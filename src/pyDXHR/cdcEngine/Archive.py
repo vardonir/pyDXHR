@@ -196,23 +196,3 @@ class UnpackedArchive(Archive):
                         self.SectionHeaders[key] = []
 
                     self.SectionHeaders[key].append(entry)
-
-
-if __name__ == "__main__":
-    # ps3_cache = Path("..\\..\\..\\..\\PS3_W\\CACHE.000")
-    # ps3_bigfile = Path("..\\..\\..\\..\\PS3_W\\Bigfile.000")
-    # pc_base = r"E:\Deus Ex - Human Revolution\Bigfile.000"
-
-    ps3_cache = Path(r"C:\Users\vardo\DXHR_Research\DXHRPS3\CACHE.000")
-    pc_base = r"E:\Deus Ex - Human Revolution\BIGFILE.000"
-    pc_en_base = r"E:\Deus Ex - Human Revolution\bigfile_Polish.000"
-    pc_dc = r"E:\GOGGames\Deus Ex HRDC\BIGFILE.000"
-
-    arc = Archive()
-    arc.deserialize_from_file(pc_dc)
-    # arc.unpack()
-
-    data = arc.get_from_filename(r"audio\streams\vo\eng\det1\adam_jensen\sq02\det1_sq02_dia_adam_006b.mul", spec=0xffffe010)
-    # data = arc.get_from_filename(r"alarm.drm")
-
-    breakpoint()
