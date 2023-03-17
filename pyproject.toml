@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "pyDXHR"
+version = "0.0.1"
+description = "Data inspection/extraction tools for Deus Ex: Human Revolution"
+authors = ["Vardonir <vardonir@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tqdm = "^4.64.1"
+numpy = "^1.24.2"
+fastcrc = "^0.2.1"
+
+[tool.poetry.dev-dependencies]
+notebook = "^6.5.2"
+jupyter = "^1.0.0"
+ipython = "^8.11.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
