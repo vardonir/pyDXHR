@@ -1,4 +1,0 @@
-# Mods
-
-- [Japanese Dub](japanese_dub.md)
-- [Force localization](locals.md)
