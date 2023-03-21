@@ -1,0 +1,64 @@
+a
+{
+    color: #eecf7b;
+}
+
+a:visited {
+    color: #ffffff;
+}
+
+.site-header {
+    background-color: black;
+}
+
+body {
+    color: #eecf7b;
+    background-color: #0f0501;
+    --themebgcolor: black;
+    --themecolor: #eecf7b;
+    --themecolor2: #c5a245;
+    --themecolor3: #0f0501;
+}
+
+.footer {
+    background-color: black;
+} 
+
+.footer a {
+    color: #eecf7b;
+}
+
+.highlight {
+    background-color: black;
+    border-color: gray;
+    border-style: dotted;
+    border-width: thin;
+    color: white
+}
+
+.wy-nav-shift{
+    background-color: var(--themebgcolor);
+}
+
+.wy-nav-top {
+background-color: var(--themebgcolor);
+}
+
+  .wy-side-nav-search {
+    background-color: var(--themecolor2);
+
+  }
+
+  .wy-nav-content{
+    background-color: var(--themebgcolor);
+
+  }
+
+.wy-nav-content-wrap {
+    background-color: var(--themebgcolor);    
+}
+
+.wy-side-scroll{
+    background-color: var(--themecolor3);    
+    border-style: none solid none none;
+}
