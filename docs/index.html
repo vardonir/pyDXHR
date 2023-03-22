@@ -34,7 +34,7 @@
           
           <a href="#">
             
-              <img src="_static/pydxhr_logo.svg" class="logo" alt="Logo"/>
+              <img src="_static/pydxhr_logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -95,7 +95,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002276BFF3AC0>
+<jinja2.runtime.BlockReference object at 0x000002C38014DB40>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>
@@ -111,7 +111,18 @@ Not affiliated with Embracer Group AB or Eidos Montréal.
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
 
 </body>
 </html>

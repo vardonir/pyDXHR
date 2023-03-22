@@ -36,8 +36,9 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
 html_css_files = ["colors.css"]
 
-html_logo = '_static/pydxhr_logo.svg'
+html_logo = '_static/pydxhr_logo.png'
 html_theme_options = {
+    'analytics_id': 'G-3VLGR2WY44',
     'prev_next_buttons_location': None,
     'logo_only': True,
     'display_version': False,
