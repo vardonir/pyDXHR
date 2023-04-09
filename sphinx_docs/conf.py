@@ -43,3 +43,5 @@ html_theme_options = {
     'logo_only': True,
     'display_version': False,
 }
+
+# command for terminal: sphinx-build -b html sphinx_docs/ docs -E

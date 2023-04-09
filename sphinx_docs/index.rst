@@ -9,4 +9,4 @@
    Mods <mods/mods.rst>
    Demos <demos/sound.rst>
    References <references.md>
-   
+   Utilities <utilities.md>

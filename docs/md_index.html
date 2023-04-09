@@ -48,11 +48,13 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Home</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#progress">Progress</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mods/mods.html">Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/sound.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 
         </div>
@@ -85,7 +87,15 @@
 <p>This page will detail documentation for the tools + some notes on stuff I’ve found while digging through the files.</p>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
-<p>Come back later.</p>
+<p>I’m planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you’re doing, I have the poetry file that I used to build the environment for the package. In this version, the only main external dependencies are <code class="docutils literal notranslate"><span class="pre">tqdm</span></code>, <code class="docutils literal notranslate"><span class="pre">fastcrc</span></code> and <code class="docutils literal notranslate"><span class="pre">numpy</span></code>. Later versions use <code class="docutils literal notranslate"><span class="pre">Pillow</span></code> and <code class="docutils literal notranslate"><span class="pre">kaitaistruct</span></code></p>
+</section>
+<section id="progress">
+<h2>Progress<a class="headerlink" href="#progress" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>[x] Read MUL files and export to FSB</p></li>
+<li><p>[ ] Read RenderMesh sections and export to GLTF</p></li>
+<li><p>[ ] Read RenderResource sections (i.e., textures) and export to DDS/TGA</p></li>
+</ul>
 </section>
 </section>
 
@@ -97,7 +107,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002C38014F700>
+<jinja2.runtime.BlockReference object at 0x000002F465EB5FF0>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>

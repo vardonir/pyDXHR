@@ -9,4 +9,10 @@ This page will detail documentation for the tools + some notes on stuff I've fou
 
 ## Usage
 
-Come back later.
+I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package. In this version, the only main external dependencies are `tqdm`, `fastcrc` and `numpy`. Later versions use `Pillow` and `kaitaistruct`
+
+## Progress
+
+- [x] Read MUL files and export to FSB
+- [ ] Read RenderMesh sections and export to GLTF 
+- [ ] Read RenderResource sections (i.e., textures) and export to DDS/TGA
