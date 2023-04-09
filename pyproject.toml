@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyDXHR"
-version = "0.0.1"
+version = "0.0.2"
 description = "Data inspection/extraction tools for Deus Ex: Human Revolution"
 authors = ["Vardonir <vardonir@gmail.com>"]
 
@@ -9,6 +9,7 @@ python = "^3.10"
 tqdm = "^4.64.1"
 numpy = "^1.24.2"
 fastcrc = "^0.2.1"
+wannacri = { git = "https://github.com/donmai-me/WannaCRI.git", branch = "master" }
 
 [tool.poetry.dev-dependencies]
 notebook = "^6.5.2"
