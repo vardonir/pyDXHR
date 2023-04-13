@@ -291,7 +291,8 @@ class UnitDRM(DRM):
                            apply_scale: bool = False,
                            blank_materials: bool = False,
                            ):
-        from pyDXHR.cdcEngine.DRM.Sections import RenderMesh, RenderResource
+        from pyDXHR.cdcEngine.Sections import RenderResource
+        from pyDXHR.cdcEngine.Sections import RenderMesh
         import kaitaistruct
         import shutil
 
@@ -504,8 +505,6 @@ class UnitDRM(DRM):
 
 
 def _decompose_trs_matrix(trs_mat: np.ndarray, apply_gltf_scale: bool = False) -> tuple:
-    from pyDXHR.utils.gltf import GLTF_SCALE
-
     location = trs_mat.T[-1, 0:3]
     # if apply_gltf_scale:
     #     location *= GLTF_SCALE

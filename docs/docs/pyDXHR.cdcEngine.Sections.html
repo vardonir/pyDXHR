@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.Sections package &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyDXHR.cdcEngine.Sound package" href="pyDXHR.cdcEngine.Sound.html" />
+    <link rel="prev" title="pyDXHR.cdcEngine.DRM package" href="pyDXHR.cdcEngine.DRM.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyDXHR.html">pyDXHR package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyDXHR.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html">pyDXHR.Export package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html">pyDXHR.KaitaiGenerated package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html">pyDXHR.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#module-pyDXHR.main">pyDXHR.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#module-pyDXHR">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyDXHR</a></li>
+          <li class="breadcrumb-item"><a href="pyDXHR.html">pyDXHR package</a></li>
+          <li class="breadcrumb-item"><a href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.Sections package</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pydxhr-cdcengine-sections-package">
+<h1>pyDXHR.cdcEngine.Sections package<a class="headerlink" href="#pydxhr-cdcengine-sections-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.CollisionMesh">
+<span id="pydxhr-cdcengine-sections-collisionmesh-module"></span><h2>pyDXHR.cdcEngine.Sections.CollisionMesh module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.CollisionMesh" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.CollisionMesh.CollisionMesh">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.CollisionMesh.</span></span><span class="sig-name descname"><span class="pre">CollisionMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/CollisionMesh.html#CollisionMesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.CollisionMesh.CollisionMesh" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh" title="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">RenderMesh</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.DTPData">
+<span id="pydxhr-cdcengine-sections-dtpdata-module"></span><h2>pyDXHR.cdcEngine.Sections.DTPData module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.DTPData" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.DTPData.DTPData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.DTPData.</span></span><span class="sig-name descname"><span class="pre">DTPData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/DTPData.html#DTPData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.DTPData.DTPData" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.AbstractSection" title="pyDXHR.cdcEngine.Sections.AbstractSection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.DTPData.DTPData.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/DTPData.html#DTPData.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.DTPData.DTPData.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.Material">
+<span id="pydxhr-cdcengine-sections-material-module"></span><h2>pyDXHR.cdcEngine.Sections.Material module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.Material" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.Material">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.Material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.Material" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.AbstractSection" title="pyDXHR.cdcEngine.Sections.AbstractSection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.Material.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">as_library</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#Material.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.Material.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.Material.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_texture_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#Material.to_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.Material.to_json" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.deserialize_drm">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.Material.</span></span><span class="sig-name descname"><span class="pre">deserialize_drm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><span class="pre">DRM</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_only_dx11</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">texture_library</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.Sections.Material.Material" title="pyDXHR.cdcEngine.Sections.Material.Material"><span class="pre">Material</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#deserialize_drm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.deserialize_drm" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.get_material_ids">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.Material.</span></span><span class="sig-name descname"><span class="pre">get_material_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#get_material_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.get_material_ids" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.Material.guess_materials">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.Material.</span></span><span class="sig-name descname"><span class="pre">guess_materials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int1a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int1b1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int1b2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tbind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byte4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/Material.html#guess_materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.Material.guess_materials" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.RenderMesh">
+<span id="pydxhr-cdcengine-sections-rendermesh-module"></span><h2>pyDXHR.cdcEngine.Sections.RenderMesh module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.RenderMesh" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderMesh.</span></span><span class="sig-name descname"><span class="pre">RenderMesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderMesh.html#RenderMesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.AbstractSection" title="pyDXHR.cdcEngine.Sections.AbstractSection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blank_materials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderMesh.html#RenderMesh.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderMesh.deserialize">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderMesh.</span></span><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderMesh.html#deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderMesh.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderMesh.deserialize_drm">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderMesh.</span></span><span class="sig-name descname"><span class="pre">deserialize_drm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><span class="pre">DRM</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderMesh.html#deserialize_drm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderMesh.deserialize_drm" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.RenderModel">
+<span id="pydxhr-cdcengine-sections-rendermodel-module"></span><h2>pyDXHR.cdcEngine.Sections.RenderModel module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.RenderModel" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderModel.RenderModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderModel.</span></span><span class="sig-name descname"><span class="pre">RenderModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderModel.html#RenderModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderModel.RenderModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh" title="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">RenderMesh</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.RenderModelBuffer">
+<span id="pydxhr-cdcengine-sections-rendermodelbuffer-module"></span><h2>pyDXHR.cdcEngine.Sections.RenderModelBuffer module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.RenderModelBuffer" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderModelBuffer.RenderModelBuffer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderModelBuffer.</span></span><span class="sig-name descname"><span class="pre">RenderModelBuffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rm_sec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderModelBuffer.html#RenderModelBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderModelBuffer.RenderModelBuffer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh" title="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">RenderMesh</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderModelBuffer.RenderModelBuffer.RenderModelSection">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RenderModelSection</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderModelBuffer.RenderModelBuffer.RenderModelSection" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.RenderResource">
+<span id="pydxhr-cdcengine-sections-renderresource-module"></span><h2>pyDXHR.cdcEngine.Sections.RenderResource module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.RenderResource" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderResource.RenderResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderResource.</span></span><span class="sig-name descname"><span class="pre">RenderResource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderResource.html#RenderResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.AbstractSection" title="pyDXHR.cdcEngine.Sections.AbstractSection"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSection</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_file">
+<span class="sig-name descname"><span class="pre">to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat" title="pyDXHR.Export.DDSWriter.OutputFormat"><span class="pre">OutputFormat</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderResource.html#RenderResource.to_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_dds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_blob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderResource.html#RenderResource.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderResource.from_library">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderResource.</span></span><span class="sig-name descname"><span class="pre">from_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tex_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tex_lib_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderResource.html#from_library"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderResource.from_library" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections.RenderTerrain">
+<span id="pydxhr-cdcengine-sections-renderterrain-module"></span><h2>pyDXHR.cdcEngine.Sections.RenderTerrain module<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections.RenderTerrain" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.RenderTerrain.RenderTerrain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.RenderTerrain.</span></span><span class="sig-name descname"><span class="pre">RenderTerrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections/RenderTerrain.html#RenderTerrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.RenderTerrain.RenderTerrain" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh" title="pyDXHR.cdcEngine.Sections.RenderMesh.RenderMesh"><code class="xref py py-class docutils literal notranslate"><span class="pre">RenderMesh</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.Sections">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyDXHR.cdcEngine.Sections" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.AbstractSection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.Sections.</span></span><span class="sig-name descname"><span class="pre">AbstractSection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections.html#AbstractSection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.AbstractSection" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.AbstractSection.AttachedArchive">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AttachedArchive</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.AbstractSection.AttachedArchive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.AbstractSection.Name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.AbstractSection.Name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.Sections.AbstractSection.to_gltf">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/Sections.html#AbstractSection.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.Sections.AbstractSection.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000219934C3910>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

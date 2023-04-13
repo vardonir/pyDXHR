@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.DRM.UnitDRM &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.DRM.UnitDRM</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.DRM.UnitDRM</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Mostly adapted from https://github.com/rrika/dxhr/blob/main/tools/cdcunit.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span><span class="p">,</span> <span class="n">trange</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">Archive</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionType</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Reference</span> <span class="kn">import</span> <span class="n">Reference</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">create_directory</span>
+
+
+<div class="viewcode-block" id="ObjectType"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType">[docs]</a><span class="k">class</span> <span class="nc">ObjectType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">IMF</span> <span class="o">=</span> <span class="s2">&quot;IMF&quot;</span>
+    <span class="n">EXT_IMF</span> <span class="o">=</span> <span class="s2">&quot;External IMF&quot;</span>
+    <span class="n">OBJ</span> <span class="o">=</span> <span class="s2">&quot;OBJ&quot;</span>  <span class="c1"># i guess calling them both objects is confusing. whatever.</span>
+    <span class="n">Stream</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span>
+    <span class="n">Collision</span> <span class="o">=</span> <span class="s2">&quot;Collision&quot;</span></div>
+
+
+<div class="viewcode-block" id="UnitDRM"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM">[docs]</a><span class="k">class</span> <span class="nc">UnitDRM</span><span class="p">(</span><span class="n">DRM</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ObjectType</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Archive</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rel_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coll_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj2_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imf_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cell_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linked_drm_ref</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_imf_ref</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_ref</span><span class="p">:</span> <span class="n">Reference</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cell_ref_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Reference</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_occlusion_ref_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Reference</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># region sub0 - linked drm and collision</span>
+    <span class="k">def</span> <span class="nf">_linked_drm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_linked_drm_ref</span><span class="o">.</span><span class="n">get_string</span><span class="p">(</span><span class="mh">0x100</span> <span class="o">*</span> <span class="n">i</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rel_count</span><span class="p">)]</span>
+        <span class="c1"># return [self._linked_drm_ref.access_null_terminated(0x100 * i).decode(&quot;utf-8&quot;) for i in range(self._rel_count)]</span>
+
+    <span class="k">def</span> <span class="nf">_process_collision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coll_count</span><span class="p">):</span>
+            <span class="n">cd0s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="o">.</span><span class="n">add_offset</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mh">0x80</span><span class="p">)</span>
+            <span class="n">trs_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="o">.</span><span class="n">access_array</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="n">bbs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="o">.</span><span class="n">access_array</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mh">0x40</span><span class="p">)</span>
+
+            <span class="n">cd1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x74</span><span class="p">)</span>
+            <span class="n">vtx</span> <span class="o">=</span> <span class="n">cd1</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">cd1</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x24</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region sub30 - imf and obj</span>
+    <span class="k">def</span> <span class="nf">_process_imf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ext_imf_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">imf_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_imf_count</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Reading IMF data&quot;</span><span class="p">):</span>
+            <span class="n">trs_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imf_ref</span><span class="o">.</span><span class="n">access_array</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x90</span><span class="p">)</span>
+            <span class="n">trs_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">trs_mat</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="n">dtpid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imf_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x90</span> <span class="o">+</span> <span class="mh">0x48</span><span class="p">)</span>
+            <span class="n">fname_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_imf_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x4C</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x90</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">dtpid</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">fname_ref</span><span class="p">:</span>            <span class="c1"># IMFs embedded in the file</span>
+                <span class="n">dtp_imf_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup_reference</span><span class="p">(</span><span class="n">section_type</span><span class="o">=</span><span class="n">SectionType</span><span class="o">.</span><span class="n">DTPData</span><span class="p">,</span> <span class="n">section_id</span><span class="o">=</span><span class="n">dtpid</span><span class="p">)</span>
+                <span class="n">rm_imf_ref</span> <span class="o">=</span> <span class="n">dtp_imf_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x4</span><span class="p">)</span>
+                <span class="n">rm_sec</span> <span class="o">=</span> <span class="n">rm_imf_ref</span><span class="o">.</span><span class="n">section</span>
+
+                <span class="k">if</span> <span class="n">rm_sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">imf_dict</span><span class="p">:</span>
+                    <span class="c1"># this will probably not trigger, but just in case...</span>
+                    <span class="n">imf_dict</span><span class="p">[</span><span class="n">rm_sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">imf_dict</span><span class="p">[</span><span class="n">rm_sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trs_mat</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">fname_ref</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>           <span class="c1"># IMFs elsewhere</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">fname_ref</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">fname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ext_imf_dict</span><span class="p">:</span>
+                    <span class="n">ext_imf_dict</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">ext_imf_dict</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trs_mat</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">EXT_IMF</span><span class="p">]</span> <span class="o">=</span> <span class="n">ext_imf_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">IMF</span><span class="p">]</span> <span class="o">=</span> <span class="n">imf_dict</span>
+
+    <span class="k">def</span> <span class="nf">_get_obj_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># seems like there&#39;s a correlation between that and the list of linked DRMs</span>
+
+        <span class="c1"># from collections import Counter</span>
+        <span class="c1"># c = Counter(self.obj)</span>
+        <span class="c1"># c[&quot;mapboundary&quot;]</span>
+
+        <span class="n">obj_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_obj_count</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Reading OBJ data&quot;</span><span class="p">):</span>
+            <span class="c1"># # # TODO: plz fix me</span>
+            <span class="c1"># dat = struct.unpack_from(&quot;&lt;fffLfffLfffLH&quot;, self._obj_ref.section.Data,</span>
+            <span class="c1">#                          self._obj_ref.offset + i * 0x70)</span>
+            <span class="c1"># posrot = dat[0:-1]</span>
+
+            <span class="n">index</span><span class="p">,</span>  <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;H&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span>
+                                       <span class="mh">0x30</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x70</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;fff&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span>
+                                     <span class="mh">0x10</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x70</span><span class="p">)</span>
+            <span class="n">rot</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;fff&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x70</span><span class="p">)</span>
+            <span class="n">scl</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;fff&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span>
+                                     <span class="mh">0x20</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mh">0x70</span><span class="p">)</span>
+
+            <span class="n">rot_as_matrix</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="n">trs_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+            <span class="n">trs_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">scl</span><span class="p">)</span>
+            <span class="n">trs_mat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">trs_mat</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">rot_as_matrix</span>
+
+            <span class="n">obj_indices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">index</span><span class="p">,</span> <span class="n">trs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">obj_indices</span>
+
+    <span class="k">def</span> <span class="nf">_process_obj2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># ???</span>
+        <span class="n">obj2_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="mh">0x1C</span><span class="p">)</span>
+        <span class="k">pass</span>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region sub50 - occlusion, stream</span>
+    <span class="k">def</span> <span class="nf">_process_occlusion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO</span>
+        <span class="k">pass</span>
+        <span class="c1"># for i in range(self._cell_count):</span>
+        <span class="c1">#     breakpoint()</span>
+
+    <span class="k">def</span> <span class="nf">_process_streamgroup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">streamgroup_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_count</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Reading stream objects&quot;</span><span class="p">):</span>
+            <span class="n">streamgroup_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_ref</span><span class="o">.</span><span class="n">add_offset</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mh">0x14</span><span class="p">)</span>
+            <span class="n">streamgroup_name</span> <span class="o">=</span> <span class="n">streamgroup_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x0</span><span class="p">)</span>
+            <span class="n">streamgroup_path</span> <span class="o">=</span> <span class="n">streamgroup_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0xC</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">streamgroup_path</span><span class="p">:</span>
+                <span class="n">streamgroup_name</span> <span class="o">=</span> <span class="n">streamgroup_name</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+                <span class="n">streamgroup_path</span> <span class="o">=</span> <span class="n">streamgroup_path</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">streamgroup_name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">streamgroup_path</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">streamgroup_data</span><span class="p">:</span>
+                    <span class="n">streamgroup_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="c1"># TRS mat for streamobjects is 4x4 unit matrix</span>
+                <span class="n">streamgroup_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">Stream</span><span class="p">]</span> <span class="o">=</span> <span class="n">streamgroup_data</span>
+    <span class="c1"># endregion</span>
+
+    <span class="k">def</span> <span class="nf">_get_references</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">unit_ref</span> <span class="o">=</span> <span class="n">Reference</span><span class="o">.</span><span class="n">from_drm_root</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">sub0_ref</span> <span class="o">=</span> <span class="n">unit_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Terrain?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linked_drm_ref</span> <span class="o">=</span> <span class="n">sub0_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linked_drm_ref</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rel_count</span> <span class="o">=</span> <span class="n">sub0_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="mh">0x2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span> <span class="o">=</span> <span class="n">sub0_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x18</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collision_ref</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coll_count</span> <span class="o">=</span> <span class="n">sub0_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="mh">0x14</span><span class="p">)</span>
+
+        <span class="n">sub30_ref</span> <span class="o">=</span> <span class="n">unit_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x30</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sub30_ref</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_ref</span> <span class="o">=</span> <span class="n">sub30_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x18</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_obj_count</span> <span class="o">=</span> <span class="n">sub30_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="mh">0x14</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_imf_ref</span> <span class="o">=</span> <span class="n">sub30_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0xA8</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_imf_count</span> <span class="o">=</span> <span class="n">sub30_ref</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="mh">0xA4</span><span class="p">)</span>
+
+        <span class="n">sub50_ref</span> <span class="o">=</span> <span class="n">unit_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x50</span><span class="p">)</span>  <span class="c1"># CellGroupData</span>
+        <span class="k">if</span> <span class="n">sub50_ref</span><span class="p">:</span>
+            <span class="n">sub50_0</span> <span class="o">=</span> <span class="n">sub50_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># CellGroupDataHeader</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_ref</span> <span class="o">=</span> <span class="n">sub50_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0xC</span><span class="p">)</span>  <span class="c1"># CellStreamGroupData*</span>
+            <span class="n">sub50_14</span> <span class="o">=</span> <span class="n">sub50_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x14</span><span class="p">)</span>  <span class="c1"># CellData*[] # RDRs here are just the occlusion</span>
+            <span class="n">sub50_18</span> <span class="o">=</span> <span class="n">sub50_ref</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x18</span><span class="p">)</span>  <span class="c1"># CellStreamData (void terrain)</span>
+
+            <span class="k">if</span> <span class="n">sub50_0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_ref</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_streamgroup_count</span> <span class="o">=</span> <span class="n">sub50_0</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="mh">0xC</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">sub50_18</span><span class="p">:</span>
+                <span class="n">sub50_18_4</span> <span class="o">=</span> <span class="n">sub50_18</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>  <span class="c1"># ???</span>
+                <span class="n">cell_count</span> <span class="o">=</span> <span class="n">sub50_0</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cell_count</span> <span class="o">=</span> <span class="n">cell_count</span>
+
+            <span class="k">if</span> <span class="n">sub50_14</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cell_ref_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_occlusion_ref_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cell_count</span><span class="p">):</span>
+                    <span class="n">cell</span> <span class="o">=</span> <span class="n">sub50_14</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">cellsub0</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">cellsub4</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x4</span><span class="p">)</span>
+                        <span class="n">cellsub4_0</span> <span class="o">=</span> <span class="n">cellsub4</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x0</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">cellsub4_0</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="n">cellsub20</span> <span class="o">=</span> <span class="n">cell</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x20</span><span class="p">)</span>
+                    <span class="n">cellname</span> <span class="o">=</span> <span class="n">cellsub0</span><span class="o">.</span><span class="n">deref</span><span class="p">(</span><span class="mh">0x0</span><span class="p">)</span><span class="o">.</span><span class="n">get_string</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="n">cellsub4_0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_cell_ref_list</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">cellsub4_0</span><span class="p">,</span> <span class="n">cellname</span><span class="p">))</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_occlusion_ref_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cellsub20</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UnitDRM.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">header_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">include_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_include_args</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_references</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">&quot;archive&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Cannot parse OBJ without attached archive&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">load_linked_rel</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;load_linked_rel&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;load_linked_rel&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">load_linked_rel</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_linked_drm</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;archive&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s2">&quot;collision&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_collision</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s2">&quot;obj2&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_obj2</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing OBJ&quot;</span><span class="p">)</span>
+            <span class="n">object_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">obj_index</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_obj_indices</span><span class="p">():</span>
+                <span class="n">obj_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">object_list</span><span class="p">[</span><span class="n">obj_index</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">obj_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">object_dict</span><span class="p">:</span>
+                    <span class="n">object_dict</span><span class="p">[</span><span class="n">obj_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">object_dict</span><span class="p">[</span><span class="n">obj_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trs_mat</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">OBJ</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_dict</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s2">&quot;imf&quot;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing IMF&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_imf</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s1">&#39;stream&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing stream&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_streamgroup</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">include_args</span><span class="p">[</span><span class="s2">&quot;occlusion&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_occlusion</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_include_args</span><span class="p">(</span><span class="n">input_kwargs</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;imf&quot;</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">,</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="s2">&quot;collision&quot;</span><span class="p">,</span> <span class="s2">&quot;occlusion&quot;</span><span class="p">,</span> <span class="s2">&quot;obj2&quot;</span><span class="p">]</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">input_kwargs</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_kwargs</span><span class="p">[</span><span class="n">a</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">out</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="p">,</span>
+                           <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                           <span class="n">trs_mat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">dest</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">apply_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                           <span class="n">blank_materials</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                           <span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections</span> <span class="kn">import</span> <span class="n">RenderResource</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections</span> <span class="kn">import</span> <span class="n">RenderMesh</span>
+        <span class="kn">import</span> <span class="nn">kaitaistruct</span>
+        <span class="kn">import</span> <span class="nn">shutil</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rm</span> <span class="o">=</span> <span class="n">RenderMesh</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">rm_section</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">kaitaistruct</span><span class="o">.</span><span class="n">ValidationNotEqualError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># some RM sections are apparently badly formed? idk</span>
+            <span class="c1"># warnings.warn(&quot;Encountered RenderMesh error&quot;)</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rm</span><span class="p">:</span>
+                <span class="n">gltf_object</span> <span class="o">=</span> <span class="n">rm</span><span class="o">.</span><span class="n">to_gltf</span><span class="p">(</span><span class="n">as_bytes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_scale</span><span class="p">,</span> <span class="n">blank_materials</span><span class="o">=</span><span class="n">blank_materials</span><span class="p">)</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">gltf_object</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">trs_mat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">matrix</span> <span class="o">=</span> <span class="n">trs_mat</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">dest</span><span class="p">:</span>
+                    <span class="n">pydxhr_texlib</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYDXHR_TEXLIB&#39;</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">pydxhr_texlib</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">texture_dest</span> <span class="o">=</span> <span class="n">dest</span> <span class="o">/</span> <span class="s2">&quot;textures&quot;</span>
+                        <span class="n">texture_dest</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">gltf_object</span><span class="o">.</span><span class="n">images</span><span class="p">:</span>
+                            <span class="n">tex_id</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s1">&#39;cdcTextureID&#39;</span><span class="p">]</span>
+                            <span class="n">tex_from_lib</span> <span class="o">=</span> <span class="n">RenderResource</span><span class="o">.</span><span class="n">from_library</span><span class="p">(</span><span class="n">tex_id</span><span class="o">=</span><span class="n">tex_id</span><span class="p">,</span> <span class="n">tex_lib_dir</span><span class="o">=</span><span class="n">pydxhr_texlib</span><span class="p">,</span> <span class="n">as_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">tex_from_lib</span><span class="p">,</span> <span class="n">texture_dest</span><span class="p">)</span>
+                            <span class="n">img</span><span class="o">.</span><span class="n">uri</span> <span class="o">=</span> <span class="s2">&quot;..</span><span class="se">\\</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;textures&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Path</span><span class="p">(</span><span class="n">tex_from_lib</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                            <span class="n">img</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;T_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+
+                    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+                        <span class="p">(</span><span class="n">dest</span> <span class="o">/</span> <span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">gltf_object</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">dest</span> <span class="o">/</span> <span class="n">folder</span> <span class="o">/</span> <span class="n">file_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UnitDRM.to_ue5_csv"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_ue5_csv">[docs]</a>    <span class="k">def</span> <span class="nf">to_ue5_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+               <span class="n">save_to</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">apply_universal_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">):</span>
+        <span class="c1"># the UE5 importer expects to receive blank materials since those are intended to be fixed later. for now.</span>
+
+        <span class="kn">import</span> <span class="nn">csv</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">create_directory</span><span class="p">(</span><span class="n">save_to</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">csvfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dest</span> <span class="o">/</span> <span class="s2">&quot;locations.csv&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">csvwriter</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">csvfile</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">write_csv_row</span><span class="p">(</span><span class="n">row_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">trs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">loc</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">scl</span> <span class="o">=</span> <span class="n">_decompose_trs_matrix</span><span class="p">(</span><span class="n">trs</span><span class="p">,</span> <span class="n">apply_gltf_scale</span><span class="o">=</span><span class="n">apply_universal_scale</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="n">row_name</span><span class="p">]</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">scl</span><span class="p">)</span>
+            <span class="n">csvwriter</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="p">:</span>
+            <span class="c1"># streamobjects</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">Stream</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                                   <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing stream objects&quot;</span><span class="p">):</span>
+                <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="sa">fr</span><span class="s2">&quot;streamgroups\</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.drm&quot;</span><span class="p">)</span>
+                <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                    <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                                    <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+                                                    <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                    <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+                                                    <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_universal_scale</span><span class="p">,</span>
+                                                    <span class="n">blank_materials</span><span class="o">=</span><span class="kc">True</span>
+                                                    <span class="p">)</span>
+                        <span class="n">write_csv_row</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span> <span class="n">trs_mat</span><span class="p">)</span>
+                        <span class="c1"># csvwriter.writerow([f&quot;{name}_&quot; + f&quot;{sec.Header.SecId:x}&quot;.rjust(8, &#39;0&#39;)] + trs_mat.T.flatten().tolist())</span>
+
+            <span class="c1"># external IMFs</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">EXT_IMF</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing external IMFs&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">imf_path</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="n">imf_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">imf_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">imf_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">imf_path</span><span class="p">)</span>
+                <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                    <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;imf_ext&quot;</span><span class="p">,</span>
+                                                    <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">imf_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                    <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+                                                    <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_universal_scale</span><span class="p">,</span>
+                                                    <span class="n">blank_materials</span><span class="o">=</span><span class="kc">True</span>
+                                                    <span class="p">)</span>
+                        <span class="n">write_csv_row</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">imf_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span> <span class="n">trs_mat</span><span class="p">)</span>
+                        <span class="c1"># csvwriter.writerow([f&quot;{imf_name}_&quot; + f&quot;{sec.Header.SecId:x}&quot;.rjust(8, &#39;0&#39;)] + trs_mat.T.flatten().tolist())</span>
+
+            <span class="c1"># objects</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">OBJ</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing OBJs&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">obj_name</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">obj_name</span> <span class="o">+</span> <span class="s2">&quot;.drm&quot;</span><span class="p">)</span>
+                <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                    <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                                    <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;obj&quot;</span><span class="p">,</span>
+                                                    <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                    <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+                                                    <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_universal_scale</span><span class="p">,</span>
+                                                    <span class="n">blank_materials</span><span class="o">=</span><span class="kc">True</span>
+                                                    <span class="p">)</span>
+
+                        <span class="n">write_csv_row</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span> <span class="n">trs_mat</span><span class="p">)</span>
+
+        <span class="c1"># internal IMFs</span>
+        <span class="k">for</span> <span class="n">rm_id</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">IMF</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing internal IMFs&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                <span class="n">rm_sec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup_section</span><span class="p">(</span><span class="n">SectionType</span><span class="o">.</span><span class="n">RenderMesh</span><span class="p">,</span> <span class="n">rm_id</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">rm_sec</span><span class="p">,</span>
+                                            <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;imf_int&quot;</span><span class="p">,</span>
+                                            <span class="n">file_name</span><span class="o">=</span><span class="s2">&quot;RM_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rm_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                            <span class="n">dest</span><span class="o">=</span><span class="n">dest</span><span class="p">,</span>
+                                            <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_universal_scale</span><span class="p">,</span>
+                                            <span class="n">blank_materials</span><span class="o">=</span><span class="kc">True</span>
+                                            <span class="p">)</span>
+                <span class="n">write_csv_row</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RM_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rm_sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span> <span class="n">trs_mat</span><span class="p">)</span>
+
+        <span class="n">csvfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="UnitDRM.to_gltf"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_gltf">[docs]</a>    <span class="k">def</span> <span class="nf">to_gltf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">apply_universal_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">save_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;overwrite&quot;</span><span class="p">):</span>
+        <span class="n">dest</span> <span class="o">=</span> <span class="n">create_directory</span><span class="p">(</span><span class="n">save_to</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">)</span> <span class="k">if</span> <span class="n">save_to</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="p">:</span>
+            <span class="c1"># handle external IMFs</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">EXT_IMF</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing external IMFs&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">imf_path</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="n">imf_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">imf_path</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">imf_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                    <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">imf_path</span><span class="p">)</span>
+                    <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                    <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                                <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;imf_ext&quot;</span><span class="p">,</span>
+                                                <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">imf_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                <span class="n">dest</span><span class="o">=</span><span class="n">dest</span>
+                                                <span class="p">)</span>
+
+            <span class="c1"># handle objects</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">OBJ</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing OBJs&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">obj_name</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                    <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">obj_name</span> <span class="o">+</span> <span class="s2">&quot;.drm&quot;</span><span class="p">)</span>
+                    <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                    <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                                <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;obj&quot;</span><span class="p">,</span>
+                                                <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj_name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                <span class="n">dest</span><span class="o">=</span><span class="n">dest</span>
+                                                <span class="p">)</span>
+
+            <span class="c1"># handle streamobjects</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">Stream</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                                   <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing stream objects&quot;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                    <span class="n">drm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_archive</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="sa">fr</span><span class="s2">&quot;streamgroups\</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.drm&quot;</span><span class="p">)</span>
+                    <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+                    <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">drm_data</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">sec</span><span class="p">,</span>
+                                                <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                                <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+                                                <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                                <span class="n">dest</span><span class="o">=</span><span class="n">dest</span>
+                                                <span class="p">)</span>
+
+        <span class="c1"># handle internal IMFs</span>
+        <span class="k">for</span> <span class="n">rm_id</span><span class="p">,</span> <span class="n">trs_mat_list</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="p">[</span><span class="n">ObjectType</span><span class="o">.</span><span class="n">IMF</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Processing internal IMFs&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">trs_mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trs_mat_list</span><span class="p">):</span>
+                <span class="n">rm_sec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup_section</span><span class="p">(</span><span class="n">SectionType</span><span class="o">.</span><span class="n">RenderMesh</span><span class="p">,</span> <span class="n">rm_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_read_section_data</span><span class="p">(</span><span class="n">rm_section</span><span class="o">=</span><span class="n">rm_sec</span><span class="p">,</span>
+                                        <span class="n">trs_mat</span><span class="o">=</span><span class="n">trs_mat</span><span class="p">,</span>
+                                        <span class="n">folder</span><span class="o">=</span><span class="s2">&quot;imf_int&quot;</span><span class="p">,</span>
+                                        <span class="n">file_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;RM_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rm_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">,</span>
+                                        <span class="n">dest</span><span class="o">=</span><span class="n">dest</span>
+                                        <span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_decompose_trs_matrix</span><span class="p">(</span><span class="n">trs_mat</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">apply_gltf_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">trs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="c1"># if apply_gltf_scale:</span>
+    <span class="c1">#     location *= GLTF_SCALE</span>
+
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">trs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># might need to transpose?</span>
+    <span class="n">rot_matrix</span> <span class="o">=</span> <span class="n">trs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">scale</span>
+    <span class="n">rotation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">rot_matrix</span><span class="p">)</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="s2">&quot;xyz&quot;</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">location</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="n">scale</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E9C8C580>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

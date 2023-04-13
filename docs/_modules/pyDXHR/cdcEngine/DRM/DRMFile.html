@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.DRM.DRMFile &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.DRM.DRMFile</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.DRM.DRMFile</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Section</span> <span class="kn">import</span> <span class="n">SectionHeader</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM</span> <span class="kn">import</span> <span class="n">CompressedDRM</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM</span> <span class="kn">import</span> <span class="n">Section</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Reference</span> <span class="kn">import</span> <span class="n">Reference</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">Endian</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionType</span><span class="p">,</span> <span class="n">SectionSubtype</span>
+
+
+<div class="viewcode-block" id="DRMHeader"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader">[docs]</a><span class="k">class</span> <span class="nc">DRMHeader</span><span class="p">:</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Endian&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Version&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DRMDependencies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;OBJDependencies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Flags&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;RootSection&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SectionHeaders&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RootSection</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">SectionHeader</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="DRMHeader.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">header_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">32</span>
+
+        <span class="n">le_version</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&lt;L&quot;</span><span class="p">,</span> <span class="n">header_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">be_version</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">header_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">le_version</span> <span class="o">!=</span> <span class="mi">19</span> <span class="ow">and</span> <span class="n">le_version</span> <span class="o">!=</span> <span class="mi">21</span> <span class="ow">and</span> <span class="n">be_version</span> <span class="o">!=</span> <span class="mi">19</span> <span class="ow">and</span> <span class="n">be_version</span> <span class="o">!=</span> <span class="mi">21</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Invalid format&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">le_version</span> <span class="o">==</span> <span class="mi">19</span> <span class="ow">and</span> <span class="n">be_version</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Not supported&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">le_version</span> <span class="o">==</span> <span class="mi">21</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Version</span> <span class="o">=</span> <span class="n">le_version</span>
+        <span class="k">elif</span> <span class="n">be_version</span> <span class="o">==</span> <span class="mi">21</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Version</span> <span class="o">=</span> <span class="n">be_version</span>
+
+        <span class="n">version</span><span class="p">,</span> \
+            <span class="n">len_drm_dep</span><span class="p">,</span> <span class="n">len_obj_dep</span><span class="p">,</span> \
+            <span class="n">unknown0c</span><span class="p">,</span> <span class="n">unknown10</span><span class="p">,</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">Flags</span><span class="p">,</span> \
+            <span class="n">len_sections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RootSection</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">8L&quot;</span><span class="p">,</span> <span class="n">header_data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span> <span class="o">=</span> <span class="n">Section</span><span class="o">.</span><span class="n">deserialize_section_headers</span><span class="p">(</span>
+            <span class="n">drm_header</span><span class="o">=</span><span class="n">header_data</span><span class="p">,</span>
+            <span class="n">len_sections</span><span class="o">=</span><span class="n">len_sections</span><span class="p">,</span>
+            <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span>
+        <span class="p">)</span>
+
+        <span class="n">cursor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="n">len_sections</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span> <span class="o">=</span> <span class="n">header_data</span><span class="p">[</span><span class="n">cursor</span><span class="p">:</span><span class="n">cursor</span><span class="o">+</span><span class="n">len_obj_dep</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">OBJDependencies</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">cursor</span> <span class="o">+=</span> <span class="n">len_obj_dep</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span> <span class="o">=</span> <span class="n">header_data</span><span class="p">[</span><span class="n">cursor</span><span class="p">:</span><span class="n">cursor</span><span class="o">+</span><span class="n">len_drm_dep</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DRMDependencies</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">cursor</span> <span class="o">+=</span> <span class="n">len_drm_dep</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">cursor</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="mi">15</span></div></div>
+        <span class="c1"># return cursor</span>
+
+
+<div class="viewcode-block" id="DRM"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM">[docs]</a><span class="k">class</span> <span class="nc">DRM</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Header</span> <span class="o">=</span> <span class="n">DRMHeader</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionData</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="DRM.lookup_section"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_section">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section_type</span><span class="p">:</span> <span class="n">SectionType</span><span class="p">,</span> <span class="n">section_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># ugly af, but it&#39;s not like it&#39;s used often...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">section_type</span><span class="o">.</span><span class="n">value</span> <span class="ow">and</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span> <span class="o">==</span> <span class="n">section_id</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">sec</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+        <span class="c1"># [sec for sec in self.Sections if sec.Header.SectionType == SectionType.DTPData]</span>
+
+<div class="viewcode-block" id="DRM.lookup_reference"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_reference">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section_type</span><span class="p">:</span> <span class="n">SectionType</span><span class="p">,</span> <span class="n">section_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup_section</span><span class="p">(</span><span class="n">section_type</span><span class="p">,</span> <span class="n">section_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sec</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Reference</span><span class="o">.</span><span class="n">from_drm_section</span><span class="p">(</span><span class="n">drm</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">sec</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="DRM.to_gltf"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.to_gltf">[docs]</a>    <span class="k">def</span> <span class="nf">to_gltf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DRM.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">header_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">merge_generic_sections</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">magic</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">magic</span> <span class="o">==</span> <span class="n">CompressedDRM</span><span class="o">.</span><span class="n">Magic</span><span class="p">:</span>
+            <span class="n">block_data</span> <span class="o">=</span> <span class="n">CompressedDRM</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">header_only</span><span class="o">=</span><span class="n">header_only</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">merge_generic_sections</span><span class="p">:</span>
+            <span class="c1"># the notes in the xnalara script mention that a generic section type just means that it&#39;s supposed</span>
+            <span class="c1"># to continue from the previous section. but i havent been able to recreate that. so...</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">CompressedDRM</span><span class="o">.</span><span class="n">rebuild_aligned</span><span class="p">(</span><span class="n">block_data</span><span class="p">)</span>
+            <span class="n">header_cursor_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="n">section_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">header_cursor_end</span><span class="p">:]</span>
+
+            <span class="n">l</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">SectionType</span><span class="o">.</span><span class="n">Generic</span><span class="p">,</span> <span class="n">sec_header</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">]</span>
+
+            <span class="n">ll</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">is_gen</span><span class="p">,</span> <span class="n">sec_header</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gen</span><span class="p">:</span>
+                    <span class="n">ll</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+            <span class="n">lll</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">[</span><span class="n">p</span><span class="p">:</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ll</span><span class="p">,</span> <span class="n">ll</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
+
+            <span class="n">llll</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lll</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">data_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">h</span><span class="o">.</span><span class="n">DataSize</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">i</span><span class="p">])</span>
+                    <span class="n">header_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">h</span><span class="o">.</span><span class="n">HeaderSize</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">i</span><span class="p">])</span>
+                    <span class="n">llll</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">header_size</span><span class="p">))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">llll</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">DataSize</span><span class="p">,</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">HeaderSize</span><span class="p">))</span>
+
+                <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">header_only</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SectionData</span> <span class="o">=</span> <span class="n">Section</span><span class="o">.</span><span class="n">from_drm_sizes</span><span class="p">(</span>
+                    <span class="n">block_data</span><span class="o">=</span><span class="n">section_data</span><span class="p">,</span>
+                    <span class="n">size_data</span><span class="o">=</span><span class="n">llll</span><span class="p">,</span>
+                    <span class="n">header_list</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                    <span class="n">drm_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Flags</span><span class="p">,</span>
+                    <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Endian</span>
+                <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># TODO: this should be revised to handle large unit DRMs, particularly det_city_sarif from the ps3 version</span>
+            <span class="c1"># * the first block is not necessarily the *entire* DRM header</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">block_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">header_only</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SectionData</span> <span class="o">=</span> <span class="n">Section</span><span class="o">.</span><span class="n">from_drm_blocks</span><span class="p">(</span>
+                    <span class="n">drm_block_list</span><span class="o">=</span><span class="n">block_data</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                    <span class="c1"># drm_block_list=block_data,</span>
+                    <span class="n">sec_header_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">,</span>
+                    <span class="n">drm_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Flags</span><span class="p">,</span>
+                    <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Endian</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">SectionSubtype</span> <span class="o">|</span> <span class="n">SectionSubtype</span><span class="p">):</span>
+        <span class="c1"># TODO: generalize this. type checks aren&#39;t working??</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">SectionType</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">item</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="o">==</span> <span class="n">item</span><span class="p">]</span>
+
+    <span class="c1"># TODO: hahaha clean this shit up</span>
+<div class="viewcode-block" id="DRM.filter_by_type"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_type">[docs]</a>    <span class="k">def</span> <span class="nf">filter_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DRM.filter_by_subtype"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_subtype">[docs]</a>    <span class="k">def</span> <span class="nf">filter_by_subtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DRM.filter_out_by_type"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_type">[docs]</a>    <span class="k">def</span> <span class="nf">filter_out_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DRM.filter_out_by_subtype"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_subtype">[docs]</a>    <span class="k">def</span> <span class="nf">filter_out_by_subtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filter_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filter_list</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DRM.filter_out_dx9_materials"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_dx9_materials">[docs]</a>    <span class="k">def</span> <span class="nf">filter_out_dx9_materials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">materials_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># only for pc-w</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">filter_section_list</span><span class="p">(</span><span class="n">sec_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="n">by_type</span><span class="o">=</span><span class="s2">&quot;dx9_materials&quot;</span><span class="p">,</span> <span class="n">materials_only</span><span class="o">=</span><span class="n">materials_only</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">filter_section_list</span><span class="p">(</span><span class="n">sec_header_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">,</span> <span class="n">materials_only</span><span class="o">=</span><span class="n">materials_only</span><span class="p">,</span> <span class="n">by_type</span><span class="o">=</span><span class="s2">&quot;dx9_materials&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="filter_section_list"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.filter_section_list">[docs]</a><span class="k">def</span> <span class="nf">filter_section_list</span><span class="p">(</span><span class="n">sec_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">sec_header_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">by_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">SectionType</span> <span class="o">|</span> <span class="n">SectionSubtype</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">kwargs</span>
+                        <span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">by_type</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">by_type</span> <span class="o">==</span> <span class="s2">&quot;dx9_materials&quot;</span><span class="p">:</span>
+            <span class="n">mat_only</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;materials_only&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;materials_only&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">sec_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sec_list</span> <span class="k">if</span> <span class="n">_filter_out_dx9_materials</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="p">,</span> <span class="n">mat_only</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="n">sec_header_list</span> <span class="k">if</span> <span class="n">_filter_out_dx9_materials</span><span class="p">(</span><span class="n">sec_header</span><span class="p">,</span> <span class="n">mat_only</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">by_type</span><span class="p">,</span> <span class="n">SectionType</span><span class="p">):</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;action&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="s2">&quot;include&quot;</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;include&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sec_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sec_list</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">by_type</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="n">sec_header_list</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">by_type</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;remove&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sec_list</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sec_list</span> <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">!=</span> <span class="n">by_type</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="n">sec_header_list</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">!=</span> <span class="n">by_type</span><span class="p">]</span></div>
+
+
+<span class="k">def</span> <span class="nf">_filter_out_dx9_materials</span><span class="p">(</span><span class="n">inp</span><span class="p">:</span> <span class="n">SectionHeader</span><span class="p">,</span>
+                              <span class="n">keep_only_materials</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">inp</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">!=</span> <span class="n">SectionType</span><span class="o">.</span><span class="n">Material</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">keep_only_materials</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">inp</span><span class="o">.</span><span class="n">Language</span> <span class="o">&gt;&gt;</span> <span class="mi">30</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="filter_out_render_model_buffer"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.DRMFile.filter_out_render_model_buffer">[docs]</a><span class="k">def</span> <span class="nf">filter_out_render_model_buffer</span><span class="p">(</span><span class="n">sec_header_list</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">sec_header</span> <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="n">sec_header_list</span> <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionSubtype</span> <span class="o">!=</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderModelBuffer</span><span class="p">]</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202EA9A4D30>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

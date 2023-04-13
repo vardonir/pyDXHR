@@ -1,9 +1,6 @@
-from typing import Optional
 from pathlib import Path
 from tqdm import tqdm
 from pyDXHR.cdcEngine.Archive import Archive
-from pyDXHR.cdcEngine.Archive import Archive, ArchivePlatform
-from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 from pyDXHR.utils import crc32bzip2
 
 

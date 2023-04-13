@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.DRM.Reference &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.DRM.Reference</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.DRM.Reference</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Section</span> <span class="kn">import</span> <span class="n">Section</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Resolver</span> <span class="kn">import</span> <span class="n">UnknownResolver</span><span class="p">,</span> <span class="n">LocalDataResolver</span><span class="p">,</span> <span class="n">RemoteDataResolver</span><span class="p">,</span> <span class="n">MissingResolver</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+
+
+<div class="viewcode-block" id="Reference"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference">[docs]</a><span class="k">class</span> <span class="nc">Reference</span><span class="p">:</span>
+    <span class="c1"># adapted from https://github.com/rrika/dxhr/blob/main/tools/drm.py#L21</span>
+    <span class="c1"># i get the concept, but someday i&#39;ll figure out what the pancake is going on here...</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Section</span><span class="p">],</span> <span class="n">section</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section_list</span> <span class="o">=</span> <span class="n">section_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="n">section</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resolver</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Reference.from_drm_root"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_root">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_drm_root</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">drm</span><span class="p">:</span> <span class="n">DRM</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section_list</span><span class="o">=</span><span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">[</span><span class="n">drm</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">RootSection</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reference.from_drm_section"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_section">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_drm_section</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">drm</span><span class="p">:</span> <span class="n">DRM</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section_list</span><span class="o">=</span><span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">section</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reference.from_drm_id"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_id">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_drm_id</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">drm</span><span class="p">:</span> <span class="n">DRM</span><span class="p">,</span> <span class="n">sec_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">Id</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">sec_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section_list</span><span class="o">=</span><span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Reference </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="Reference.attach_unpacked_archive"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.attach_unpacked_archive">[docs]</a>    <span class="k">def</span> <span class="nf">attach_unpacked_archive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unpacked_archive</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Reference.deref"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.deref">[docs]</a>    <span class="k">def</span> <span class="nf">deref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
+        <span class="n">resolver</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Resolvers</span> <span class="k">if</span> <span class="n">offset</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">PointerOffset</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resolver</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">resolver</span> <span class="o">=</span> <span class="n">resolver</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resolver</span> <span class="o">=</span> <span class="n">resolver</span>
+
+            <span class="k">match</span> <span class="nb">type</span><span class="p">(</span><span class="n">resolver</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+                <span class="k">case</span> <span class="n">UnknownResolver</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">resolver</span><span class="o">.</span><span class="n">SectionId</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span> <span class="o">==</span> <span class="n">MissingResolver</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">elif</span> <span class="n">resolver</span><span class="o">.</span><span class="n">SectionId</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">Reference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">[</span><span class="n">resolver</span><span class="o">.</span><span class="n">SectionId</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># there has to be a much less brute force method for this...</span>
+                        <span class="k">return</span> <span class="n">MissingResolver</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+                        <span class="c1"># external_reference = find_external_reference(reference.SectionType, reference.ExtId)</span>
+                        <span class="c1"># print(f&quot;MISSING REFERENCE U2R&quot;)</span>
+                        <span class="c1"># print(reference.SectionType)</span>
+                        <span class="c1"># return external_reference</span>
+                <span class="k">case</span> <span class="n">LocalDataResolver</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+                    <span class="n">reference_offset</span> <span class="o">=</span> <span class="n">resolver</span><span class="o">.</span><span class="n">DataOffset</span>
+                    <span class="n">local_section_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">Reference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">[</span><span class="n">local_section_index</span><span class="p">],</span> <span class="n">reference_offset</span><span class="p">)</span>
+                <span class="k">case</span> <span class="n">RemoteDataResolver</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+                    <span class="n">reference_offset</span> <span class="o">=</span> <span class="n">resolver</span><span class="o">.</span><span class="n">DataOffset</span>
+                    <span class="n">remote_section_index</span> <span class="o">=</span> <span class="n">resolver</span><span class="o">.</span><span class="n">SectionIndex</span>
+                    <span class="k">return</span> <span class="n">Reference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">[</span><span class="n">remote_section_index</span><span class="p">],</span> <span class="n">reference_offset</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Reference.access"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.access">[docs]</a>    <span class="k">def</span> <span class="nf">access</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unpack_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">swap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">byte_swap</span>
+
+        <span class="k">if</span> <span class="n">swap</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">unpack_format</span><span class="p">,</span> <span class="n">byte_swap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">unpack_format</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Reference.add_offset"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.add_offset">[docs]</a>    <span class="k">def</span> <span class="nf">add_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Reference</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reference.access_array"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.access_array">[docs]</a>    <span class="k">def</span> <span class="nf">access_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unpack_format</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arr_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">arr_len</span><span class="si">}{</span><span class="n">unpack_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reference.access_null_terminated"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.access_null_terminated">[docs]</a>    <span class="k">def</span> <span class="nf">access_null_terminated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># &quot;access everything in the data starting from the offset up until it hits a zero&quot;</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">zero</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">zero</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Reference.get_string"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Reference.Reference.get_string">[docs]</a>    <span class="k">def</span> <span class="nf">get_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;ascii&quot;</span><span class="p">):</span>
+        <span class="n">dat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">access_null_terminated</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dat</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dat</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E9C8C0A0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

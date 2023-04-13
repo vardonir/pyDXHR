@@ -22,6 +22,11 @@ For the exporters:
 * Audio: [vgmstream](https://github.com/vgmstream/vgmstream) - used as a CLI tool
 * Cinematics: [WannaCRI](https://github.com/donmai-me/WannaCRI)
 
+Demos:
+
+* Jupyter/ipynb
+* Trimesh + pyglet for the 3D models
+
 ## Usage
 
 I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package.

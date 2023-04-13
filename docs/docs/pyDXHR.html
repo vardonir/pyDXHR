@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR package &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyDXHR.Export package" href="pyDXHR.Export.html" />
+    <link rel="prev" title="pyDXHR" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyDXHR package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html">pyDXHR.Export package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html">pyDXHR.KaitaiGenerated package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html">pyDXHR.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyDXHR.main">pyDXHR.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyDXHR">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyDXHR</a></li>
+      <li class="breadcrumb-item active">pyDXHR package</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pydxhr-package">
+<h1>pyDXHR package<a class="headerlink" href="#pydxhr-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pyDXHR.Export.html">pyDXHR.Export package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export.ArchiveUnpack">pyDXHR.Export.ArchiveUnpack module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.ArchiveUnpack.unpack_archive"><code class="docutils literal notranslate"><span class="pre">unpack_archive()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export.DDSWriter">pyDXHR.Export.DDSWriter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage"><code class="docutils literal notranslate"><span class="pre">DDSImage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage.save_as"><code class="docutils literal notranslate"><span class="pre">DDSImage.save_as()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage.write_as"><code class="docutils literal notranslate"><span class="pre">DDSImage.write_as()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat"><code class="docutils literal notranslate"><span class="pre">OutputFormat</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat.DDS"><code class="docutils literal notranslate"><span class="pre">OutputFormat.DDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat.PNG"><code class="docutils literal notranslate"><span class="pre">OutputFormat.PNG</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat.TGA"><code class="docutils literal notranslate"><span class="pre">OutputFormat.TGA</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat"><code class="docutils literal notranslate"><span class="pre">TextureFormat</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat.a8r8g8b8"><code class="docutils literal notranslate"><span class="pre">TextureFormat.a8r8g8b8</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat.dxt1"><code class="docutils literal notranslate"><span class="pre">TextureFormat.dxt1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat.dxt3"><code class="docutils literal notranslate"><span class="pre">TextureFormat.dxt3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat.dxt5"><code class="docutils literal notranslate"><span class="pre">TextureFormat.dxt5</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export.DRMUnpack">pyDXHR.Export.DRMUnpack module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export.GenerateTextureLibrary">pyDXHR.Export.GenerateTextureLibrary module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.Export.html#pyDXHR.Export.GenerateTextureLibrary.generate"><code class="docutils literal notranslate"><span class="pre">generate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export.UnitGLTF">pyDXHR.Export.UnitGLTF module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.Export.html#module-pyDXHR.Export">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html">pyDXHR.KaitaiGenerated package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.CDRM">pyDXHR.KaitaiGenerated.CDRM module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.CDRM.CdrmData"><code class="docutils literal notranslate"><span class="pre">CdrmData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.CDRM.CdrmData.Cdrm"><code class="docutils literal notranslate"><span class="pre">CdrmData.Cdrm</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.DDS">pyDXHR.KaitaiGenerated.DDS module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.DDS.Dds"><code class="docutils literal notranslate"><span class="pre">Dds</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.DDS.Dds.PixelFormat"><code class="docutils literal notranslate"><span class="pre">Dds.PixelFormat</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.DDS.Dds.TextureFormat"><code class="docutils literal notranslate"><span class="pre">Dds.TextureFormat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.PCD">pyDXHR.KaitaiGenerated.PCD module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.PCD.Pcd"><code class="docutils literal notranslate"><span class="pre">Pcd</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.PCD.Pcd.TextureFormat"><code class="docutils literal notranslate"><span class="pre">Pcd.TextureFormat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.PS3T">pyDXHR.KaitaiGenerated.PS3T module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.PS3T.Ps3t"><code class="docutils literal notranslate"><span class="pre">Ps3t</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.PS3T.Ps3t.TextureFormat"><code class="docutils literal notranslate"><span class="pre">Ps3t.TextureFormat</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.RenderModel">pyDXHR.KaitaiGenerated.RenderModel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.RenderModel.RenderModel"><code class="docutils literal notranslate"><span class="pre">RenderModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.RenderModel.RenderModel.MeshData"><code class="docutils literal notranslate"><span class="pre">RenderModel.MeshData</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.RenderModelHeader">pyDXHR.KaitaiGenerated.RenderModelHeader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.RenderModelHeader.RenderModelHeaderPC"><code class="docutils literal notranslate"><span class="pre">RenderModelHeaderPC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.RenderTerrainGroup">pyDXHR.KaitaiGenerated.RenderTerrainGroup module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.RenderTerrainGroup.RenderTerrainGroup"><code class="docutils literal notranslate"><span class="pre">RenderTerrainGroup</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.RenderTerrainHeader">pyDXHR.KaitaiGenerated.RenderTerrainHeader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.RenderTerrainHeader.RenderTerrainHeader"><code class="docutils literal notranslate"><span class="pre">RenderTerrainHeader</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated.Vertices">pyDXHR.KaitaiGenerated.Vertices module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.Vertices.VertexInfo"><code class="docutils literal notranslate"><span class="pre">VertexInfo</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#pyDXHR.KaitaiGenerated.Vertices.VertexInfo.VertexSemantic"><code class="docutils literal notranslate"><span class="pre">VertexInfo.VertexSemantic</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html#module-pyDXHR.KaitaiGenerated">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html">pyDXHR.cdcEngine.DRM package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.CompressedDRM">pyDXHR.cdcEngine.DRM.CompressedDRM module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.DRMFile">pyDXHR.cdcEngine.DRM.DRMFile module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.Reference">pyDXHR.cdcEngine.DRM.Reference module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.Resolver">pyDXHR.cdcEngine.DRM.Resolver module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.Section">pyDXHR.cdcEngine.DRM.Section module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.SectionTypes">pyDXHR.cdcEngine.DRM.SectionTypes module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM.UnitDRM">pyDXHR.cdcEngine.DRM.UnitDRM module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.DRM.html#module-pyDXHR.cdcEngine.DRM">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html">pyDXHR.cdcEngine.Sections package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.CollisionMesh">pyDXHR.cdcEngine.Sections.CollisionMesh module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.DTPData">pyDXHR.cdcEngine.Sections.DTPData module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.Material">pyDXHR.cdcEngine.Sections.Material module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.RenderMesh">pyDXHR.cdcEngine.Sections.RenderMesh module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.RenderModel">pyDXHR.cdcEngine.Sections.RenderModel module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.RenderModelBuffer">pyDXHR.cdcEngine.Sections.RenderModelBuffer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.RenderResource">pyDXHR.cdcEngine.Sections.RenderResource module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections.RenderTerrain">pyDXHR.cdcEngine.Sections.RenderTerrain module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sections.html#module-pyDXHR.cdcEngine.Sections">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.Sound.html">pyDXHR.cdcEngine.Sound package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sound.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sound.html#module-pyDXHR.cdcEngine.Sound.MultiplexStream">pyDXHR.cdcEngine.Sound.MultiplexStream module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.Sound.html#module-pyDXHR.cdcEngine.Sound">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.USM.html">pyDXHR.cdcEngine.USM package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.USM.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.USM.html#module-pyDXHR.cdcEngine.USM.Extract">pyDXHR.cdcEngine.USM.Extract module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.USM.html#module-pyDXHR.cdcEngine.USM">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#module-pyDXHR.cdcEngine.Archive">pyDXHR.cdcEngine.Archive module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive"><code class="docutils literal notranslate"><span class="pre">Archive</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.animation_list"><code class="docutils literal notranslate"><span class="pre">Archive.animation_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.append"><code class="docutils literal notranslate"><span class="pre">Archive.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize"><code class="docutils literal notranslate"><span class="pre">Archive.deserialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize_from_env"><code class="docutils literal notranslate"><span class="pre">Archive.deserialize_from_env()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize_from_file"><code class="docutils literal notranslate"><span class="pre">Archive.deserialize_from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_entry_data"><code class="docutils literal notranslate"><span class="pre">Archive.get_entry_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_from_filename"><code class="docutils literal notranslate"><span class="pre">Archive.get_from_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_from_hash"><code class="docutils literal notranslate"><span class="pre">Archive.get_from_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.object_list"><code class="docutils literal notranslate"><span class="pre">Archive.object_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.section_list"><code class="docutils literal notranslate"><span class="pre">Archive.section_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.serialize"><code class="docutils literal notranslate"><span class="pre">Archive.serialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.sound_effects_list"><code class="docutils literal notranslate"><span class="pre">Archive.sound_effects_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.texture_list"><code class="docutils literal notranslate"><span class="pre">Archive.texture_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.unit_list"><code class="docutils literal notranslate"><span class="pre">Archive.unit_list</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchiveEntry"><code class="docutils literal notranslate"><span class="pre">ArchiveEntry</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.PC_JAP"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.PC_JAP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.PC_W"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.PC_W</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.PS3_JAP"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.PS3_JAP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.PS3_W"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.PS3_W</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.UNK"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.UNK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.WII_W"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.WII_W</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.XENON_JAP"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.XENON_JAP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.XENON_W"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.XENON_W</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.has_complete_file_lists"><code class="docutils literal notranslate"><span class="pre">ArchivePlatform.has_complete_file_lists()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive"><code class="docutils literal notranslate"><span class="pre">UnpackedArchive</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.deserialize"><code class="docutils literal notranslate"><span class="pre">UnpackedArchive.deserialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.load_unpacked"><code class="docutils literal notranslate"><span class="pre">UnpackedArchive.load_unpacked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.unpack"><code class="docutils literal notranslate"><span class="pre">UnpackedArchive.unpack()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#module-pyDXHR.cdcEngine.ArchiveLocale">pyDXHR.cdcEngine.ArchiveLocale module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#module-pyDXHR.cdcEngine.Locals">pyDXHR.cdcEngine.Locals module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Locals.Locals"><code class="docutils literal notranslate"><span class="pre">Locals</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Locals.Locals.Unk"><code class="docutils literal notranslate"><span class="pre">Locals.Unk</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.cdcEngine.html#module-pyDXHR.cdcEngine">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pyDXHR.utils.html">pyDXHR.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.utils.html#module-pyDXHR.utils.MeshData">pyDXHR.utils.MeshData module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel"><code class="docutils literal notranslate"><span class="pre">KaitaiRenderModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel.Header"><code class="docutils literal notranslate"><span class="pre">KaitaiRenderModel.Header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel.IndexBuffer"><code class="docutils literal notranslate"><span class="pre">KaitaiRenderModel.IndexBuffer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel.MeshPrimitiveTable"><code class="docutils literal notranslate"><span class="pre">KaitaiRenderModel.MeshPrimitiveTable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel.MeshTable"><code class="docutils literal notranslate"><span class="pre">KaitaiRenderModel.MeshTable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData"><code class="docutils literal notranslate"><span class="pre">MeshData</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.MaterialIDList"><code class="docutils literal notranslate"><span class="pre">MeshData.MaterialIDList</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.MeshPrimIndexed"><code class="docutils literal notranslate"><span class="pre">MeshData.MeshPrimIndexed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.as_gltf"><code class="docutils literal notranslate"><span class="pre">MeshData.as_gltf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.deserialize"><code class="docutils literal notranslate"><span class="pre">MeshData.deserialize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic"><code class="docutils literal notranslate"><span class="pre">VertexSemantic</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Binormal"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Binormal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Color1"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Color1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Color2"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Color2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Normal"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Normal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Normal2"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Normal2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.PackedNTB"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.PackedNTB</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Position"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Position</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.SkinIndices"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.SkinIndices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.SkinWeights"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.SkinWeights</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.Tangent"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.Tangent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.TesselationNormal"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.TesselationNormal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.TexCoord1"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.TexCoord1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.TexCoord2"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.TexCoord2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.TexCoord3"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.TexCoord3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.TexCoord4"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.TexCoord4</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.colors"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.colors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.normals"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.normals()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.tangents"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.tangents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.tex_coords"><code class="docutils literal notranslate"><span class="pre">VertexSemantic.tex_coords()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.MeshData.read_vertex_buffer"><code class="docutils literal notranslate"><span class="pre">read_vertex_buffer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.utils.html#module-pyDXHR.utils.gltf">pyDXHR.utils.gltf module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.gltf.add_tangent_handedness"><code class="docutils literal notranslate"><span class="pre">add_tangent_handedness()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.gltf.build_gltf"><code class="docutils literal notranslate"><span class="pre">build_gltf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.utils.html#module-pyDXHR.utils.vgmstream">pyDXHR.utils.vgmstream module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.vgmstream.to_wav"><code class="docutils literal notranslate"><span class="pre">to_wav()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pyDXHR.utils.html#module-pyDXHR.utils">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian"><code class="docutils literal notranslate"><span class="pre">Endian</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian.Big"><code class="docutils literal notranslate"><span class="pre">Endian.Big</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian.Little"><code class="docutils literal notranslate"><span class="pre">Endian.Little</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType"><code class="docutils literal notranslate"><span class="pre">GameType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.BASE"><code class="docutils literal notranslate"><span class="pre">GameType.BASE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.BASE_PS3"><code class="docutils literal notranslate"><span class="pre">GameType.BASE_PS3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.BASE_XENON"><code class="docutils literal notranslate"><span class="pre">GameType.BASE_XENON</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.DC"><code class="docutils literal notranslate"><span class="pre">GameType.DC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.JAP_PS3"><code class="docutils literal notranslate"><span class="pre">GameType.JAP_PS3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.GameType.TML"><code class="docutils literal notranslate"><span class="pre">GameType.TML</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.archive_prefix"><code class="docutils literal notranslate"><span class="pre">archive_prefix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.byte_swap"><code class="docutils literal notranslate"><span class="pre">byte_swap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.crc32bzip2"><code class="docutils literal notranslate"><span class="pre">crc32bzip2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.create_directory"><code class="docutils literal notranslate"><span class="pre">create_directory()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.get_filelist"><code class="docutils literal notranslate"><span class="pre">get_filelist()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-pyDXHR.main">
+<span id="pydxhr-main-module"></span><h2>pyDXHR.main module<a class="headerlink" href="#module-pyDXHR.main" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-pyDXHR">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyDXHR" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x0000021992EF9540>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

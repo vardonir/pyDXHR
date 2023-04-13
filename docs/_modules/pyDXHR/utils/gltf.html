@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.utils.gltf &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../utils.html">pyDXHR.utils</a></li>
+      <li class="breadcrumb-item active">pyDXHR.utils.gltf</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.utils.gltf</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pygltflib</span> <span class="k">as</span> <span class="nn">gltf</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Final</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections.Material</span> <span class="kn">import</span> <span class="n">Material</span><span class="p">,</span> <span class="n">guess_materials</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections</span> <span class="kn">import</span> <span class="n">RenderResource</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils.MeshData</span> <span class="kn">import</span> <span class="n">MeshData</span><span class="p">,</span> <span class="n">VertexSemantic</span>
+
+<span class="n">GLTF_SCALE</span><span class="p">:</span> <span class="n">Final</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.002</span>
+
+
+<div class="viewcode-block" id="build_gltf"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.gltf.build_gltf">[docs]</a><span class="k">def</span> <span class="nf">build_gltf</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">:</span> <span class="n">MeshData</span><span class="p">,</span>
+               <span class="n">save_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">as_bytes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">share_textures</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+               <span class="n">apply_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+               <span class="n">blank_materials</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    &quot;share_textures&quot;: will create a folder called &quot;textures&quot;</span>
+<span class="sd">    &quot;blank materials&quot;: create the materials, but do not assign textures</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">apply_scale</span><span class="p">:</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">GLTF_SCALE</span>
+
+    <span class="c1"># region setup</span>
+    <span class="n">asset_data</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Asset</span><span class="p">()</span>
+    <span class="n">asset_data</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="s2">&quot;pyDXHR&quot;</span>
+    <span class="n">asset_data</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;2.0&quot;</span>
+    <span class="n">asset_data</span><span class="o">.</span><span class="n">copyright</span> <span class="o">=</span> <span class="s2">&quot;2011 (c) Eidos Montreal&quot;</span>
+
+    <span class="n">gltf_root</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">GLTF2</span><span class="p">()</span>
+
+    <span class="n">binary_blob</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+
+    <span class="n">parent_node</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Node</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">parent_node_index</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">parent_node</span><span class="p">)</span>
+    <span class="n">parent_node</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">[</span><span class="n">scale</span><span class="p">]</span>
+    <span class="n">parent_node</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">Rotation</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">scene_node</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Scene</span><span class="p">()</span>
+    <span class="n">scene_node</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="n">parent_node_index</span><span class="p">]</span>
+    <span class="n">scene_index</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">scene_node</span><span class="p">)</span>
+    <span class="n">gltf_root</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">scene_index</span>
+
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Mesh</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">mesh_index</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
+    <span class="n">parent_node</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh_index</span>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region create materials</span>
+    <span class="n">complete_image_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">mat_index_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Material</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">mat_index</span><span class="p">,</span> <span class="n">mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mesh_data</span><span class="o">.</span><span class="n">MaterialIDList</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mat</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mat_index_dict</span><span class="p">:</span>
+            <span class="n">image_dict</span> <span class="o">=</span> <span class="n">_populate_material</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">mat</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">blank_materials</span><span class="o">=</span><span class="n">blank_materials</span><span class="p">)</span>
+            <span class="n">mat_index_dict</span><span class="p">[</span><span class="n">mat</span><span class="p">]</span> <span class="o">=</span> <span class="n">mat_index</span>
+            <span class="n">complete_image_dict</span> <span class="o">|=</span> <span class="n">image_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+    <span class="c1"># region vertex</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">vtx_sem_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mesh_data</span><span class="o">.</span><span class="n">VertexBuffers</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">attribute_index_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">vtx_sem</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">vtx_sem_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">vtx_buffer_view</span><span class="p">,</span> <span class="n">vtx_accessor</span><span class="p">,</span> <span class="n">vtx_byte_data</span> <span class="o">=</span> <span class="n">_add_vertex_data</span><span class="p">(</span>
+                <span class="n">vtx_sem</span><span class="o">=</span><span class="n">vtx_sem</span><span class="p">,</span>
+                <span class="n">vtx_array</span><span class="o">=</span><span class="n">array</span><span class="p">,</span>
+                <span class="n">binary_blob</span><span class="o">=</span><span class="n">binary_blob</span><span class="p">,</span>
+                <span class="n">mesh_num</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
+                <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+
+            <span class="n">binary_blob</span> <span class="o">+=</span> <span class="n">vtx_byte_data</span>
+            <span class="n">vtx_buffer_view_index</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">=</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">vtx_buffer_view</span><span class="p">)</span>
+            <span class="n">vtx_accessor</span><span class="o">.</span><span class="n">bufferView</span> <span class="o">=</span> <span class="n">vtx_buffer_view_index</span>
+            <span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">vtx_buffer_view_index</span>
+
+            <span class="n">_</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">=</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">vtx_accessor</span><span class="p">)</span>
+
+        <span class="n">mesh_attributes</span> <span class="o">=</span> <span class="n">_populate_mesh_attributes</span><span class="p">(</span><span class="n">attribute_index_dict</span><span class="p">)</span>
+
+        <span class="n">mesh_prim_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Material</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mesh_data</span><span class="o">.</span><span class="n">MeshPrimIndexed</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">imp</span><span class="p">,</span> <span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">arr</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mesh_prim_list</span><span class="p">):</span>
+            <span class="n">accessor_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">.</span><span class="n">accessors</span><span class="p">)</span>
+
+            <span class="n">idx_buffer_view</span><span class="p">,</span> <span class="n">idx_accessor</span><span class="p">,</span> <span class="n">idx_byte_data</span> <span class="o">=</span> <span class="n">_add_index_data</span><span class="p">(</span>
+                <span class="n">array</span><span class="o">=</span><span class="n">arr</span><span class="p">,</span>
+                <span class="n">binary_blob</span><span class="o">=</span><span class="n">binary_blob</span><span class="p">,</span>
+                <span class="n">mesh_num</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
+                <span class="n">submesh_num</span><span class="o">=</span><span class="n">imp</span>
+            <span class="p">)</span>
+
+            <span class="n">binary_blob</span> <span class="o">+=</span> <span class="n">idx_byte_data</span>
+            <span class="n">idx_buffer_view_index</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">=</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">idx_buffer_view</span><span class="p">)</span>
+            <span class="n">idx_accessor</span><span class="o">.</span><span class="n">bufferView</span> <span class="o">=</span> <span class="n">idx_buffer_view_index</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">=</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">idx_accessor</span><span class="p">)</span>
+
+            <span class="n">mesh_prim</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Primitive</span><span class="p">(</span>
+                <span class="n">attributes</span><span class="o">=</span><span class="n">mesh_attributes</span><span class="p">,</span>
+                <span class="n">indices</span><span class="o">=</span><span class="n">accessor_index</span><span class="p">,</span>
+                <span class="n">material</span><span class="o">=</span><span class="n">mat_index_dict</span><span class="p">[</span><span class="n">mat</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="n">mesh</span><span class="o">.</span><span class="n">primitives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mesh_prim</span><span class="p">)</span>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region closing</span>
+    <span class="n">_create_buffer</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">binary_blob</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save_to</span><span class="p">:</span>
+        <span class="n">save_to</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_to</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_to</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.gltf&quot;</span><span class="p">:</span>
+            <span class="n">file_destination</span> <span class="o">=</span> <span class="n">save_to</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_destination</span> <span class="o">=</span> <span class="n">save_to</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="p">(</span><span class="n">save_to</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.gltf&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">share_textures</span><span class="p">:</span>
+            <span class="c1"># creates a folder called textures where the files will be copied</span>
+            <span class="p">(</span><span class="n">file_destination</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;textures&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">texture_destination</span> <span class="o">=</span> <span class="s2">&quot;textures&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># creates a folder with the same name as the input</span>
+            <span class="p">(</span><span class="n">file_destination</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">file_destination</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">texture_destination</span> <span class="o">=</span> <span class="n">file_destination</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">_copy_texture_images</span><span class="p">(</span><span class="n">image_dict</span><span class="o">=</span><span class="n">complete_image_dict</span><span class="p">,</span>
+                             <span class="n">relative_texture_destination</span><span class="o">=</span><span class="n">texture_destination</span><span class="p">,</span>
+                             <span class="n">absolute_destination</span><span class="o">=</span><span class="n">file_destination</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">)</span>
+            <span class="n">gltf_root</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file_destination</span><span class="p">,</span> <span class="n">asset</span><span class="o">=</span><span class="n">asset_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">as_bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gltf_root</span><span class="o">.</span><span class="n">save_to_bytes</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">gltf_root</span></div>
+    <span class="c1"># endregion</span>
+
+
+<span class="k">def</span> <span class="nf">_copy_texture_images</span><span class="p">(</span>
+        <span class="n">image_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Image</span><span class="p">],</span>
+        <span class="n">relative_texture_destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">absolute_destination</span><span class="p">:</span> <span class="n">Path</span>
+<span class="p">):</span>
+    <span class="n">pydxhr_texlib</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYDXHR_TEXLIB&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pydxhr_texlib</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">image_index</span><span class="p">,</span> <span class="n">gltf_image</span> <span class="ow">in</span> <span class="n">image_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">tex_id</span> <span class="o">=</span> <span class="n">gltf_image</span><span class="o">.</span><span class="n">extras</span><span class="p">[</span><span class="s2">&quot;cdcTextureID&quot;</span><span class="p">]</span>
+            <span class="n">img_as_path</span> <span class="o">=</span> <span class="n">RenderResource</span><span class="o">.</span><span class="n">from_library</span><span class="p">(</span><span class="n">tex_id</span><span class="p">,</span> <span class="n">pydxhr_texlib</span><span class="p">,</span> <span class="n">as_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">img_as_path</span><span class="p">,</span> <span class="n">absolute_destination</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="n">relative_texture_destination</span><span class="p">)</span>
+            <span class="n">gltf_image</span><span class="o">.</span><span class="n">uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">relative_texture_destination</span><span class="p">)</span> <span class="o">/</span> <span class="n">img_as_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">gltf_image</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;T_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+            <span class="n">gltf_image</span><span class="o">.</span><span class="n">mimeType</span> <span class="o">=</span> <span class="s2">&quot;image/png&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_populate_material</span><span class="p">(</span>
+        <span class="n">gltf_root</span><span class="p">:</span> <span class="n">gltf</span><span class="o">.</span><span class="n">GLTF2</span><span class="p">,</span>
+        <span class="n">cdc_material_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">blank_materials</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">):</span>
+
+    <span class="n">pydxhr_matlib</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYDXHR_MATLIB&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_image</span><span class="p">():</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;I_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tx_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span>
+            <span class="n">extras</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;cdcTextureID&quot;</span><span class="p">:</span> <span class="n">tx_id</span><span class="p">,</span>
+                <span class="s2">&quot;guessed_key&quot;</span><span class="p">:</span> <span class="n">mat_key</span><span class="p">,</span>
+                <span class="s2">&quot;cdcMaterialID&quot;</span><span class="p">:</span> <span class="n">cdc_material_id</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">gltf_im_id</span> <span class="o">=</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">blank_materials</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># the images are added to the gltf image list regardless if they&#39;ll be used later on</span>
+        <span class="c1"># so that the textures directory will be created and they&#39;ll still be saved there</span>
+
+        <span class="n">image_dict</span><span class="p">[</span><span class="n">gltf_im_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span>
+
+        <span class="n">tx</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Texture</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">gltf_im_id</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;T_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tx_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">),</span>
+            <span class="n">extras</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;cdcTextureID&quot;</span><span class="p">:</span> <span class="n">tx_id</span><span class="p">,</span>
+                <span class="s2">&quot;guessed_key&quot;</span><span class="p">:</span> <span class="n">mat_key</span><span class="p">,</span>
+                <span class="s2">&quot;cdcMaterialID&quot;</span><span class="p">:</span> <span class="n">cdc_material_id</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">tx</span><span class="p">)</span>
+
+    <span class="n">mat_name</span> <span class="o">=</span> <span class="s2">&quot;M_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cdc_material_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">blank_materials</span><span class="p">:</span>
+        <span class="n">gltf_mat</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mat_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">gltf_mat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">pydxhr_matlib</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">pydxhr_matlib</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">tex_arr</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">arr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">cdc_material_id</span><span class="p">)]</span>
+
+    <span class="n">seen</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">materials</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tex_id</span><span class="p">,</span> <span class="n">tex_info</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tex_arr</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">tex_arr</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]):</span>
+        <span class="k">if</span> <span class="n">tex_id</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">mat_type</span> <span class="o">=</span> <span class="n">guess_materials</span><span class="p">(</span><span class="o">*</span><span class="n">tex_info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mat_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">materials</span><span class="p">:</span>
+            <span class="n">materials</span><span class="p">[</span><span class="n">mat_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">materials</span><span class="p">[</span><span class="n">mat_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex_id</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+        <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex_id</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+    <span class="c1"># len_mats = max(len(images) for images in materials.values())</span>
+    <span class="n">materials_fixed</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">materials</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span><span class="p">(</span><span class="o">*</span><span class="n">materials</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+    <span class="c1"># image_list = list(itertools.chain.from_iterable(materials.values()))</span>
+
+    <span class="n">image_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">materials_fixed</span><span class="p">):</span>
+        <span class="n">gltf_mat</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mat_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mat_key</span><span class="p">,</span> <span class="n">tx_id</span> <span class="ow">in</span> <span class="n">mat</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">tx_id</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">gltf_tx_id</span> <span class="o">=</span> <span class="n">_add_image</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">gltf_tx_id</span><span class="p">:</span>
+                    <span class="n">tf</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">TextureInfo</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">gltf_tx_id</span><span class="p">)</span>
+
+                    <span class="k">match</span> <span class="n">mat_key</span><span class="p">:</span>
+                        <span class="k">case</span> <span class="s2">&quot;diffuse&quot;</span><span class="p">:</span>
+                            <span class="n">gltf_mat</span><span class="o">.</span><span class="n">pbrMetallicRoughness</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">PbrMetallicRoughness</span><span class="p">(</span><span class="n">baseColorTexture</span><span class="o">=</span><span class="n">tf</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="s2">&quot;normal&quot;</span><span class="p">:</span>
+                            <span class="n">gltf_mat</span><span class="o">.</span><span class="n">normalTexture</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">NormalMaterialTexture</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">gltf_tx_id</span><span class="p">)</span>
+                        <span class="k">case</span> <span class="s2">&quot;blend&quot;</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                            <span class="k">pass</span>
+            <span class="n">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">,</span> <span class="n">gltf_mat</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># add dangling images + textures, but not attach to any materials - these can be fixed later,</span>
+            <span class="c1"># depending on the settings of the GLTF importer</span>
+            <span class="k">for</span> <span class="n">mat_key</span><span class="p">,</span> <span class="n">tx_id</span> <span class="ow">in</span> <span class="n">mat</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">tx_id</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">_</span> <span class="o">=</span> <span class="n">_add_image</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">image_dict</span>
+
+
+<span class="k">def</span> <span class="nf">_add_index_data</span><span class="p">(</span>
+        <span class="n">array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">binary_blob</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">mesh_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">submesh_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">gltf</span><span class="o">.</span><span class="n">BufferView</span><span class="p">,</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Accessor</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+    <span class="n">current_byte_offset</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">binary_blob</span><span class="p">)</span>
+
+    <span class="n">byte_data</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">BufferView</span><span class="p">(</span>
+        <span class="n">buffer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">byteOffset</span><span class="o">=</span><span class="n">current_byte_offset</span><span class="p">,</span>
+        <span class="n">byteLength</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">byte_data</span><span class="p">),</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">gltf</span><span class="o">.</span><span class="n">ELEMENT_ARRAY_BUFFER</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Mesh_</span><span class="si">{</span><span class="n">mesh_num</span><span class="si">}</span><span class="s2">_Prim_</span><span class="si">{</span><span class="n">submesh_num</span><span class="si">}</span><span class="s2">_indices&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">accessor</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Accessor</span><span class="p">(</span>
+        <span class="n">componentType</span><span class="o">=</span><span class="n">gltf</span><span class="o">.</span><span class="n">UNSIGNED_INT</span><span class="p">,</span>
+        <span class="n">count</span><span class="o">=</span><span class="n">array</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">gltf</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">,</span>
+        <span class="nb">max</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">max</span><span class="p">())],</span>
+        <span class="nb">min</span><span class="o">=</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">min</span><span class="p">())],</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Mesh_</span><span class="si">{</span><span class="n">mesh_num</span><span class="si">}</span><span class="s2">_Prim_</span><span class="si">{</span><span class="n">submesh_num</span><span class="si">}</span><span class="s2">_indices&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">view</span><span class="p">,</span> <span class="n">accessor</span><span class="p">,</span> <span class="n">byte_data</span>
+
+
+<span class="k">def</span> <span class="nf">_populate_mesh_attributes</span><span class="p">(</span><span class="n">attribute_index_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Attributes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a dictionary of attribute indices to the GLTF Attribute object</span>
+
+<span class="sd">    :param attribute_index_dict:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Attributes</span><span class="p">(</span>
+        <span class="n">POSITION</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Position</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">NORMAL</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">TANGENT</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Tangent</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+
+        <span class="c1"># I think HR only uses 1 and 2, but just in case...</span>
+        <span class="n">TEXCOORD_0</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord1</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">TEXCOORD_1</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord2</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">TEXCOORD_2</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord3</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">TEXCOORD_3</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord4</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+
+        <span class="n">COLOR_0</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Color1</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">COLOR_1</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Color2</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+
+        <span class="c1"># not implemented</span>
+        <span class="n">JOINTS_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">WEIGHTS_0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+        <span class="c1"># included in file for archival purposes</span>
+        <span class="n">_BINORMAL</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Binormal</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+        <span class="n">_NORMAL2</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Normal2</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>  <span class="c1"># so confused</span>
+        <span class="n">_PACKED_NTB</span><span class="o">=</span><span class="n">attribute_index_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">PackedNTB</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_add_vertex_data</span><span class="p">(</span>
+        <span class="n">vtx_sem</span><span class="p">:</span> <span class="n">VertexSemantic</span><span class="p">,</span>
+        <span class="n">vtx_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">binary_blob</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">mesh_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">gltf</span><span class="o">.</span><span class="n">BufferView</span><span class="p">,</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Accessor</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a vertex semantic/vertex numpy array to a GLTF bufferview + Accessor + byte data</span>
+
+<span class="sd">    :param vtx_sem:</span>
+<span class="sd">    :param vtx_array:</span>
+<span class="sd">    :param binary_blob:</span>
+<span class="sd">    :param mesh_num:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">tangents</span><span class="p">():</span>
+        <span class="n">vtx_array</span> <span class="o">=</span> <span class="n">add_tangent_handedness</span><span class="p">(</span><span class="n">vtx_array</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">colors</span><span class="p">():</span>
+        <span class="c1"># I&#39;m not sure if this is correct, but if it gets the GLTF validator to shut up...</span>
+        <span class="n">vtx_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vtx_array</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Position</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="n">vtx_array</span> <span class="o">*=</span> <span class="n">scale</span>
+
+    <span class="n">current_byte_offset</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">binary_blob</span><span class="p">)</span>
+    <span class="n">byte_data</span> <span class="o">=</span> <span class="n">vtx_array</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+
+    <span class="n">view</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">BufferView</span><span class="p">(</span>
+        <span class="n">buffer</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">byteOffset</span><span class="o">=</span><span class="n">current_byte_offset</span><span class="p">,</span>
+        <span class="n">byteLength</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">byte_data</span><span class="p">),</span>
+        <span class="n">target</span><span class="o">=</span><span class="n">gltf</span><span class="o">.</span><span class="n">ARRAY_BUFFER</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Mesh_</span><span class="si">{</span><span class="n">mesh_num</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">accessor</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Accessor</span><span class="p">(</span>
+        <span class="n">componentType</span><span class="o">=</span><span class="n">gltf</span><span class="o">.</span><span class="n">FLOAT</span><span class="p">,</span>
+        <span class="n">count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">vtx_array</span><span class="p">),</span>
+        <span class="c1"># max=[round(i, 2) for i in np.max(v, axis=0).tolist()],</span>
+        <span class="c1"># min=[round(i, 2) for i in np.min(v, axis=0).tolist()],</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Mesh_</span><span class="si">{</span><span class="n">mesh_num</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">tex_coords</span><span class="p">():</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">VEC2</span>
+    <span class="k">elif</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">tangents</span><span class="p">():</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">VEC4</span>
+    <span class="k">elif</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">normals</span><span class="p">():</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">VEC3</span>
+    <span class="k">elif</span> <span class="n">vtx_sem</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Position</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">VEC3</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">vtx_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vtx_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">accessor</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">VEC3</span>
+
+    <span class="k">return</span> <span class="n">view</span><span class="p">,</span> <span class="n">accessor</span><span class="p">,</span> <span class="n">byte_data</span>
+
+
+<span class="k">def</span> <span class="nf">_add_to_gltf</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">:</span> <span class="n">gltf</span><span class="o">.</span><span class="n">GLTF2</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Property</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Adds a GLTF property to the GLTF object according to its type and returns the index of the property</span>
+
+<span class="sd">    :param gltf_root:</span>
+<span class="sd">    :param item:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">li</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">gltf</span><span class="o">.</span><span class="n">Property</span><span class="p">]</span>
+    <span class="k">match</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Node</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">nodes</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Mesh</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">meshes</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Material</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">materials</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Accessor</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">accessors</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">BufferView</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">bufferViews</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">images</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Scene</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">scenes</span>
+        <span class="k">case</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Texture</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="n">li</span> <span class="o">=</span> <span class="n">gltf_root</span><span class="o">.</span><span class="n">textures</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">li</span><span class="p">)</span>
+    <span class="n">li</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">index</span>
+
+
+<span class="k">def</span> <span class="nf">_create_buffer</span><span class="p">(</span><span class="n">gltf_root</span><span class="p">:</span> <span class="n">gltf</span><span class="o">.</span><span class="n">GLTF2</span><span class="p">,</span> <span class="n">binary_blob</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a buffer for binary blob and attaches it to the GLTF root</span>
+
+<span class="sd">    :param gltf_root:</span>
+<span class="sd">    :param binary_blob:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">buffer</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Buffer</span><span class="p">()</span>
+    <span class="n">buffer</span><span class="o">.</span><span class="n">byteLength</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">binary_blob</span><span class="p">)</span>
+    <span class="n">gltf_root</span><span class="o">.</span><span class="n">buffers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+
+    <span class="n">gltf_root</span><span class="o">.</span><span class="n">set_binary_blob</span><span class="p">(</span><span class="n">binary_blob</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="add_tangent_handedness"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.gltf.add_tangent_handedness">[docs]</a><span class="k">def</span> <span class="nf">add_tangent_handedness</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    See GLTF spec</span>
+
+<span class="sd">    :param v:</span>
+<span class="sd">    :param reverse:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">handedness</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">reverse</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">v</span><span class="p">,</span> <span class="n">handedness</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">T</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202EA9A5DB0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -19,3 +19,7 @@
 - [Donmai's writeup on the USM format](https://listed.to/@donmai/24921/criware-s-usm-format-part-1)
 - [Xentax's page on the FSB4 file format](http://wiki.xentax.com/index.php/FMOD_Audio_FSB)
 - [Quicktex source code, used for rebuilding DDS files](https://github.com/drewcassidy/quicktex)
+
+## Specific references
+
+- [PS3T file format](https://github.com/Gh0stBlade/cdcEngineTools/blob/master/PCD2DDS/PCD.cpp)

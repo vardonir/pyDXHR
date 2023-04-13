@@ -83,7 +83,7 @@ class MeshData:
 
     @property
     def MaterialIDList(self):
-        from pyDXHR.cdcEngine.DRM.Sections.Material import Material
+        from pyDXHR.cdcEngine.Sections.Material import Material
 
         mlist = []
         for mid in self._mat_id_list:
@@ -99,7 +99,7 @@ class MeshData:
     # noinspection PyPep8Naming
     @property
     def MeshPrimIndexed(self):
-        from pyDXHR.cdcEngine.DRM.Sections.Material import Material
+        from pyDXHR.cdcEngine.Sections.Material import Material
 
         match self._subtype:
             case SectionSubtype.RenderModel | SectionSubtype.RenderModelBuffer:

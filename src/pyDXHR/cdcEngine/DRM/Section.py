@@ -124,17 +124,18 @@ class Section:
         return not self.__eq__(other)
 
     def deserialize(self, archive=None):
-        from pyDXHR.cdcEngine.DRM.Sections.Material import Material
-        from pyDXHR.cdcEngine.DRM.Sections.RenderResource import RenderResource
-        from pyDXHR.cdcEngine.DRM.Sections.DTPData import DTPData
-        from pyDXHR.cdcEngine.DRM.Sections.RenderModel import RenderModel
-        from pyDXHR.cdcEngine.DRM.Sections.RenderModelBuffer import RenderModelBuffer
+        from pyDXHR.cdcEngine.Sections.Material import Material
+        from pyDXHR.cdcEngine.Sections.RenderResource import RenderResource
+        from pyDXHR.cdcEngine.Sections import DTPData
+        from pyDXHR.cdcEngine.Sections.RenderModel import RenderModel
+        from pyDXHR.cdcEngine.Sections.RenderModelBuffer import RenderModelBuffer
 
         match self.Header.SectionType:
             case SectionType.CollisionMesh:
                 pass
             case SectionType.DTPData:
-                self.Deserialized = DTPData(section=self, archive=archive)
+                pass
+                # self.Deserialized = DTPData(section=self, archive=archive)
             case SectionType.RenderMesh:
                 match self.Header.SectionSubtype:
                     case SectionSubtype.RenderModel:

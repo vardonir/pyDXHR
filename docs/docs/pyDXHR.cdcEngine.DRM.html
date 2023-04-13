@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.DRM package &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyDXHR.cdcEngine.Sections package" href="pyDXHR.cdcEngine.Sections.html" />
+    <link rel="prev" title="pyDXHR.cdcEngine package" href="pyDXHR.cdcEngine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pyDXHR.html">pyDXHR package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pyDXHR.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.Export.html">pyDXHR.Export package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.KaitaiGenerated.html">pyDXHR.KaitaiGenerated package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pyDXHR.utils.html">pyDXHR.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#module-pyDXHR.main">pyDXHR.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pyDXHR.html#module-pyDXHR">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyDXHR</a></li>
+          <li class="breadcrumb-item"><a href="pyDXHR.html">pyDXHR package</a></li>
+          <li class="breadcrumb-item"><a href="pyDXHR.cdcEngine.html">pyDXHR.cdcEngine package</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.DRM package</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pydxhr-cdcengine-drm-package">
+<h1>pyDXHR.cdcEngine.DRM package<a class="headerlink" href="#pydxhr-cdcengine-drm-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.CompressedDRM">
+<span id="pydxhr-cdcengine-drm-compresseddrm-module"></span><h2>pyDXHR.cdcEngine.DRM.CompressedDRM module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.CompressedDRM" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.CompressedDRM.decompress">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.CompressedDRM.</span></span><span class="sig-name descname"><span class="pre">decompress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/CompressedDRM.html#decompress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.CompressedDRM.decompress" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.CompressedDRM.rebuild_aligned">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.CompressedDRM.</span></span><span class="sig-name descname"><span class="pre">rebuild_aligned</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">byte_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/CompressedDRM.html#rebuild_aligned"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.CompressedDRM.rebuild_aligned" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.DRMFile">
+<span id="pydxhr-cdcengine-drm-drmfile-module"></span><h2>pyDXHR.cdcEngine.DRM.DRMFile module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.DRMFile" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.DRMFile.</span></span><span class="sig-name descname"><span class="pre">DRM</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_generic_sections</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_subtype">
+<span class="sig-name descname"><span class="pre">filter_by_subtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.filter_by_subtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_subtype" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_type">
+<span class="sig-name descname"><span class="pre">filter_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.filter_by_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_by_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_subtype">
+<span class="sig-name descname"><span class="pre">filter_out_by_subtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.filter_out_by_subtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_subtype" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_type">
+<span class="sig-name descname"><span class="pre">filter_out_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.filter_out_by_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_by_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_dx9_materials">
+<span class="sig-name descname"><span class="pre">filter_out_dx9_materials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">materials_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.filter_out_dx9_materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.filter_out_dx9_materials" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_reference">
+<span class="sig-name descname"><span class="pre">lookup_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType" title="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType"><span class="pre">SectionType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.lookup_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_reference" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_section">
+<span class="sig-name descname"><span class="pre">lookup_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType" title="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType"><span class="pre">SectionType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.lookup_section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.lookup_section" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRM.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRM.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.DRMFile.</span></span><span class="sig-name descname"><span class="pre">DRMHeader</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRMHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.DRMDependencies">
+<span class="sig-name descname"><span class="pre">DRMDependencies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.DRMDependencies" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Endian">
+<span class="sig-name descname"><span class="pre">Endian</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Endian" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Flags">
+<span class="sig-name descname"><span class="pre">Flags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Flags" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.OBJDependencies">
+<span class="sig-name descname"><span class="pre">OBJDependencies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.OBJDependencies" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.RootSection">
+<span class="sig-name descname"><span class="pre">RootSection</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.RootSection" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.SectionHeaders">
+<span class="sig-name descname"><span class="pre">SectionHeaders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader" title="pyDXHR.cdcEngine.DRM.Section.SectionHeader"><span class="pre">SectionHeader</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.SectionHeaders" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Version">
+<span class="sig-name descname"><span class="pre">Version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.Version" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#DRMHeader.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRMHeader.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.filter_out_render_model_buffer">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.DRMFile.</span></span><span class="sig-name descname"><span class="pre">filter_out_render_model_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sec_header_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#filter_out_render_model_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.filter_out_render_model_buffer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.DRMFile.filter_section_list">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.DRMFile.</span></span><span class="sig-name descname"><span class="pre">filter_section_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sec_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sec_header_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType" title="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType"><span class="pre">SectionType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype" title="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype"><span class="pre">SectionSubtype</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/DRMFile.html#filter_section_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.DRMFile.filter_section_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.Reference">
+<span id="pydxhr-cdcengine-drm-reference-module"></span><h2>pyDXHR.cdcEngine.DRM.Reference module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.Reference" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Reference.</span></span><span class="sig-name descname"><span class="pre">Reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.access">
+<span class="sig-name descname"><span class="pre">access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unpack_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.access"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.access" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.access_array">
+<span class="sig-name descname"><span class="pre">access_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unpack_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arr_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.access_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.access_array" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.access_null_terminated">
+<span class="sig-name descname"><span class="pre">access_null_terminated</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.access_null_terminated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.access_null_terminated" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.add_offset">
+<span class="sig-name descname"><span class="pre">add_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.add_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.add_offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.attach_unpacked_archive">
+<span class="sig-name descname"><span class="pre">attach_unpacked_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unpacked_archive</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.attach_unpacked_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.attach_unpacked_archive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.deref">
+<span class="sig-name descname"><span class="pre">deref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.deref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.deref" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_id">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_drm_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><span class="pre">DRM</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sec_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.from_drm_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_root">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_drm_root</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><span class="pre">DRM</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.from_drm_root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_root" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_section">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_drm_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><span class="pre">DRM</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.from_drm_section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.from_drm_section" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Reference.Reference.get_string">
+<span class="sig-name descname"><span class="pre">get_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ascii'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Reference.html#Reference.get_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Reference.Reference.get_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.Resolver">
+<span id="pydxhr-cdcengine-drm-resolver-module"></span><h2>pyDXHR.cdcEngine.DRM.Resolver module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.Resolver" title="Permalink to this heading"></a></h2>
+<p>Regarding the BE implementation: it’s a bit handwavy, I don’t know if it’s the correct method, but it works on initial testing</p>
+<p>References:
+- <a class="reference external" href="https://github.com/rrika/dxhr/blob/main/tools/drm.py">https://github.com/rrika/dxhr/blob/main/tools/drm.py</a>
+- <a class="reference external" href="https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/Resolver.cs">https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/Resolver.cs</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">LocalDataResolver</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#LocalDataResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolver</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#LocalDataResolver.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.MissingResolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">MissingResolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pointer_offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#MissingResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.MissingResolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolver</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.MissingResolver.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#MissingResolver.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.MissingResolver.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">RemoteDataResolver</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#RemoteDataResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolver</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#RemoteDataResolver.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.Resolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">Resolver</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#Resolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.Resolver.deserialize">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#Resolver.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">UnknownResolver</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#UnknownResolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolver</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_headers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">b''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#UnknownResolver.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.deserialize_resolver_list">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">deserialize_resolver_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><span class="pre">Resolver</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#deserialize_resolver_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.deserialize_resolver_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.find_in_archive">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">find_in_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType" title="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType"><span class="pre">SectionType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpacked_archive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#find_in_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.find_in_archive" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Resolver.find_resolver">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Resolver.</span></span><span class="sig-name descname"><span class="pre">find_resolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolver_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><span class="pre">Resolver</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpacked_archive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><span class="pre">Resolver</span></a></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Resolver.html#find_resolver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Resolver.find_resolver" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.Section">
+<span id="pydxhr-cdcengine-drm-section-module"></span><h2>pyDXHR.cdcEngine.DRM.Section module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.Section" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Section.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#Section"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Data">
+<span class="sig-name descname"><span class="pre">Data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Deserialized">
+<span class="sig-name descname"><span class="pre">Deserialized</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Deserialized" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Filename">
+<span class="sig-name descname"><span class="pre">Filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Filename" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Flags">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Flags</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Flags" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Header">
+<span class="sig-name descname"><span class="pre">Header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader" title="pyDXHR.cdcEngine.DRM.Section.SectionHeader"><span class="pre">SectionHeader</span></a></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Header" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.Resolvers">
+<span class="sig-name descname"><span class="pre">Resolvers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Resolver.Resolver" title="pyDXHR.cdcEngine.DRM.Resolver.Resolver"><span class="pre">Resolver</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.Resolvers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.Section.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#Section.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.Section.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Section.</span></span><span class="sig-name descname"><span class="pre">SectionHeader</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#SectionHeader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.HeaderSize">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">HeaderSize</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.HeaderSize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.IdHexString">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">IdHexString</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.IdHexString" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.SectionSubtype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SectionSubtype</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.SectionSubtype" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.Specialization">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Specialization</span></span><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.Specialization" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#SectionHeader.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.SectionHeader.get_file_name">
+<span class="sig-name descname"><span class="pre">get_file_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#SectionHeader.get_file_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader.get_file_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.deserialize_section_headers">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Section.</span></span><span class="sig-name descname"><span class="pre">deserialize_section_headers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_sections</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#deserialize_section_headers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.deserialize_section_headers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.from_drm_blocks">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Section.</span></span><span class="sig-name descname"><span class="pre">from_drm_blocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drm_block_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sec_header_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.SectionHeader" title="pyDXHR.cdcEngine.DRM.Section.SectionHeader"><span class="pre">SectionHeader</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drm_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyDXHR.cdcEngine.DRM.Section.Section" title="pyDXHR.cdcEngine.DRM.Section.Section"><span class="pre">Section</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#from_drm_blocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.from_drm_blocks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.Section.from_drm_sizes">
+<span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.Section.</span></span><span class="sig-name descname"><span class="pre">from_drm_sizes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drm_flag</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="pyDXHR.utils.html#pyDXHR.utils.Endian" title="pyDXHR.utils.Endian"><span class="pre">Endian</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Endian.Little</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/Section.html#from_drm_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.Section.from_drm_sizes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.SectionTypes">
+<span id="pydxhr-cdcengine-drm-sectiontypes-module"></span><h2>pyDXHR.cdcEngine.DRM.SectionTypes module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.SectionTypes" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.SectionTypes.</span></span><span class="sig-name descname"><span class="pre">SectionSubtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/SectionTypes.html#SectionSubtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py">https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.CameraShake">
+<span class="sig-name descname"><span class="pre">CameraShake</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">50</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.CameraShake" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Conversation">
+<span class="sig-name descname"><span class="pre">Conversation</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Conversation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Generic">
+<span class="sig-name descname"><span class="pre">Generic</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Generic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderModel">
+<span class="sig-name descname"><span class="pre">RenderModel</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">26</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderModel" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderModelBuffer">
+<span class="sig-name descname"><span class="pre">RenderModelBuffer</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">27</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderModelBuffer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderTerrain">
+<span class="sig-name descname"><span class="pre">RenderTerrain</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">24</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.RenderTerrain" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Scaleform">
+<span class="sig-name descname"><span class="pre">Scaleform</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">41</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Scaleform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.SmartScript">
+<span class="sig-name descname"><span class="pre">SmartScript</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">40</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.SmartScript" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Sound">
+<span class="sig-name descname"><span class="pre">Sound</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Sound" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Texture">
+<span class="sig-name descname"><span class="pre">Texture</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Texture" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown11">
+<span class="sig-name descname"><span class="pre">Unknown11</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown11" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown16">
+<span class="sig-name descname"><span class="pre">Unknown16</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown17">
+<span class="sig-name descname"><span class="pre">Unknown17</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">17</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown17" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown18">
+<span class="sig-name descname"><span class="pre">Unknown18</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">18</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown18" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown19">
+<span class="sig-name descname"><span class="pre">Unknown19</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">19</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown19" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown20">
+<span class="sig-name descname"><span class="pre">Unknown20</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown20" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown21">
+<span class="sig-name descname"><span class="pre">Unknown21</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">21</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown21" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown25">
+<span class="sig-name descname"><span class="pre">Unknown25</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown25" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown28">
+<span class="sig-name descname"><span class="pre">Unknown28</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">28</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown28" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown30">
+<span class="sig-name descname"><span class="pre">Unknown30</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown30" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown32">
+<span class="sig-name descname"><span class="pre">Unknown32</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown32" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown34">
+<span class="sig-name descname"><span class="pre">Unknown34</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">34</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown34" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown36">
+<span class="sig-name descname"><span class="pre">Unknown36</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">36</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown36" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown48">
+<span class="sig-name descname"><span class="pre">Unknown48</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">48</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown48" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown52">
+<span class="sig-name descname"><span class="pre">Unknown52</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">52</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.Unknown52" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.UnknownSectionSubtype">
+<span class="sig-name descname"><span class="pre">UnknownSectionSubtype</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionSubtype.UnknownSectionSubtype" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.SectionTypes.</span></span><span class="sig-name descname"><span class="pre">SectionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/SectionTypes.html#SectionType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py">https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py</a>
+<a class="reference external" href="https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/SectionType.cs">https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/SectionType.cs</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Animation">
+<span class="sig-name descname"><span class="pre">Animation</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Animation" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.AnyType">
+<span class="sig-name descname"><span class="pre">AnyType</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.AnyType" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.CollisionMesh">
+<span class="sig-name descname"><span class="pre">CollisionMesh</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">13</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.CollisionMesh" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.DTPData">
+<span class="sig-name descname"><span class="pre">DTPData</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.DTPData" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Empty">
+<span class="sig-name descname"><span class="pre">Empty</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.FMODSoundBank">
+<span class="sig-name descname"><span class="pre">FMODSoundBank</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.FMODSoundBank" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Generic">
+<span class="sig-name descname"><span class="pre">Generic</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Generic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Material">
+<span class="sig-name descname"><span class="pre">Material</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Material" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Object">
+<span class="sig-name descname"><span class="pre">Object</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">11</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Object" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.RenderMesh">
+<span class="sig-name descname"><span class="pre">RenderMesh</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.RenderMesh" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.RenderResource">
+<span class="sig-name descname"><span class="pre">RenderResource</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.RenderResource" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Script">
+<span class="sig-name descname"><span class="pre">Script</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Script" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.ShaderLib">
+<span class="sig-name descname"><span class="pre">ShaderLib</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.ShaderLib" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.StreamGroupList">
+<span class="sig-name descname"><span class="pre">StreamGroupList</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">14</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.StreamGroupList" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Unknown03">
+<span class="sig-name descname"><span class="pre">Unknown03</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Unknown03" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Unknown04">
+<span class="sig-name descname"><span class="pre">Unknown04</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.Unknown04" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.UnknownSectionType">
+<span class="sig-name descname"><span class="pre">UnknownSectionType</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.SectionTypes.SectionType.UnknownSectionType" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM.UnitDRM">
+<span id="pydxhr-cdcengine-drm-unitdrm-module"></span><h2>pyDXHR.cdcEngine.DRM.UnitDRM module<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM.UnitDRM" title="Permalink to this heading"></a></h2>
+<p>Mostly adapted from <a class="reference external" href="https://github.com/rrika/dxhr/blob/main/tools/cdcunit.py">https://github.com/rrika/dxhr/blob/main/tools/cdcunit.py</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.UnitDRM.</span></span><span class="sig-name descname"><span class="pre">ObjectType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/UnitDRM.html#ObjectType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.Collision">
+<span class="sig-name descname"><span class="pre">Collision</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Collision'</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.Collision" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.EXT_IMF">
+<span class="sig-name descname"><span class="pre">EXT_IMF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'External</span> <span class="pre">IMF'</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.EXT_IMF" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.IMF">
+<span class="sig-name descname"><span class="pre">IMF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IMF'</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.IMF" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.OBJ">
+<span class="sig-name descname"><span class="pre">OBJ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'OBJ'</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.OBJ" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.Stream">
+<span class="sig-name descname"><span class="pre">Stream</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Stream'</span></em><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.ObjectType.Stream" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyDXHR.cdcEngine.DRM.UnitDRM.</span></span><span class="sig-name descname"><span class="pre">UnitDRM</span></span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/UnitDRM.html#UnitDRM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pyDXHR.cdcEngine.DRM.DRMFile.DRM" title="pyDXHR.cdcEngine.DRM.DRMFile.DRM"><code class="xref py py-class docutils literal notranslate"><span class="pre">DRM</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.deserialize">
+<span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/UnitDRM.html#UnitDRM.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.deserialize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_gltf">
+<span class="sig-name descname"><span class="pre">to_gltf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">apply_universal_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'overwrite'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/UnitDRM.html#UnitDRM.to_gltf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_gltf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_ue5_csv">
+<span class="sig-name descname"><span class="pre">to_ue5_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_universal_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'overwrite'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pyDXHR/cdcEngine/DRM/UnitDRM.html#UnitDRM.to_ue5_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyDXHR.cdcEngine.DRM.UnitDRM.UnitDRM.to_ue5_csv" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyDXHR.cdcEngine.DRM">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyDXHR.cdcEngine.DRM" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x000002199340D420>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

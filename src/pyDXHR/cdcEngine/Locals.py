@@ -60,7 +60,7 @@ for prev, curr in zip(loc_fr.u5, loc_fr.u5[1:]):
     strings_fr.append(data_fr[prev.str_offset:curr.str_offset])
 
 
-breakpoint()
+# breakpoint()
 # a = None
 # for idx, i in enumerate(loc.u5):
 #     if i.str_offset == 0xe0920:

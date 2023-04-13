@@ -1,9 +1,9 @@
 from pathlib import Path
 from tqdm import tqdm
-from pyDXHR.cdcEngine.Archive import Archive, ArchivePlatform
+from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
-from pyDXHR.cdcEngine.DRM.Sections.RenderResource import RenderResource, OutputFormat
+from pyDXHR.cdcEngine.Sections.RenderResource import RenderResource, OutputFormat
 
 
 def generate(

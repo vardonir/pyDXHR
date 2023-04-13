@@ -295,4 +295,4 @@ if __name__ == "__main__":
     ps3_ja.deserialize(ps3_ja_data)
     ps3_ja_swapped_data = ps3_ja.swap()
 
-    breakpoint()
+    # breakpoint()

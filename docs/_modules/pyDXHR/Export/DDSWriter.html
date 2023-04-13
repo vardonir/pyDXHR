@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.Export.DDSWriter &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.Export.DDSWriter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.Export.DDSWriter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Flags values adapted from</span>
+<span class="sd">https://github.com/drewcassidy/quicktex/blob/main/quicktex/dds.py</span>
+<span class="sd">https://www.xnalara.org/viewtopic.php?t=1001</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+
+<div class="viewcode-block" id="TextureFormat"><a class="viewcode-back" href="../../../docs/pyDXHR.Export.html#pyDXHR.Export.DDSWriter.TextureFormat">[docs]</a><span class="k">class</span> <span class="nc">TextureFormat</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">a8r8g8b8</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">133</span>
+    <span class="n">dxt1</span> <span class="o">=</span> <span class="mi">827611204</span><span class="p">,</span> <span class="mi">134</span>
+    <span class="n">dxt3</span> <span class="o">=</span> <span class="mi">861165636</span><span class="p">,</span> <span class="mi">165</span>
+    <span class="n">dxt5</span> <span class="o">=</span> <span class="mi">894720068</span><span class="p">,</span> <span class="mi">136</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">values</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="c1"># first value is canonical value</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_true_value</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">other_value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_value2member_map_</span><span class="p">[</span><span class="n">other_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_all_values</span> <span class="o">=</span> <span class="n">values</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;</span><span class="si">%s</span><span class="s1">.</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_name_</span><span class="p">,</span>
+                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_values</span><span class="p">]),</span>
+                <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_value</span></div>
+
+
+<div class="viewcode-block" id="OutputFormat"><a class="viewcode-back" href="../../../docs/pyDXHR.Export.html#pyDXHR.Export.DDSWriter.OutputFormat">[docs]</a><span class="k">class</span> <span class="nc">OutputFormat</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">DDS</span> <span class="o">=</span> <span class="s2">&quot;dds&quot;</span>
+    <span class="n">PNG</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span>
+    <span class="n">TGA</span> <span class="o">=</span> <span class="s2">&quot;tga&quot;</span></div>
+
+
+<div class="viewcode-block" id="DDSImage"><a class="viewcode-back" href="../../../docs/pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage">[docs]</a><span class="k">class</span> <span class="nc">DDSImage</span><span class="p">:</span>
+    <span class="n">_magic</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\x44\x44\x53\x20</span><span class="s1">&#39;</span>
+    <span class="n">_len_header</span> <span class="o">=</span> <span class="mi">124</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">texture_format</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">len_mipmaps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">payload</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Format</span> <span class="o">=</span> <span class="n">TextureFormat</span><span class="p">(</span><span class="n">texture_format</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Payload</span> <span class="o">=</span> <span class="n">payload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span> <span class="o">=</span> <span class="n">len_mipmaps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_blob</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">caps</span> <span class="o">=</span> <span class="mh">0x1</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="mh">0x2</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="mh">0x4</span>
+        <span class="c1"># PITCH = 0x8</span>
+        <span class="n">pixel_format</span> <span class="o">=</span> <span class="mh">0x1000</span>
+        <span class="n">mipmap_count</span> <span class="o">=</span> <span class="mh">0x20000</span>
+        <span class="n">linear_size</span> <span class="o">=</span> <span class="mh">0x80000</span>
+        <span class="c1"># DEPTH = 0x800000</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">caps</span> <span class="o">|</span> <span class="n">height</span> <span class="o">|</span> <span class="n">width</span> <span class="o">|</span> <span class="n">pixel_format</span> <span class="o">|</span> <span class="n">linear_size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">|=</span> <span class="n">mipmap_count</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_pitch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Height</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)])</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Width</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)])</span>
+
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">a8r8g8b8</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Width</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt1</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">blk_size</span> <span class="o">=</span> <span class="mi">8</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt3</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt5</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">blk_size</span> <span class="o">=</span> <span class="mi">16</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format not found&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span> <span class="o">*</span> <span class="n">blk_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pixel_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">flags_alpha_pixels</span> <span class="o">=</span> <span class="mh">0x1</span>
+        <span class="c1"># ALPHA = 0x2</span>
+        <span class="n">flags_fourcc</span> <span class="o">=</span> <span class="mh">0x4</span>
+        <span class="n">flags_rgb</span> <span class="o">=</span> <span class="mh">0x40</span>
+        <span class="c1"># YUV = 0x200</span>
+        <span class="c1"># LUMINANCE = 0x20000</span>
+
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">a8r8g8b8</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">flags_rgb</span> <span class="o">|</span> <span class="n">flags_alpha_pixels</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt1</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt3</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt5</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">flags_fourcc</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format not found&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_fourcc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">a8r8g8b8</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt1</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt3</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt5</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format not found&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dwCaps1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">flags_complex</span> <span class="o">=</span> <span class="mh">0x8</span>
+        <span class="n">flags_mipmap</span> <span class="o">=</span> <span class="mh">0x400000</span>
+        <span class="n">flags_texture</span> <span class="o">=</span> <span class="mh">0x1000</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">flags_texture</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">|=</span> <span class="p">(</span><span class="n">flags_complex</span> <span class="o">|</span> <span class="n">flags_mipmap</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_dwCaps2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_pixel_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">a8r8g8b8</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">32</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt1</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt3</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt5</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format not found&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pixel_bitmasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">a8r8g8b8</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mh">0x00FF0000</span><span class="p">,</span> <span class="mh">0x0000FF00</span><span class="p">,</span> <span class="mh">0x000000FF</span><span class="p">,</span> <span class="mh">0xFF000000</span>
+            <span class="k">case</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt1</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt3</span><span class="o">.</span><span class="n">value</span> <span class="o">|</span> <span class="n">TextureFormat</span><span class="o">.</span><span class="n">dxt5</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Format not found&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_build_blob</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magic</span>
+
+        <span class="c1"># TODO: FIX ME</span>
+        <span class="c1"># region DDS header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+            <span class="s1">&#39;&lt;7I44x&#39;</span><span class="p">,</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_len_header</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flags</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Height</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Width</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pitch</span><span class="p">(),</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># self.depth,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+            <span class="s1">&#39;&lt;8I&#39;</span><span class="p">,</span>
+            <span class="mi">32</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_format</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fourcc</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pixel_size</span><span class="p">(),</span>
+            <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_pixel_bitmasks</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+            <span class="s1">&#39;&lt;4I4x&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dwCaps1</span><span class="p">(),</span>  <span class="c1"># dwCaps1</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># dwCaps2 - no cubemaps in DXHR</span>
+            <span class="mi">0</span><span class="p">,</span>  <span class="c1"># dwCaps3 = 0</span>
+            <span class="mi">0</span>  <span class="c1"># dwCaps4 = 0</span>
+        <span class="p">)</span>
+        <span class="c1"># endregion</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_len_header</span> <span class="o">+</span> <span class="mi">4</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Payload</span>
+
+<div class="viewcode-block" id="DDSImage.write_as"><a class="viewcode-back" href="../../../docs/pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage.write_as">[docs]</a>    <span class="k">def</span> <span class="nf">write_as</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_format</span><span class="p">:</span> <span class="n">OutputFormat</span> <span class="o">=</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">DDS</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">image_format</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">DDS</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span>
+            <span class="k">case</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">PNG</span> <span class="o">|</span> <span class="n">OutputFormat</span><span class="o">.</span><span class="n">TGA</span><span class="p">:</span>
+                <span class="n">dds_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dds_blob</span><span class="p">))</span>
+                <span class="n">out_im_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+                <span class="n">dds_image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">out_im_buffer</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">image_format</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">out_im_buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="DDSImage.save_as"><a class="viewcode-back" href="../../../docs/pyDXHR.Export.html#pyDXHR.Export.DDSWriter.DDSImage.save_as">[docs]</a>    <span class="k">def</span> <span class="nf">save_as</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_format</span><span class="p">:</span> <span class="n">OutputFormat</span><span class="p">,</span> <span class="n">save_to</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_to</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">write_as</span><span class="p">(</span><span class="n">image_format</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E97E28F0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

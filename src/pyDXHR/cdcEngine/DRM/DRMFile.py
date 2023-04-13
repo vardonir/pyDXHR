@@ -50,7 +50,7 @@ class DRMHeader:
 
         version, \
             len_drm_dep, len_obj_dep, \
-            unknown0C, unknown10, \
+            unknown0c, unknown10, \
             self.Flags, \
             len_sections, self.RootSection = struct.unpack_from(f"{self.Endian.value}8L", header_data, offset=0)
 
@@ -113,14 +113,15 @@ class DRM:
             return False
 
         if merge_generic_sections:
-            # the notes in the xnalara script mention that a generic section type just means that it's supposed to continue from the previous
-            # section. but i havent been able to recreate that. so...
+            # the notes in the xnalara script mention that a generic section type just means that it's supposed
+            # to continue from the previous section. but i havent been able to recreate that. so...
             data = CompressedDRM.rebuild_aligned(block_data)
             header_cursor_end = self.Header.deserialize(data)
 
             section_data = data[header_cursor_end:]
 
-            l = [(sec_header.SectionType == SectionType.Generic, sec_header) for sec_header in self.Header.SectionHeaders]
+            l = [(sec_header.SectionType == SectionType.Generic, sec_header)
+                 for sec_header in self.Header.SectionHeaders]
 
             ll = []
             for idx, (is_gen, sec_header) in enumerate(l):

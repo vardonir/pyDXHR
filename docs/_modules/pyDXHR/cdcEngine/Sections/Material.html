@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.Sections.Material &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../Sections.html">pyDXHR.cdcEngine.Sections</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.Sections.Material</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.Sections.Material</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">ArchivePlatform</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Section</span> <span class="kn">import</span> <span class="n">Section</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Resolver</span> <span class="kn">import</span> <span class="n">find_resolver</span><span class="p">,</span> <span class="n">MissingResolver</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections</span> <span class="kn">import</span> <span class="n">AbstractSection</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections.RenderResource</span> <span class="kn">import</span> <span class="n">RenderResource</span><span class="p">,</span> <span class="n">from_library</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+
+
+<div class="viewcode-block" id="Material"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.Material">[docs]</a><span class="k">class</span> <span class="nc">Material</span><span class="p">(</span><span class="n">AbstractSection</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_texture_list</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TextureLibrary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;texture_library&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;texture_library&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ImageDict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Diffuse</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Normal</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Specular</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mask</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Blend</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cubemap</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Unknown</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RenderResource</span> <span class="o">|</span> <span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_name_from_archive</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">m_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">archive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">archive</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">has_complete_file_lists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">archive</span><span class="o">.</span><span class="n">section_list</span><span class="p">[</span><span class="n">m_id</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;M_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Material.to_gltf"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.Material.to_gltf">[docs]</a>    <span class="k">def</span> <span class="nf">to_gltf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">as_library</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">library_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="p">):</span>
+        <span class="k">pass</span></div>
+        <span class="c1"># import pygltflib as gltf</span>
+        <span class="c1">#</span>
+        <span class="c1"># if as_library and library_dir:</span>
+        <span class="c1">#     if not self.TextureLibrary:</span>
+        <span class="c1">#         raise NotImplementedError</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         index = 0</span>
+        <span class="c1">#         gltf_image_list, gltf_texture_list = [], []</span>
+        <span class="c1">#         for key, value in self.ImageDict.items():</span>
+        <span class="c1">#             for t_id, image in value:</span>
+        <span class="c1">#                 gltf_image = gltf.Image()</span>
+        <span class="c1">#                 gltf_image.name = &quot;T_&quot; + f&quot;{t_id:x}&quot;.rjust(8, &#39;0&#39;)</span>
+        <span class="c1">#                 gltf_image.uri = str(image.relative_to(library_dir))</span>
+        <span class="c1">#                 gltf_image.extras = {</span>
+        <span class="c1">#                     &quot;cdcTextureId&quot;: t_id</span>
+        <span class="c1">#                 }</span>
+        <span class="c1">#</span>
+        <span class="c1">#                 gltf_texture_info = gltf.TextureInfo()</span>
+        <span class="c1">#                 gltf_texture_info.index = index</span>
+        <span class="c1">#                 gltf_texture_list.append(gltf_texture_info)</span>
+        <span class="c1">#</span>
+        <span class="c1">#                 gltf_image_list.append(gltf_image)</span>
+        <span class="c1">#</span>
+        <span class="c1">#     gltf_mat = gltf.Material()</span>
+        <span class="c1">#     gltf_mat.name = self.Name</span>
+        <span class="c1">#     gltf_mat.extras = {</span>
+        <span class="c1">#         &quot;cdcMaterialID&quot;: self.ID</span>
+        <span class="c1">#     }</span>
+        <span class="c1">#     gltf_mat.emissiveTexture = gltf.TextureInfo(</span>
+        <span class="c1">#         index=0</span>
+        <span class="c1">#     )</span>
+        <span class="c1">#</span>
+        <span class="c1">#     return gltf_mat, gltf_image_list, gltf_texture_list</span>
+
+<div class="viewcode-block" id="Material.to_json"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.Material.to_json">[docs]</a>    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">use_texture_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">use_texture_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ImageDict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_texture_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_texture_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="mh">0x4c</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">idx</span>
+
+            <span class="n">submat_blob_data_offset</span> <span class="o">=</span> <span class="n">find_resolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Resolvers</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">DataOffset</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">submat_blob_data_offset</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">texture_resolver</span> <span class="o">=</span> <span class="n">find_resolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Resolvers</span><span class="p">,</span> <span class="n">submat_blob_data_offset</span> <span class="o">+</span> <span class="mh">0x18</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">texture_resolver</span><span class="p">,</span> <span class="n">MissingResolver</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">texture_resolver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">texture_data_offset</span> <span class="o">=</span> <span class="n">texture_resolver</span><span class="o">.</span><span class="n">DataOffset</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">tex_count</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;4B&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">submat_blob_data_offset</span> <span class="o">+</span> <span class="mh">0x14</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">tex_count</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tex_count</span><span class="p">):</span>
+                    <span class="n">tx_off</span> <span class="o">=</span> <span class="n">texture_data_offset</span> <span class="o">+</span> <span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>
+
+                    <span class="n">tex_id</span><span class="p">,</span> \
+                        <span class="n">int1a</span><span class="p">,</span> <span class="n">int1b1</span><span class="p">,</span> <span class="n">int1b2</span><span class="p">,</span> <span class="n">int2</span><span class="p">,</span> <span class="n">byte1</span><span class="p">,</span> \
+                        <span class="n">tbind</span><span class="p">,</span> <span class="n">byte3</span><span class="p">,</span> <span class="n">byte4</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LHBBLBBBB&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">section</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span>
+                                                                 <span class="n">tx_off</span><span class="p">)</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_raw_texture_list</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">tex_id</span><span class="p">,</span> <span class="n">int1a</span><span class="p">,</span> <span class="n">int1b1</span><span class="p">,</span> <span class="n">int1b2</span><span class="p">,</span> <span class="n">int2</span><span class="p">,</span> <span class="n">byte1</span><span class="p">,</span> <span class="n">tbind</span><span class="p">,</span> <span class="n">byte3</span><span class="p">,</span> <span class="n">byte4</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_deserialize_from_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_deserialize_from_section</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_texture_ids</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_textures</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_textures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO: a biiiiit handwavy, but idc anymore</span>
+        <span class="n">seen</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">submat_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_texture_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">tex_id</span><span class="p">,</span> <span class="n">int1a</span><span class="p">,</span> <span class="n">int1b1</span><span class="p">,</span> <span class="n">int1b2</span><span class="p">,</span> <span class="n">int2</span><span class="p">,</span> <span class="n">byte1</span><span class="p">,</span> <span class="n">tbind</span><span class="p">,</span> <span class="n">byte3</span><span class="p">,</span> <span class="n">byte4</span> <span class="ow">in</span> <span class="n">submat_3</span><span class="p">:</span>
+            <span class="c1"># tex_data = tex_id, int1a, int1b1, int1b2, int2, byte1, tbind, byte3, byte4</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TextureLibrary</span><span class="p">:</span>
+                <span class="n">tex</span> <span class="o">=</span> <span class="p">(</span><span class="n">tex_id</span><span class="p">,</span> <span class="n">from_library</span><span class="p">(</span><span class="n">tex_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TextureLibrary</span><span class="p">))</span>
+                <span class="c1"># tex = tex_data, from_library(tex_id, self.TextureLibrary)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tex</span> <span class="o">=</span> <span class="n">tex_id</span>
+
+            <span class="k">if</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">96</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Cubemap</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">tex_id</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># int1b1, int1b2</span>
+                <span class="c1"># 0,0</span>
+                <span class="c1"># 128, 191</span>
+                <span class="c1"># 0, 191</span>
+
+                <span class="k">if</span> <span class="n">int2</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Blend</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">32</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Diffuse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex</span><span class="p">)</span>
+                        <span class="k">continue</span>
+                    <span class="k">elif</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">128</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">Unknown</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex</span><span class="p">)</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tex_id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ImageDict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;diffuse&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Diffuse</span><span class="p">,</span>
+            <span class="s2">&quot;normal&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Normal</span><span class="p">,</span>
+            <span class="s2">&quot;specular&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Specular</span><span class="p">,</span>
+            <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mask</span><span class="p">,</span>
+            <span class="s2">&quot;blend&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blend</span><span class="p">,</span>
+            <span class="s2">&quot;unknown&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">Unknown</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="guess_materials"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.guess_materials">[docs]</a><span class="k">def</span> <span class="nf">guess_materials</span><span class="p">(</span><span class="n">int1a</span><span class="p">,</span> <span class="n">int1b1</span><span class="p">,</span> <span class="n">int1b2</span><span class="p">,</span> <span class="n">int2</span><span class="p">,</span> <span class="n">byte1</span><span class="p">,</span> <span class="n">tbind</span><span class="p">,</span> <span class="n">byte3</span><span class="p">,</span> <span class="n">byte4</span><span class="p">):</span>    
+    <span class="c1"># some handwavy bullshit</span>
+
+    <span class="k">if</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">96</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;cubemap&quot;</span>
+
+    <span class="k">if</span> <span class="n">int2</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;blend&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">32</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;diffuse&quot;</span>
+        <span class="k">elif</span> <span class="n">byte1</span> <span class="o">==</span> <span class="mi">128</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;normal&quot;</span></div>
+
+
+<div class="viewcode-block" id="get_material_ids"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.get_material_ids">[docs]</a><span class="k">def</span> <span class="nf">get_material_ids</span><span class="p">(</span><span class="n">sec</span><span class="p">:</span> <span class="n">Section</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="c1"># of a render model</span>
+    <span class="n">mat_resolver</span> <span class="o">=</span> <span class="n">find_resolver</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">Resolvers</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mat_resolver</span><span class="p">,</span> <span class="n">MissingResolver</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">mat_offset</span> <span class="o">=</span> <span class="n">mat_resolver</span><span class="o">.</span><span class="n">DataOffset</span>
+    <span class="k">if</span> <span class="n">mat_offset</span><span class="p">:</span>
+        <span class="n">endian</span> <span class="o">=</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Endian</span>
+        <span class="n">count</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">sec</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">mat_offset</span><span class="p">)</span>
+
+        <span class="n">mat_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+            <span class="nb">id</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">sec</span><span class="o">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">mat_offset</span><span class="o">+</span><span class="mi">4</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">mat_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+
+    <span class="k">return</span> <span class="n">mat_ids</span></div>
+
+
+<div class="viewcode-block" id="deserialize_drm"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.Material.deserialize_drm">[docs]</a><span class="k">def</span> <span class="nf">deserialize_drm</span><span class="p">(</span>
+        <span class="n">drm</span><span class="p">:</span> <span class="n">DRM</span><span class="p">,</span>
+        <span class="n">use_only_dx11</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">texture_library</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">Material</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">use_only_dx11</span><span class="p">:</span>
+        <span class="n">mat_list</span> <span class="o">=</span> <span class="n">drm</span><span class="o">.</span><span class="n">filter_out_dx9_materials</span><span class="p">(</span><span class="n">materials_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">Material</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="n">mat</span><span class="p">,</span> <span class="n">texture_library</span><span class="o">=</span><span class="n">texture_library</span><span class="p">)</span> <span class="k">for</span> <span class="n">mat</span> <span class="ow">in</span> <span class="n">mat_list</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E9C8D0F0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

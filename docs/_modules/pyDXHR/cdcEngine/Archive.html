@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.Archive &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.Archive</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.Archive</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">dbm</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionType</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">Endian</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+
+
+<div class="viewcode-block" id="ArchivePlatform"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform">[docs]</a><span class="k">class</span> <span class="nc">ArchivePlatform</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">PC_W</span> <span class="o">=</span> <span class="s2">&quot;pc-w&quot;</span>
+    <span class="n">PC_JAP</span> <span class="o">=</span> <span class="s2">&quot;pc-jap&quot;</span>  <span class="c1"># this doesn&#39;t exist, but it&#39;s here for the sake of completeness</span>
+    <span class="n">PS3_W</span> <span class="o">=</span> <span class="s2">&quot;ps3-w&quot;</span>
+    <span class="n">PS3_JAP</span> <span class="o">=</span> <span class="s2">&quot;ps3-jap&quot;</span>
+    <span class="n">XENON_W</span> <span class="o">=</span> <span class="s2">&quot;xenon-w&quot;</span>
+    <span class="n">XENON_JAP</span> <span class="o">=</span> <span class="s2">&quot;xenon-jap&quot;</span>  <span class="c1"># probably not correct lmao</span>
+    <span class="n">WII_W</span> <span class="o">=</span> <span class="s2">&quot;wii-w&quot;</span>  <span class="c1"># need to check</span>
+    <span class="n">UNK</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="ArchivePlatform.has_complete_file_lists"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchivePlatform.has_complete_file_lists">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">has_complete_file_lists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_W</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_JAP</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">XENON_W</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ArchiveEntry"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.ArchiveEntry">[docs]</a><span class="k">class</span> <span class="nc">ArchiveEntry</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NameHash</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Locale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CompressedSize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">EntryData</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">NameHash</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Locale</span><span class="p">)</span><span class="si">}</span><span class="s2"> @ </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Offset</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="si">}</span><span class="s2"> bytes)&quot;</span></div>
+
+
+<div class="viewcode-block" id="Archive"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive">[docs]</a><span class="k">class</span> <span class="nc">Archive</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_block_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="p">:</span> <span class="n">ArchivePlatform</span> <span class="o">=</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">UNK</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ArchiveEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># self.EntryDict: Dict[Tuple[int, int], ArchiveEntry] = {}</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span><span class="s2"> files&quot;</span>
+
+<div class="viewcode-block" id="Archive.deserialize"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="c1"># for, uh, completion?? reading from file tends to be faster</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+        <span class="c1"># self._deserialize_header(data)</span>
+        <span class="c1"># self._deserialize_entries(</span>
+        <span class="c1">#     hash_data=data[0x48:4 * self.number_of_files],</span>
+        <span class="c1">#     entry_data=data[0x48 + (4 * self.number_of_files):0x48 + (4 * self.number_of_files) + (4 * 4 * self.number_of_files)]</span>
+        <span class="c1"># )\</span>
+
+<div class="viewcode-block" id="Archive.deserialize_from_env"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize_from_env">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize_from_env</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># for one-off tests</span>
+        <span class="kn">import</span> <span class="nn">os</span>
+        <span class="n">bigfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;PYDXHR_BIGFILE&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bigfile</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="n">bigfile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span></div>
+
+<div class="viewcode-block" id="Archive.deserialize_from_file"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.deserialize_from_file">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="c1"># typically used to compare differences between the different game versions</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deserialize_header</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mh">0x48</span><span class="p">))</span>
+
+            <span class="n">hash_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">)</span>
+            <span class="n">entry_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deserialize_entries</span><span class="p">(</span><span class="n">hash_data</span><span class="p">,</span> <span class="n">entry_data</span><span class="p">)</span>
+
+        <span class="c1"># check that the number of files in the folder is as expected</span>
+        <span class="n">archive_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">.*&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">()]</span>
+        <span class="n">expected_number_of_archives</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="mh">0x800</span> <span class="o">*</span> <span class="nb">max</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">Offset</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">archive_files</span><span class="p">)</span> <span class="o">==</span> <span class="n">expected_number_of_archives</span></div>
+
+    <span class="k">def</span> <span class="nf">_deserialize_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hash_data</span><span class="p">,</span> <span class="n">entry_data</span><span class="p">):</span>
+        <span class="n">hashes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">hash_data</span><span class="p">,</span>
+                               <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">newbyteorder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                               <span class="n">count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">)</span>
+
+        <span class="n">entries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">entry_data</span><span class="p">,</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">newbyteorder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                                <span class="n">count</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">entries</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">entries</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">hashes</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
+            <span class="n">archive_entry</span> <span class="o">=</span> <span class="n">ArchiveEntry</span><span class="p">()</span>
+            <span class="n">archive_entry</span><span class="o">.</span><span class="n">NameHash</span> <span class="o">=</span> <span class="n">h</span>
+            <span class="n">archive_entry</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="p">,</span> <span class="n">archive_entry</span><span class="o">.</span><span class="n">Offset</span><span class="p">,</span> <span class="n">locale</span><span class="p">,</span> <span class="n">archive_entry</span><span class="o">.</span><span class="n">CompressedSize</span> <span class="o">=</span> <span class="n">e</span>
+            <span class="c1"># archive_entry.Locale = ArchiveLocale(locale)</span>
+            <span class="n">archive_entry</span><span class="o">.</span><span class="n">Locale</span> <span class="o">=</span> <span class="n">locale</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">archive_entry</span><span class="p">)</span>
+
+            <span class="c1"># if (h, locale) in self.EntryDict:</span>
+            <span class="c1">#     raise Exception</span>
+            <span class="c1"># self.EntryDict[(h, locale)] = archive_entry</span>
+
+    <span class="k">def</span> <span class="nf">_deserialize_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">alignment</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">match</span> <span class="n">alignment</span><span class="p">:</span>
+            <span class="k">case</span> <span class="mh">0x7FF00000</span> <span class="o">|</span> <span class="mh">0x62300000</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span> <span class="o">=</span> <span class="n">alignment</span>
+            <span class="k">case</span> <span class="mh">0x0000F07F</span> <span class="o">|</span> <span class="mh">0x00003062</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="c1"># alignments im not sure about</span>
+            <span class="c1"># xbox demo</span>
+            <span class="k">case</span> <span class="mh">0x00000065</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="c1"># xbox DC</span>
+            <span class="k">case</span> <span class="mh">0x0000D06A</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+
+        <span class="n">game_type</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">12</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">ArchivePlatform</span><span class="p">(</span><span class="n">game_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_block_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span> <span class="o">/</span> <span class="mi">2048</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_files</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x44</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">parts</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="Archive.get_entry_data"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_entry_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_entry_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">ArchiveEntry</span><span class="p">):</span>
+        <span class="n">bigfile_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">Offset</span> <span class="o">*</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">))</span>
+        <span class="n">bigfile_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">((</span><span class="n">entry</span><span class="o">.</span><span class="n">Offset</span> <span class="o">*</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">))</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">(</span><span class="n">bigfile_index</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">bigfile</span><span class="p">:</span>
+            <span class="n">bigfile</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">bigfile_offset</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">bigfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="p">)</span>
+
+        <span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Archive.get_from_hash"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_from_hash">[docs]</a>    <span class="k">def</span> <span class="nf">get_from_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_hash</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">as_bytes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file_hash</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># entry = self.EntryDict.get((file_hash, spec))</span>
+            <span class="c1">#</span>
+            <span class="c1"># if entry:</span>
+            <span class="c1">#     if as_bytes:</span>
+            <span class="c1">#         return self.get_entry_data(entry)</span>
+            <span class="c1">#     else:</span>
+            <span class="c1">#         return entry</span>
+            <span class="c1"># else:</span>
+            <span class="c1">#     return None</span>
+
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">NameHash</span> <span class="o">==</span> <span class="n">file_hash</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">Locale</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">():</span>
+                    <span class="n">entry_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entry_data</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">as_bytes</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">entry_data</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">e</span></div>
+
+<div class="viewcode-block" id="Archive.get_from_filename"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.get_from_filename">[docs]</a>    <span class="k">def</span> <span class="nf">get_from_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">as_bytes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">as_raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># TODO: use the ArchiveLocale enum instead of the spec integer</span>
+        <span class="c1"># as_raw = if the input is &quot;xxx/xyz&quot;, it will not append the platform prefix. useful for checking the &quot;pc-dev&quot; files</span>
+
+        <span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">crc32bzip2</span>
+        <span class="k">if</span> <span class="n">as_raw</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="n">crc32bzip2</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">as_bytes</span><span class="o">=</span><span class="n">as_bytes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="n">crc32bzip2</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">as_bytes</span><span class="o">=</span><span class="n">as_bytes</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ArchivePlatform</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">UNK</span><span class="p">]:</span>
+            <span class="n">rebuilt_filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="n">crc32bzip2</span><span class="p">(</span><span class="n">rebuilt_filename</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">as_bytes</span><span class="o">=</span><span class="n">as_bytes</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rebuilt_filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">parts</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="n">crc32bzip2</span><span class="p">(</span><span class="n">rebuilt_filename</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">spec</span><span class="o">=</span><span class="n">spec</span><span class="p">,</span> <span class="n">as_bytes</span><span class="o">=</span><span class="n">as_bytes</span><span class="p">)</span></div>
+
+    <span class="c1"># region lists</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">object_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">obj_list_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="s2">&quot;objectlist.txt&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">obj_list_raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">_decode_text</span><span class="p">(</span><span class="n">obj_list_raw</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unit_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">unit_list_raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="s2">&quot;unitlist.txt&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unit_list_raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">unit_list_decoded</span> <span class="o">=</span> <span class="p">[</span><span class="n">it</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">unit_list_raw</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">unit_list_decoded</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">unit_list_decoded</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">section_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_W</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">raw_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="mi">4128657984</span><span class="p">)</span>  <span class="c1"># 0xF6165240</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_JAP</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">raw_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="mi">4162441112</span><span class="p">)</span>  <span class="c1"># F819CF98</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">raw_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">_decode_text</span><span class="p">(</span><span class="n">raw_list</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">animation_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_W</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">raw_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="mi">2974621525</span><span class="p">)</span>  <span class="c1"># 0xB14D1F55</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_JAP</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">raw_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">_decode_text</span><span class="p">(</span><span class="n">raw_list</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sound_effects_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_W</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">raw_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="mi">1117682290</span><span class="p">)</span>  <span class="c1"># 0x429E7A72</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_JAP</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">raw_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">_decode_text</span><span class="p">(</span><span class="n">raw_list</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">texture_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_W</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">raw_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="mi">2979602415</span><span class="p">)</span>  <span class="c1"># 0xB1991FEF</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">PS3_JAP</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">case</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">XENON_W</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="ne">NotImplementedError</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">raw_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">_decode_text</span><span class="p">(</span><span class="n">raw_list</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;latin1&quot;</span><span class="p">)</span>
+
+    <span class="c1"># endregion</span>
+
+<div class="viewcode-block" id="Archive.append"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="n">ArchiveEntry</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Archive.serialize"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.Archive.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span><span class="p">)</span>
+        <span class="n">platform_as_bytes</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+        <span class="n">platform_padding_size</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data</span><span class="p">)</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="n">platform_as_bytes</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="o">*</span><span class="n">platform_padding_size</span>
+
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">))</span>
+
+        <span class="n">est_header_size</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">64</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">+</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">)))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">))</span>
+        <span class="n">est_header_size</span> <span class="o">+=</span> <span class="p">((</span><span class="mh">0x800</span> <span class="o">-</span> <span class="n">est_header_size</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span><span class="o">.</span><span class="n">NameHash</span><span class="p">)</span>
+
+        <span class="n">archive_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repack_archive_entries</span><span class="p">(</span><span class="n">est_header_size</span><span class="p">)</span>
+
+        <span class="c1"># pack in the name hashes</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">NameHash</span><span class="p">)</span>
+
+        <span class="c1"># pack in the entry data</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Packing file table&quot;</span><span class="p">):</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">UncompressedSize</span><span class="p">)</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">Offset</span><span class="p">)</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">Locale</span><span class="p">)</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">CompressedSize</span><span class="p">)</span>
+
+        <span class="c1"># pad header with zeroes</span>
+        <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mh">0x800</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data</span><span class="p">))</span> <span class="o">%</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">len_diff</span>
+
+        <span class="c1"># add the first archive data</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="n">archive_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># pad it again with zeroes</span>
+        <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mh">0x800</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data</span><span class="p">))</span> <span class="o">%</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">len_diff</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">archive_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">out_data</span><span class="p">]</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">archive_data</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">return</span> <span class="n">out</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">out_data</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_repack_archive_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+        <span class="n">out_data_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+
+        <span class="n">max_blocks_per_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_alignment</span> <span class="o">//</span> <span class="mi">2048</span>
+
+        <span class="n">current_bigfile_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">global_pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">header_size</span> <span class="o">//</span> <span class="mh">0x800</span>
+
+        <span class="k">for</span> <span class="n">entry_idx</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Aligning BIGFILEs&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">UncompressedSize</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">CompressedSize</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+            <span class="n">block_count</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span><span class="p">)</span> <span class="o">+</span> <span class="mh">0x800</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mh">0x800</span>
+            <span class="k">if</span> <span class="n">block_count</span> <span class="o">&gt;</span> <span class="n">max_blocks_per_file</span><span class="p">:</span>
+                <span class="n">block_count</span> <span class="o">=</span> <span class="n">max_blocks_per_file</span>
+
+            <span class="k">if</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">block_count</span> <span class="o">&gt;</span> <span class="n">max_blocks_per_file</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">global_pos</span> <span class="o">+=</span> <span class="n">max_blocks_per_file</span>
+
+                <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mh">0x800</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data_list</span><span class="p">[</span><span class="n">current_bigfile_index</span><span class="p">]))</span> <span class="o">%</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span>
+                <span class="n">out_data_list</span><span class="p">[</span><span class="n">current_bigfile_index</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">len_diff</span>
+
+                <span class="n">out_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">current_bigfile_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># add the entry</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">Offset</span> <span class="o">=</span> <span class="n">global_pos</span> <span class="o">+</span> <span class="n">pos</span>
+            <span class="n">out_data_list</span><span class="p">[</span><span class="n">current_bigfile_index</span><span class="p">]</span> <span class="o">+=</span> <span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span>
+
+            <span class="c1"># pad this entry with zeros</span>
+            <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mh">0x800</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data_list</span><span class="p">[</span><span class="n">current_bigfile_index</span><span class="p">]))</span> <span class="o">%</span> <span class="mh">0x800</span><span class="p">)</span> <span class="o">%</span> <span class="mh">0x800</span>
+            <span class="n">out_data_list</span><span class="p">[</span><span class="n">current_bigfile_index</span><span class="p">]</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">len_diff</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">block_count</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created </span><span class="si">{</span><span class="n">current_bigfile_index</span><span class="si">}</span><span class="s2"> BIGFILES&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out_data_list</span></div>
+
+
+<div class="viewcode-block" id="UnpackedArchive"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive">[docs]</a><span class="k">class</span> <span class="nc">UnpackedArchive</span><span class="p">(</span><span class="n">Archive</span><span class="p">):</span>
+<div class="viewcode-block" id="UnpackedArchive.deserialize"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ArchiveFiles</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">SectionType</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">ArchiveEntry</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="UnpackedArchive.unpack"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.unpack">[docs]</a>    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_db</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">flag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;c&#39;</span><span class="p">):</span>
+        <span class="c1"># https://docs.python.org/3/library/dbm.html#dbm.open</span>
+        <span class="n">read_header_only</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">save_db</span> <span class="k">else</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">save_db</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="c1"># db = dbm.open(save_db, flag)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Entries</span><span class="p">):</span>
+            <span class="n">entry_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_entry_data</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+            <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+
+            <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">entry_data</span><span class="p">,</span> <span class="n">header_only</span><span class="o">=</span><span class="n">read_header_only</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">drm</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ArchiveFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drm</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">sec_header</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">SectionType</span><span class="o">.</span><span class="n">Material</span> <span class="ow">and</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">Specialization</span> <span class="o">&gt;&gt;</span> <span class="mi">30</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">sec_header</span><span class="o">.</span><span class="n">SectionType</span><span class="p">,</span> <span class="n">sec_header</span><span class="o">.</span><span class="n">SecId</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span></div>
+
+        <span class="c1"># if save_db:</span>
+        <span class="c1">#     db.close()</span>
+
+<div class="viewcode-block" id="UnpackedArchive.load_unpacked"><a class="viewcode-back" href="../../../docs/pyDXHR.cdcEngine.html#pyDXHR.cdcEngine.Archive.UnpackedArchive.load_unpacked">[docs]</a>    <span class="k">def</span> <span class="nf">load_unpacked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">saved_db</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<span class="c1"># region filename stuff</span>
+<span class="k">def</span> <span class="nf">_decode_text</span><span class="p">(</span><span class="n">raw_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span><span class="p">):</span>
+    <span class="n">decoded</span> <span class="o">=</span> <span class="n">raw_data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span>
+    <span class="n">decoded_list</span> <span class="o">=</span> <span class="n">decoded</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="nb">int</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span> <span class="n">it</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">decoded_list</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E9C8C3A0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

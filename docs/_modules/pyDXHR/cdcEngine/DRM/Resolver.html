@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.DRM.Resolver &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.DRM.Resolver</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.DRM.Resolver</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Regarding the BE implementation: it&#39;s a bit handwavy, I don&#39;t know if it&#39;s the correct method, but it works on initial testing</span>
+
+<span class="sd">References: </span>
+<span class="sd">- https://github.com/rrika/dxhr/blob/main/tools/drm.py</span>
+<span class="sd">- https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/Resolver.cs</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionType</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">byte_swap</span><span class="p">,</span> <span class="n">Endian</span>
+
+
+<div class="viewcode-block" id="Resolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.Resolver">[docs]</a><span class="k">class</span> <span class="nc">Resolver</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DataOffset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionIndex</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionType</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionId</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Resolver.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.Resolver.deserialize">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="LocalDataResolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver">[docs]</a><span class="k">class</span> <span class="nc">LocalDataResolver</span><span class="p">(</span><span class="n">Resolver</span><span class="p">):</span>
+<div class="viewcode-block" id="LocalDataResolver.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.LocalDataResolver.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">endian</span> <span class="o">==</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;Q&quot;</span><span class="p">,</span> <span class="n">byte_swap</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span> <span class="o">=</span> <span class="p">((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0x00000000FFFFFFFF</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DataOffset</span> <span class="o">=</span> <span class="p">((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFFF00000000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;LDR </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DataOffset</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
+
+<div class="viewcode-block" id="RemoteDataResolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver">[docs]</a><span class="k">class</span> <span class="nc">RemoteDataResolver</span><span class="p">(</span><span class="n">Resolver</span><span class="p">):</span>
+<div class="viewcode-block" id="RemoteDataResolver.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.RemoteDataResolver.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">endian</span> <span class="o">==</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;Q&quot;</span><span class="p">,</span> <span class="n">byte_swap</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionIndex</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0x0000000000003FFF</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">00</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0x0000003FFFFFC000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DataOffset</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFC000000000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">38</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;RDR </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DataOffset</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">SectionIndex</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="UnknownResolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver">[docs]</a><span class="k">class</span> <span class="nc">UnknownResolver</span><span class="p">(</span><span class="n">Resolver</span><span class="p">):</span>
+<div class="viewcode-block" id="UnknownResolver.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.UnknownResolver.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">data</span><span class="p">,</span>
+                    <span class="n">section_headers</span><span class="p">:</span> <span class="n">Optional</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">section_data</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">endian</span> <span class="o">==</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">byte_swap</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;little&quot;</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span> <span class="o">=</span> <span class="p">((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0x01FFFFFF</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">=</span> <span class="n">SectionType</span><span class="p">(((</span><span class="n">data</span> <span class="o">&amp;</span> <span class="mh">0xFE000000</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">25</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">section_headers</span> <span class="ow">and</span> <span class="n">section_data</span><span class="p">:</span>
+            <span class="c1"># uh... where did I get this again?</span>
+            <span class="n">ext_id</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">section_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SectionId</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_section_index</span><span class="p">(</span><span class="n">section_headers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SectionType</span><span class="p">,</span> <span class="n">ext_id</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_find_section_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">section_headers</span><span class="p">,</span>
+                            <span class="n">section_type</span><span class="p">:</span> <span class="n">SectionType</span><span class="p">,</span>
+                            <span class="n">section_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">section_headers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">section_type</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">SecId</span> <span class="o">==</span> <span class="n">section_id</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">idx</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">MissingResolver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;UR </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">SectionType</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">SectionId</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="MissingResolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.MissingResolver">[docs]</a><span class="k">class</span> <span class="nc">MissingResolver</span><span class="p">(</span><span class="n">Resolver</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pointer_offset</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span> <span class="o">=</span> <span class="n">pointer_offset</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;MissingResolver </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">PointerOffset</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="MissingResolver.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.MissingResolver.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;whut&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="deserialize_resolver_list"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.deserialize_resolver_list">[docs]</a><span class="k">def</span> <span class="nf">deserialize_resolver_list</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">header_list</span><span class="p">,</span>
+        <span class="n">section_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Resolver</span><span class="p">]:</span>
+    <span class="n">resolvers</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">local_resolver_count</span><span class="p">,</span> <span class="n">remote_resolver_count</span><span class="p">,</span> \
+            <span class="n">u2_resolver_count</span><span class="p">,</span> <span class="n">u3_resolver_count</span><span class="p">,</span> <span class="n">u4_resolver_count</span> <span class="o">=</span> \
+            <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLLL&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="mi">5</span>
+        <span class="n">local_resolver_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}{</span><span class="n">local_resolver_count</span><span class="si">}</span><span class="s2">Q&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="n">local_resolver_data</span><span class="p">:</span>
+            <span class="n">l_res</span> <span class="o">=</span> <span class="n">LocalDataResolver</span><span class="p">()</span>
+            <span class="n">l_res</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">endian</span><span class="o">=</span><span class="n">endian</span><span class="p">)</span>
+            <span class="n">resolvers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l_res</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">local_resolver_count</span> <span class="o">*</span> <span class="mi">8</span>
+        <span class="n">remote_resolver_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}{</span><span class="n">remote_resolver_count</span><span class="si">}</span><span class="s2">Q&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rr</span> <span class="ow">in</span> <span class="n">remote_resolver_data</span><span class="p">:</span>
+            <span class="n">r_res</span> <span class="o">=</span> <span class="n">RemoteDataResolver</span><span class="p">()</span>
+            <span class="n">r_res</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">rr</span><span class="p">,</span> <span class="n">endian</span><span class="o">=</span><span class="n">endian</span><span class="p">)</span>
+            <span class="n">resolvers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_res</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">remote_resolver_count</span> <span class="o">*</span> <span class="mi">8</span>
+        <span class="n">u2_resolver_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}{</span><span class="n">u2_resolver_count</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">u2r</span> <span class="ow">in</span> <span class="n">u2_resolver_data</span><span class="p">:</span>
+            <span class="n">u2_res</span> <span class="o">=</span> <span class="n">UnknownResolver</span><span class="p">()</span>
+            <span class="n">u2_res</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u2r</span><span class="p">,</span> <span class="n">section_headers</span><span class="o">=</span><span class="n">header_list</span><span class="p">,</span> <span class="n">section_data</span><span class="o">=</span><span class="n">section_data</span><span class="p">,</span> <span class="n">endian</span><span class="o">=</span><span class="n">endian</span><span class="p">)</span>
+            <span class="n">resolvers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u2_res</span><span class="p">)</span>
+
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">u2_resolver_count</span> <span class="o">*</span> <span class="mi">4</span>
+        <span class="k">assert</span> <span class="n">u3_resolver_count</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">u4_resolver_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}{</span><span class="n">u4_resolver_count</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">u4r</span> <span class="ow">in</span> <span class="n">u4_resolver_data</span><span class="p">:</span>
+            <span class="n">u4_res</span> <span class="o">=</span> <span class="n">UnknownResolver</span><span class="p">()</span>
+            <span class="n">u4_res</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u4r</span><span class="p">,</span> <span class="n">section_headers</span><span class="o">=</span><span class="n">header_list</span><span class="p">,</span> <span class="n">section_data</span><span class="o">=</span><span class="n">section_data</span><span class="p">,</span> <span class="n">endian</span><span class="o">=</span><span class="n">endian</span><span class="p">)</span>
+            <span class="n">resolvers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u4_res</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resolvers</span></div>
+
+
+<div class="viewcode-block" id="find_resolver"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.find_resolver">[docs]</a><span class="k">def</span> <span class="nf">find_resolver</span><span class="p">(</span><span class="n">resolver_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Resolver</span><span class="p">],</span>
+                  <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="n">unpacked_archive</span><span class="p">:</span> <span class="n">Optional</span> <span class="o">=</span> <span class="kc">None</span>
+                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Resolver</span><span class="p">:</span>
+
+    <span class="n">found</span> <span class="o">=</span> <span class="n">MissingResolver</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resolver_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">offset</span> <span class="o">==</span> <span class="n">res</span><span class="o">.</span><span class="n">PointerOffset</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">res</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">MissingResolver</span><span class="p">)</span> <span class="ow">and</span> <span class="n">unpacked_archive</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">resolver_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">UnknownResolver</span><span class="p">):</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">find_in_archive</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">SectionType</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">SectionId</span><span class="p">,</span> <span class="n">unpacked_archive</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">found</span></div>
+
+
+<div class="viewcode-block" id="find_in_archive"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.DRM.html#pyDXHR.cdcEngine.DRM.Resolver.find_in_archive">[docs]</a><span class="k">def</span> <span class="nf">find_in_archive</span><span class="p">(</span><span class="n">section_type</span><span class="p">:</span> <span class="n">SectionType</span><span class="p">,</span>
+                    <span class="n">section_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                    <span class="n">unpacked_archive</span><span class="p">,</span>
+                    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unpacked_archive</span><span class="o">.</span><span class="n">ArchiveFiles</span><span class="p">):</span>
+        <span class="n">archive_entry</span> <span class="o">=</span> <span class="n">unpacked_archive</span><span class="o">.</span><span class="n">SectionHeaders</span><span class="p">[(</span><span class="n">section_type</span><span class="p">,</span> <span class="n">section_id</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">archive_entry</span><span class="p">):</span>
+            <span class="n">entry_data</span> <span class="o">=</span> <span class="n">unpacked_archive</span><span class="o">.</span><span class="n">get_from_hash</span><span class="p">(</span><span class="n">archive_entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">NameHash</span><span class="p">)</span>
+            <span class="n">drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+            <span class="n">drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">entry_data</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SectionType</span> <span class="o">==</span> <span class="n">section_type</span> <span class="ow">and</span> <span class="n">sec</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SecId</span> <span class="o">==</span> <span class="n">section_id</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">find_resolver</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">Resolvers</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">unpacked_archive</span><span class="o">.</span><span class="n">unpack</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">find_in_archive</span><span class="p">(</span><span class="n">section_type</span><span class="p">,</span> <span class="n">section_id</span><span class="p">,</span> <span class="n">unpacked_archive</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E9C8D000>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

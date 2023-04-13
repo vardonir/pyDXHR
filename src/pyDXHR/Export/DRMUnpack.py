@@ -17,7 +17,7 @@ pc_data = pc_arc.get_from_filename(sarif_office_globe_path)
 pc_drm = DRM()
 stat = pc_drm.deserialize(pc_data)
 
-breakpoint()
+# breakpoint()
 # ps3_arc = Archive()
 # ps3_arc.deserialize_from_file(ps3_base)
 #

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.Sections.RenderResource &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../Sections.html">pyDXHR.cdcEngine.Sections</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.Sections.RenderResource</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.Sections.RenderResource</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">kaitaistruct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">ArchivePlatform</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.Section</span> <span class="kn">import</span> <span class="n">Section</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections</span> <span class="kn">import</span> <span class="n">AbstractSection</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.PCD</span> <span class="kn">import</span> <span class="n">Pcd</span> <span class="k">as</span> <span class="n">PCDImageFormat</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.PS3T</span> <span class="kn">import</span> <span class="n">Ps3t</span> <span class="k">as</span> <span class="n">PS3TImageFormat</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.Export.DDSWriter</span> <span class="kn">import</span> <span class="n">DDSImage</span><span class="p">,</span> <span class="n">OutputFormat</span>
+
+
+<div class="viewcode-block" id="RenderResource"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource">[docs]</a><span class="k">class</span> <span class="nc">RenderResource</span><span class="p">(</span><span class="n">AbstractSection</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ResourceType</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Payload</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Format</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Image</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DDSImage</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_deserialize_from_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sec</span><span class="p">:</span> <span class="n">Section</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_deserialize_from_section</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image_data</span> <span class="o">=</span> <span class="n">PCDImageFormat</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">Data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">kaitaistruct</span><span class="o">.</span><span class="n">ValidationNotEqualError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">image_data</span> <span class="o">=</span> <span class="n">PS3TImageFormat</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">Data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">kaitaistruct</span><span class="o">.</span><span class="n">ValidationNotEqualError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ResourceType</span> <span class="o">=</span> <span class="n">PS3TImageFormat</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Format</span> <span class="o">=</span> <span class="n">image_data</span><span class="o">.</span><span class="n">format</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ResourceType</span> <span class="o">=</span> <span class="n">PCDImageFormat</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span> <span class="o">=</span> <span class="n">image_data</span><span class="o">.</span><span class="n">len_mipmaps</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Format</span> <span class="o">=</span> <span class="n">image_data</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Width</span> <span class="o">=</span> <span class="n">image_data</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">image_data</span><span class="o">.</span><span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Payload</span> <span class="o">=</span> <span class="n">image_data</span><span class="o">.</span><span class="n">payload</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Image</span> <span class="o">=</span> <span class="n">DDSImage</span><span class="p">(</span>
+            <span class="n">height</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Height</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Width</span><span class="p">,</span>
+            <span class="n">texture_format</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Format</span><span class="p">,</span>
+            <span class="n">payload</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Payload</span><span class="p">,</span>
+            <span class="n">len_mipmaps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">LenMipMaps</span>
+        <span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_name_from_archive</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">sec_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">archive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">archive</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">value</span> <span class="ow">in</span> <span class="n">ArchivePlatform</span><span class="o">.</span><span class="n">has_complete_file_lists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">archive</span><span class="o">.</span><span class="n">texture_list</span><span class="p">[</span><span class="n">sec_id</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;RenderResource_&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sec_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RenderResource.to_gltf"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_gltf">[docs]</a>    <span class="k">def</span> <span class="nf">to_gltf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_dds</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">as_blob</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">pygltflib</span> <span class="k">as</span> <span class="nn">gltf</span>
+        <span class="k">if</span> <span class="n">use_dds</span><span class="p">:</span>
+            <span class="n">gltf_image</span> <span class="o">=</span> <span class="n">gltf</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span>
+
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RenderResource.to_file"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.RenderResource.RenderResource.to_file">[docs]</a>    <span class="k">def</span> <span class="nf">to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_format</span><span class="p">:</span> <span class="n">OutputFormat</span><span class="p">,</span> <span class="n">save_to</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">save_as</span><span class="p">(</span><span class="n">image_format</span><span class="o">=</span><span class="n">image_format</span><span class="p">,</span> <span class="n">save_to</span><span class="o">=</span><span class="n">save_to</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="from_library"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sections.html#pyDXHR.cdcEngine.Sections.RenderResource.from_library">[docs]</a><span class="k">def</span> <span class="nf">from_library</span><span class="p">(</span><span class="n">tex_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tex_lib_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="n">as_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+    <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+    <span class="n">file</span> <span class="o">=</span> <span class="n">glob</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">tex_lib_dir</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tex_id</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;.*&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">as_path</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">Archive</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionType</span>
+
+    <span class="n">pc_base</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\vardo\DXHR_Research\DXHR\BIGFILE.000&quot;</span>
+    <span class="n">pc_dc</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;C:\Program Files (x86)\GOG Galaxy\Games\Deus Ex HRDC\BIGFILE.000&#39;</span>
+    <span class="n">ps3_cache</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\vardo\DXHR_Research\DXHRDCPS3\CACHE.000&quot;</span>
+
+    <span class="n">pc_arc</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+    <span class="n">pc_arc</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="n">pc_base</span><span class="p">)</span>
+
+    <span class="n">ps3_arc</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+    <span class="n">ps3_arc</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="n">ps3_cache</span><span class="p">)</span>
+
+    <span class="n">dxt1_example</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;art\texture_library\cube_map\cubemap_sarifhq_atrium_a.drm&quot;</span>
+    <span class="n">a8r8g8b8_example</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;object\lighting\lightbeams\textures\lightbeamb.drm&quot;</span>
+
+    <span class="n">ps3t_example</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;art\texture_library\cube_map\adam_cubemap_a_diffuse.drm&quot;</span>
+
+    <span class="n">pc_data</span> <span class="o">=</span> <span class="n">pc_arc</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">a8r8g8b8_example</span><span class="p">)</span>
+
+    <span class="n">ps3_data</span> <span class="o">=</span> <span class="n">ps3_arc</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">ps3t_example</span><span class="p">)</span>
+
+    <span class="n">pc_drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+    <span class="n">pc_drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">pc_data</span><span class="p">)</span>
+
+    <span class="n">ps3_drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+    <span class="n">ps3_drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">ps3_data</span><span class="p">)</span>
+
+    <span class="n">tex_sec</span> <span class="o">=</span> <span class="n">pc_drm</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">([</span><span class="n">SectionType</span><span class="o">.</span><span class="n">RenderResource</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ps3_tex_sec</span> <span class="o">=</span> <span class="n">ps3_drm</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">([</span><span class="n">SectionType</span><span class="o">.</span><span class="n">RenderResource</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">pc_rm</span> <span class="o">=</span> <span class="n">RenderResource</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="n">tex_sec</span><span class="p">)</span>
+    <span class="n">ps3_rm</span> <span class="o">=</span> <span class="n">RenderResource</span><span class="p">(</span><span class="n">section</span><span class="o">=</span><span class="n">ps3_tex_sec</span><span class="p">)</span>
+
+    <span class="n">pc_rm</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">TGA</span><span class="p">,</span> <span class="n">save_to</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;C:\Users\vardo\DXHR_Research\pyDXHR\preprocessed\new_texture_converter\a8r8g8b8.tga&quot;</span><span class="p">)</span>
+    <span class="n">ps3_rm</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">OutputFormat</span><span class="o">.</span><span class="n">TGA</span><span class="p">,</span> <span class="n">save_to</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;C:\Users\vardo\DXHR_Research\pyDXHR\preprocessed\new_texture_converter\ps3.tga&quot;</span><span class="p">)</span>
+    <span class="c1"># breakpoint()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E97E16F0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

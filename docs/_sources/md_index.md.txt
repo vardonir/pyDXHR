@@ -5,14 +5,23 @@ Python-based tools for data exploration and extraction of Deus Ex Human Revoluti
 
 Although I went a bit too far and somehow managed to make mod tools?
 
-This page will detail documentation for the tools + some notes on stuff I've found while digging through the files.
+Documentation be here, when I feel like writing it + some notes on stuff I've found while digging through the files.
+
+## Dependencies
+
+* Python 3.10
+* Numpy
+* fastcrc
+* [kaitaistruct](https://kaitai.io/) - The python-generated code is part of the repo, but the raw KSY files are also included.
+* scipy
+
+For the exporters:
+
+* Textures: Pillow
+* Models: [pygltflib](https://gitlab.com/dodgyville/pygltflib) 
+* Audio: [vgmstream](https://github.com/vgmstream/vgmstream) - used as a CLI tool
+* Cinematics: [WannaCRI](https://github.com/donmai-me/WannaCRI)
 
 ## Usage
 
-I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package. In this version, the only main external dependencies are `tqdm`, `fastcrc` and `numpy`. Later versions use `Pillow` and `kaitaistruct`
-
-## Progress
-
-- [x] Read MUL files and export to FSB
-- [ ] Read RenderMesh sections and export to GLTF 
-- [ ] Read RenderResource sections (i.e., textures) and export to DDS/TGA
+I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package.

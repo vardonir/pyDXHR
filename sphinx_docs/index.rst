@@ -5,8 +5,8 @@
    :hidden:
    :maxdepth: 1
    
-   Home <md_index> 
+   Home <md_index>
    Mods <mods/mods.rst>
    Demos <demos/sound.rst>
    References <references.md>
-   Utilities <utilities.md>
+   Documentation <docs/modules.rst>

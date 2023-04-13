@@ -9,7 +9,7 @@
 project = 'pyDXHR'
 copyright = '2023'
 author = 'Vardonir'
-release = '0.0.1'
+release = '0.0.2'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -17,15 +17,16 @@ release = '0.0.1'
 extensions = [
     'sphinx_rtd_theme',
     "myst_parser",
-    "nbsphinx"
+    "nbsphinx",
+    'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon'
 ]
 
 source_suffix = ['.rst', '.md']
 
 templates_path = ['_templates']
 exclude_patterns = []
-
-
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

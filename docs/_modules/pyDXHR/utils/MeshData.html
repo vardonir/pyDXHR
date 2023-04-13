@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.utils.MeshData &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../utils.html">pyDXHR.utils</a></li>
+      <li class="breadcrumb-item active">pyDXHR.utils.MeshData</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.utils.MeshData</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.RenderModel</span> <span class="kn">import</span> <span class="n">RenderModel</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.RenderTerrainHeader</span> <span class="kn">import</span> <span class="n">RenderTerrainHeader</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.RenderTerrainGroup</span> <span class="kn">import</span> <span class="n">RenderTerrainGroup</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.KaitaiGenerated.Vertices</span> <span class="kn">import</span> <span class="n">VertexInfo</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.SectionTypes</span> <span class="kn">import</span> <span class="n">SectionSubtype</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">Endian</span>
+
+
+<div class="viewcode-block" id="KaitaiRenderModel"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.KaitaiRenderModel">[docs]</a><span class="k">class</span> <span class="nc">KaitaiRenderModel</span><span class="p">(</span><span class="n">RenderModel</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">Header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">header</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">IndexBuffer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">indices</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">MeshTable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">mesh_table</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">MeshPrimitiveTable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">mesh_prim_table</span></div>
+
+
+<div class="viewcode-block" id="VertexSemantic"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic">[docs]</a><span class="k">class</span> <span class="nc">VertexSemantic</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Position</span> <span class="o">=</span> <span class="mh">0xd2f7d823</span>
+    <span class="n">Normal</span> <span class="o">=</span> <span class="mh">0x36f5e414</span>
+    <span class="n">Normal2</span> <span class="o">=</span> <span class="mh">0x3E7F6149</span>  <span class="c1"># i&#39;m guessing that the real name is not &quot;Normal2&quot;, but I needed to name it something</span>
+    <span class="n">TesselationNormal</span> <span class="o">=</span> <span class="mh">0x097879bd</span>
+    <span class="n">Tangent</span> <span class="o">=</span> <span class="mh">0xf1ed11c3</span>
+    <span class="n">Binormal</span> <span class="o">=</span> <span class="mh">0x64a86f01</span>
+    <span class="n">PackedNTB</span> <span class="o">=</span> <span class="mh">0x09b1d4ea</span>
+    <span class="n">SkinWeights</span> <span class="o">=</span> <span class="mh">0x48e691c0</span>
+    <span class="n">SkinIndices</span> <span class="o">=</span> <span class="mh">0x5156d8d3</span>
+    <span class="n">Color1</span> <span class="o">=</span> <span class="mh">0x7e7dd623</span>
+    <span class="n">Color2</span> <span class="o">=</span> <span class="mh">0x733ef0fa</span>
+    <span class="n">TexCoord1</span> <span class="o">=</span> <span class="mh">0x8317902a</span>
+    <span class="n">TexCoord2</span> <span class="o">=</span> <span class="mh">0x8e54b6f3</span>
+    <span class="n">TexCoord3</span> <span class="o">=</span> <span class="mh">0x8a95ab44</span>
+    <span class="n">TexCoord4</span> <span class="o">=</span> <span class="mh">0x94d2fb41</span>
+
+<div class="viewcode-block" id="VertexSemantic.tex_coords"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.tex_coords">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">tex_coords</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord1</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord2</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord3</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">TexCoord4</span><span class="o">.</span><span class="n">value</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="VertexSemantic.colors"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.colors">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">colors</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Color1</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Color2</span><span class="o">.</span><span class="n">value</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="VertexSemantic.tangents"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.tangents">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">tangents</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Tangent</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Binormal</span><span class="o">.</span><span class="n">value</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="VertexSemantic.normals"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.VertexSemantic.normals">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">normals</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Normal</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">VertexSemantic</span><span class="o">.</span><span class="n">Normal2</span><span class="o">.</span><span class="n">value</span><span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="MeshData"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData">[docs]</a><span class="k">class</span> <span class="nc">MeshData</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_subtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SectionSubtype</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mat_id_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trs_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_headers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_indices</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rt_index_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">VertexBuffers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">MaterialIDList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections.Material</span> <span class="kn">import</span> <span class="n">Material</span>
+
+        <span class="n">mlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">mid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mat_id_list</span><span class="p">:</span>
+            <span class="n">mat</span> <span class="o">=</span> <span class="n">Material</span><span class="p">()</span>
+            <span class="n">mat</span><span class="o">.</span><span class="n">ID</span> <span class="o">=</span> <span class="n">mid</span>
+            <span class="n">mlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mlist</span>
+
+    <span class="nd">@MaterialIDList</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">MaterialIDList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat_id_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mat_id_list</span> <span class="o">=</span> <span class="n">mat_id_list</span>
+
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">MeshPrimIndexed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Sections.Material</span> <span class="kn">import</span> <span class="n">Material</span>
+
+        <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subtype</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderModel</span> <span class="o">|</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderModelBuffer</span><span class="p">:</span>
+                <span class="n">grouped</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_headers</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">start_index_buffer</span> <span class="o">==</span> <span class="n">p</span><span class="o">.</span><span class="n">start_index</span><span class="p">:</span>
+                            <span class="n">grouped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_list</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">idx</span><span class="o">+</span><span class="n">m</span><span class="o">.</span><span class="n">len_mesh_parts</span><span class="p">])</span>
+
+                <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">grp_num</span><span class="p">,</span> <span class="n">mesh_prim_list</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">grouped</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">mp</span> <span class="ow">in</span> <span class="n">mesh_prim_list</span><span class="p">:</span>
+                        <span class="n">mat</span> <span class="o">=</span> <span class="n">Material</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mat_id_list</span><span class="p">:</span>
+                            <span class="n">mat</span><span class="o">.</span><span class="n">ID</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mat_id_list</span><span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">ptr_material</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">grp_num</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+                            <span class="n">out</span><span class="p">[</span><span class="n">grp_num</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="n">out</span><span class="p">[</span><span class="n">grp_num</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_indices</span><span class="p">[</span><span class="n">mp</span><span class="p">]))</span>
+
+                <span class="k">return</span> <span class="n">out</span>
+            <span class="k">case</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderTerrain</span><span class="p">:</span>
+                <span class="n">cleaned</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">idx_buffer</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rt_index_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">idx_mat</span><span class="p">,</span> <span class="n">vtx</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">idx_buffer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cleaned</span><span class="p">:</span>
+                            <span class="n">cleaned</span><span class="p">[</span><span class="n">idx_buffer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                        <span class="n">cleaned</span><span class="p">[</span><span class="n">idx_buffer</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">MaterialIDList</span><span class="p">[</span><span class="n">idx_mat</span><span class="p">],</span> <span class="n">vtx</span><span class="p">))</span>
+
+                <span class="k">return</span> <span class="n">cleaned</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="MeshData.deserialize"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_endian</span> <span class="o">=</span> <span class="n">endian</span>
+
+        <span class="k">match</span> <span class="n">data_type</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">&quot;RenderModel&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_subtype</span> <span class="o">=</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderModel</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_from_RenderModel</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;RenderTerrain&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_subtype</span> <span class="o">=</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderTerrain</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_from_RenderTerrain</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">case</span> <span class="s2">&quot;RenderModelBuffer&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_subtype</span> <span class="o">=</span> <span class="n">SectionSubtype</span><span class="o">.</span><span class="n">RenderModelBuffer</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_from_RenderModel</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span></div>
+
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="nf">_from_RenderTerrain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">):</span>
+        <span class="c1"># adapted from https://github.com/rrika/cdcEngineDXHR/blob/main/rendering/TerrainData.h</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">RenderTerrainHeader</span><span class="o">.</span><span class="n">from_io</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">))</span>
+
+        <span class="c1"># offset indices</span>
+        <span class="n">index_buffer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}{</span><span class="n">header</span><span class="o">.</span><span class="n">len_indices</span><span class="si">}</span><span class="s2">H&quot;</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">offset_indices</span><span class="p">)</span>
+
+        <span class="c1"># offset layout</span>
+        <span class="n">vtx_info_data_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">offset_layout</span><span class="p">:])</span>
+        <span class="n">vtx_info</span> <span class="o">=</span> <span class="p">[</span><span class="n">VertexInfo</span><span class="o">.</span><span class="n">from_io</span><span class="p">(</span><span class="n">vtx_info_data_buffer</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_layout</span><span class="p">)]</span>
+
+        <span class="c1"># offset vb</span>
+        <span class="n">vb_data_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">offset_vb</span><span class="p">:])</span>
+        <span class="k">for</span> <span class="n">vb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_vb</span><span class="p">):</span>
+            <span class="n">off_vtx_buffer</span><span class="p">,</span> <span class="n">unk1</span><span class="p">,</span> <span class="n">len_vtx_buffer</span><span class="p">,</span> <span class="n">i_fmt</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLL&quot;</span><span class="p">,</span> <span class="n">vb_data_buffer</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mh">0x10</span><span class="p">))</span>
+
+            <span class="n">vtx_buffer_info</span> <span class="o">=</span> <span class="n">vtx_info</span><span class="p">[</span><span class="n">i_fmt</span><span class="p">]</span>
+            <span class="n">vtx_sem_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">vtx_sem</span> <span class="ow">in</span> <span class="n">vtx_buffer_info</span><span class="o">.</span><span class="n">vtxsem</span><span class="p">:</span>
+                <span class="c1"># TODO: normal2 doesnt seem to work + need to figure out packedntb</span>
+                <span class="n">vtx_data</span> <span class="o">=</span> <span class="n">read_vertex_buffer</span><span class="p">(</span><span class="n">vertex_data</span><span class="o">=</span><span class="n">mesh_data</span><span class="p">[</span><span class="n">off_vtx_buffer</span><span class="p">:],</span>
+                                              <span class="n">semantic_type</span><span class="o">=</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                              <span class="n">semantic_offset</span><span class="o">=</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span>
+                                              <span class="n">count</span><span class="o">=</span><span class="n">len_vtx_buffer</span><span class="p">,</span>
+                                              <span class="n">stride</span><span class="o">=</span><span class="n">vtx_buffer_info</span><span class="o">.</span><span class="n">len_vtx</span><span class="p">,</span>
+                                              <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span>
+                                              <span class="p">)</span>
+                <span class="n">vtx_sem_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="p">(</span><span class="n">vtx_sem</span><span class="o">.</span><span class="n">sem</span><span class="p">)]</span> <span class="o">=</span> <span class="n">vtx_data</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">VertexBuffers</span><span class="p">[</span><span class="n">vb</span><span class="p">]</span> <span class="o">=</span> <span class="n">vtx_sem_dict</span>
+
+        <span class="c1"># offset group (target)</span>
+        <span class="n">group_data_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">offset_group</span><span class="p">:])</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="p">[</span><span class="n">RenderTerrainGroup</span><span class="o">.</span><span class="n">from_io</span><span class="p">(</span><span class="n">group_data_buffer</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_group</span><span class="p">)]</span>
+        <span class="c1"># number of unique material indices in the groups list seems to correlate</span>
+        <span class="c1"># with number of material indices of RT. might be related?</span>
+
+        <span class="c1"># offset node (lists)</span>
+        <span class="n">node_data_buffer</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">offset_node</span><span class="p">:])</span>
+
+        <span class="c1"># TODO: wtf is going on here</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_nodes</span><span class="p">):</span>
+            <span class="n">off_list</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">L&quot;</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">offset_geom</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">off_list</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">off_list</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mesh_data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">n_ranges</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">H&quot;</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">,</span> <span class="n">off_list</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_ranges</span><span class="p">):</span>
+                <span class="n">off_range</span> <span class="o">=</span> <span class="n">off_list</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">16</span><span class="o">*</span><span class="n">j</span>
+                <span class="n">target</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">start_index</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">HHL&quot;</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">,</span> <span class="n">off_range</span><span class="p">)</span>
+
+                <span class="n">idx_mat</span><span class="p">,</span> <span class="n">idx_buffer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LL&quot;</span><span class="p">,</span> <span class="n">mesh_data</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">offset_group</span> <span class="o">+</span> <span class="n">target</span> <span class="o">*</span> <span class="mh">0x20</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">idx_buffer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_vb</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">idx_mat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">len_group</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">idx_buffer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rt_index_dict</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_rt_index_dict</span><span class="p">[</span><span class="n">idx_buffer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="n">np_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">index_buffer</span><span class="p">[</span><span class="n">start_index</span><span class="p">:</span><span class="n">start_index</span><span class="o">+</span><span class="n">count</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_rt_index_dict</span><span class="p">[</span><span class="n">idx_buffer</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx_mat</span><span class="p">,</span> <span class="n">np_indices</span><span class="p">))</span>
+
+        <span class="c1"># probably material-related?</span>
+        <span class="c1"># for g in groups:</span>
+        <span class="c1">#     if g.idx_vb == idx_buffer and g.idx_material == idx_mat :</span>
+        <span class="c1">#         test[g] = (self.VertexBuffers[idx_buffer], index_buffer[start_index:start_index+count])</span>
+        <span class="c1">#     if g in test:</span>
+        <span class="c1">#         found_test = test[g]</span>
+        <span class="c1">#         if index_buffer[start_index:start_index+count] == found_test[1]:</span>
+        <span class="c1">#             continue</span>
+        <span class="c1">#         else:</span>
+        <span class="c1">#             breakpoint()</span>
+
+        <span class="c1"># offset geom something is missing here</span>
+        <span class="c1"># geom_data_buffer = BytesIO(mesh_data[header.offset_geom:])</span>
+
+        <span class="c1"># offset dword3c something (not used)</span>
+        <span class="c1"># not implemented</span>
+
+    <span class="c1"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="nf">_from_RenderModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="c1"># TODO: insert *dramatic Shatner voice* here: BONES!</span>
+
+        <span class="n">ksy</span> <span class="o">=</span> <span class="n">KaitaiRenderModel</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">index_buffer</span> <span class="o">=</span> <span class="n">ksy</span><span class="o">.</span><span class="n">IndexBuffer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_list</span> <span class="o">=</span> <span class="n">ksy</span><span class="o">.</span><span class="n">MeshPrimitiveTable</span>
+        <span class="k">for</span> <span class="n">mp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_list</span><span class="p">:</span>
+            <span class="n">ib_width</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">len_triangles</span> <span class="o">*</span> <span class="mi">3</span>
+
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">index_buffer</span><span class="p">[</span><span class="n">mp</span><span class="o">.</span><span class="n">start_index</span><span class="p">:</span><span class="n">ib_width</span> <span class="o">+</span> <span class="n">mp</span><span class="o">.</span><span class="n">start_index</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_prim_indices</span><span class="p">[</span><span class="n">mp</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">mp</span><span class="o">.</span><span class="n">len_triangles</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_headers</span> <span class="o">=</span> <span class="n">ksy</span><span class="o">.</span><span class="n">MeshTable</span>
+        <span class="k">for</span> <span class="n">mesh_num</span><span class="p">,</span> <span class="n">mesh</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rm_mesh_headers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">min_dist</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">vtx_sem_info</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">vtx_sem_info</span>
+            <span class="n">i_stride</span><span class="p">,</span> <span class="n">len_attr</span> <span class="o">=</span> <span class="n">vtx_sem_info</span><span class="o">.</span><span class="n">len_vtx</span><span class="p">,</span> <span class="n">vtx_sem_info</span><span class="o">.</span><span class="n">len_vtx_sem</span>
+            <span class="n">vtx_buffer_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mesh</span><span class="o">.</span><span class="n">offset_to_vtx_buffer</span><span class="p">:]</span>
+
+            <span class="n">vtx_sem_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vtx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vtx_sem_info</span><span class="o">.</span><span class="n">semantics</span><span class="p">):</span>
+                <span class="n">vtx_buffer</span> <span class="o">=</span> <span class="n">read_vertex_buffer</span><span class="p">(</span>
+                    <span class="n">vertex_data</span><span class="o">=</span><span class="n">vtx_buffer_data</span><span class="p">,</span>
+                    <span class="n">semantic_type</span><span class="o">=</span><span class="n">vtx</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                    <span class="n">semantic_offset</span><span class="o">=</span><span class="n">vtx</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span>
+                    <span class="n">count</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">len_vertices</span><span class="p">,</span>
+                    <span class="n">stride</span><span class="o">=</span><span class="n">i_stride</span><span class="p">,</span>
+                    <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_endian</span><span class="p">)</span>
+
+                <span class="n">vtx_sem_dict</span><span class="p">[</span><span class="n">VertexSemantic</span><span class="p">(</span><span class="n">vtx</span><span class="o">.</span><span class="n">sem</span><span class="p">)]</span> <span class="o">=</span> <span class="n">vtx_buffer</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">VertexBuffers</span><span class="p">[</span><span class="n">mesh_num</span><span class="p">]</span> <span class="o">=</span> <span class="n">vtx_sem_dict</span>
+
+<div class="viewcode-block" id="MeshData.as_gltf"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.MeshData.as_gltf">[docs]</a>    <span class="k">def</span> <span class="nf">as_gltf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                <span class="n">save_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">as_bytes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">apply_scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">blank_materials</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pyDXHR.utils.gltf</span> <span class="kn">import</span> <span class="n">build_gltf</span>
+        <span class="k">return</span> <span class="n">build_gltf</span><span class="p">(</span>
+            <span class="n">mesh_data</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">as_bytes</span><span class="o">=</span><span class="n">as_bytes</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">save_to</span><span class="o">=</span><span class="n">save_to</span><span class="p">,</span>
+            <span class="n">apply_scale</span><span class="o">=</span><span class="n">apply_scale</span><span class="p">,</span>
+            <span class="n">blank_materials</span><span class="o">=</span><span class="n">blank_materials</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="read_vertex_buffer"><a class="viewcode-back" href="../../../docs/pyDXHR.utils.html#pyDXHR.utils.MeshData.read_vertex_buffer">[docs]</a><span class="k">def</span> <span class="nf">read_vertex_buffer</span><span class="p">(</span><span class="n">vertex_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+                       <span class="n">semantic_type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">semantic_offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                       <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    match semantic_type:</span>
+<span class="sd">        0x01                2x float32      probably unused in HR?        used in texcoords for TR</span>
+<span class="sd">        0x02                3x float32                                    position, normal</span>
+<span class="sd">        0x04           (same as 0x06?)</span>
+<span class="sd">        0x05           (same as 0x06?)                                    also normal apparently??</span>
+<span class="sd">        0x06                4x  uint8       divide by 255      (or 3x?)   blendweights</span>
+<span class="sd">        0x07                4x  uint8                          (or 3x?)   blendindices</span>
+<span class="sd">        0x13                 2x sint16      divide by 2048.0              texcoords</span>
+<span class="sd">        0xA     3x float32 + 2x uint16                                    packedNTB - shows up in RenderTerrain</span>
+
+<span class="sd">    :param vertex_data: mesh data starting from the vtx buffer offset</span>
+<span class="sd">    :param semantic_type: see table above</span>
+<span class="sd">    :param semantic_offset:</span>
+<span class="sd">    :param count: number of vertices</span>
+<span class="sd">    :param stride:</span>
+<span class="sd">    :param endian: endianess of the input data</span>
+<span class="sd">    :return: ndarray of vertices</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">match</span> <span class="n">semantic_type</span><span class="p">:</span>
+        <span class="k">case</span> <span class="mh">0x01</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">case</span> <span class="mh">0x02</span><span class="p">:</span>
+            <span class="n">vtx</span> <span class="o">=</span> <span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">fff&quot;</span><span class="p">,</span> <span class="n">vertex_data</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="n">semantic_offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vtx</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">case</span> <span class="mh">0x04</span> <span class="o">|</span> <span class="mh">0x05</span> <span class="o">|</span> <span class="mh">0x06</span> <span class="o">|</span> <span class="mh">0xA</span><span class="p">:</span>
+            <span class="c1"># not sure if 0xA belongs here, but it works?</span>
+            <span class="n">vtx</span> <span class="o">=</span> <span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">BBB&quot;</span><span class="p">,</span> <span class="n">vertex_data</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="n">semantic_offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span>
+            <span class="n">out_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vtx</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">out_array</span> <span class="o">=</span> <span class="n">out_array</span> <span class="o">/</span> <span class="mi">255</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">out_array</span> <span class="o">=</span> <span class="n">out_array</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">out_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">out_array</span>
+        <span class="k">case</span> <span class="mh">0x07</span><span class="p">:</span>
+            <span class="n">vtx</span> <span class="o">=</span> <span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">BBB&quot;</span><span class="p">,</span> <span class="n">vertex_data</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="n">semantic_offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vtx</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">case</span> <span class="mh">0x13</span><span class="p">:</span>
+            <span class="n">vtx</span> <span class="o">=</span> <span class="p">[</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">hh&quot;</span><span class="p">,</span> <span class="n">vertex_data</span><span class="p">,</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="n">semantic_offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vtx</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2048</span>
+        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown vertex semantic type: </span><span class="si">{</span><span class="n">semantic_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202EA9A6A10>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

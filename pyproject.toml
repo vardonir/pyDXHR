@@ -24,6 +24,8 @@ sphinx-rtd-theme = "^1.2.0"
 myst-parser = "^1.0.0"
 pandoc = "^2.3"
 nbsphinx = "^0.9.1"
+trimesh = "^3.21.5"
+pyglet = "^2.0.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyDXHR.cdcEngine.Sound.MultiplexStream &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../demos/sound.html">Demos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pyDXHR.cdcEngine.Sound.MultiplexStream</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pyDXHR.cdcEngine.Sound.MultiplexStream</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">byte_swap</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">ArchiveEntry</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.utils</span> <span class="kn">import</span> <span class="n">Endian</span>
+
+
+<div class="viewcode-block" id="MultiplexStreamHeader"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStreamHeader">[docs]</a><span class="k">class</span> <span class="nc">MultiplexStreamHeader</span><span class="p">:</span>
+    <span class="n">_VALID_SAMPLE_RATES</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5512</span><span class="p">,</span> <span class="mi">11025</span><span class="p">,</span> <span class="mi">22050</span><span class="p">,</span> <span class="mi">44100</span><span class="p">,</span> <span class="mi">48000</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SampleRate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SampleCount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ChannelCount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FaceDataCount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SegmentCount</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+
+<div class="viewcode-block" id="MultiplexStreamHeader.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStreamHeader.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mh">0x800</span><span class="p">]</span>
+
+        <span class="n">sample_rate</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sample_rate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VALID_SAMPLE_RATES</span><span class="p">:</span>
+            <span class="n">sample_rate</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&gt;L&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sample_rate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_VALID_SAMPLE_RATES</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Big</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SampleRate</span> <span class="o">=</span> <span class="n">sample_rate</span>
+
+        <span class="c1"># data start</span>
+        <span class="c1">#         public int SampleRate;</span>
+        <span class="c1">#         public int Unknown004;</span>
+        <span class="c1">#         public int SampleCount;</span>
+        <span class="c1">#         public int ChannelCount;</span>
+        <span class="n">sample_rate</span><span class="p">,</span> <span class="n">unk04</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SampleCount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ChannelCount</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLL&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]</span>
+        <span class="c1">#         public byte[] Unknown010;</span>
+        <span class="n">unk10</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">16B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x10</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk10</span><span class="p">)</span>
+
+        <span class="c1">#         public uint Unknown020;</span>
+        <span class="c1">#         public uint Unknown024;</span>
+        <span class="c1">#         public uint FaceDataSize;</span>
+        <span class="c1">#         public uint Unknown02C;</span>
+        <span class="n">unk20</span><span class="p">,</span> <span class="n">unk24</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">FaceDataCount</span><span class="p">,</span> <span class="n">unk2C</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLL&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x20</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]</span>
+        <span class="c1">#         public byte[] Unknown030;</span>
+        <span class="n">unk30</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">8B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x30</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk30</span><span class="p">)</span>
+
+        <span class="c1">#         public float SegmentCount;</span>
+        <span class="c1">#         public float Unknown03C;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SegmentCount</span><span class="p">,</span> <span class="n">unk3C</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">ff&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x38</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]</span>
+        <span class="c1">#         public byte[] Unknown040;</span>
+        <span class="n">unk40</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">4B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x40</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk40</span><span class="p">)</span>
+
+        <span class="c1">#         public float Unknown044;</span>
+        <span class="n">unk4</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">f&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x44</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 36)]</span>
+        <span class="c1">#         public byte[] Unknown048;</span>
+        <span class="n">unk48</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">36B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x48</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk48</span><span class="p">)</span>
+
+        <span class="c1">#         public float Unknown06C;</span>
+        <span class="c1">#         public float Unknown070;</span>
+        <span class="n">unk6C</span><span class="p">,</span> <span class="n">unk70</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">ff&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x6C</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]</span>
+        <span class="c1">#         public byte[] Unknown074;</span>
+        <span class="n">unk74</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">4B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x74</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk74</span><span class="p">)</span>
+
+        <span class="c1">#         public float Unknown078;</span>
+        <span class="n">unk78</span><span class="p">,</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">f&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x78</span><span class="p">)</span>
+
+        <span class="c1">#         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 596)]</span>
+        <span class="c1">#         public byte[] Unknown07C;</span>
+        <span class="n">unk7C</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">596B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mh">0x7C</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">unk7C</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultiplexStreamHeader.swap"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStreamHeader.swap">[docs]</a>    <span class="k">def</span> <span class="nf">swap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">byte_swap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultiplexStreamHeader.to_bytes"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStreamHeader.to_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span></div></div>
+
+
+<div class="viewcode-block" id="Block"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Block">[docs]</a><span class="k">class</span> <span class="nc">Block</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Stream</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Data</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Stream </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Stream</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Size</span><span class="si">}</span><span class="s2"> bytes)&quot;</span>
+
+<div class="viewcode-block" id="Block.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Block.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mh">0x10</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Stream</span><span class="p">,</span> <span class="n">flag</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLL&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">flag</span> <span class="o">==</span> <span class="mh">0x2001</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mh">0x10</span><span class="p">:</span><span class="mh">0x10</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">Size</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Size</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">Size</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">Stream</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">Stream</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">Data</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">Data</span>
+
+<div class="viewcode-block" id="Block.swap"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Block.swap">[docs]</a>    <span class="k">def</span> <span class="nf">swap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">byte_swap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Data</span></div>
+
+<div class="viewcode-block" id="Block.to_bytes"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Block.to_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">Data</span></div></div>
+
+
+<div class="viewcode-block" id="SegmentType"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.SegmentType">[docs]</a><span class="k">class</span> <span class="nc">SegmentType</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
+    <span class="c1"># ref: https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.Demux/Program.cs#L205</span>
+    <span class="n">Audio</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">Cinematic</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Subtitles</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">Unknown</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="Segment"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Segment">[docs]</a><span class="k">class</span> <span class="nc">Segment</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_data</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SegmentType</span><span class="p">:</span> <span class="n">SegmentType</span> <span class="o">=</span> <span class="n">SegmentType</span><span class="o">.</span><span class="n">Unknown</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">SegmentType</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span><span class="si">}</span><span class="s1"> bytes)&#39;</span>
+
+<div class="viewcode-block" id="Segment.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Segment.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">endian</span><span class="p">:</span> <span class="n">Endian</span> <span class="o">=</span> <span class="n">Endian</span><span class="o">.</span><span class="n">Little</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mh">0x10</span><span class="p">]</span>
+
+        <span class="n">seg_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">unk8</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">endian</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">LLLL&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SegmentType</span> <span class="o">=</span> <span class="n">SegmentType</span><span class="p">(</span><span class="n">seg_type</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">unk8</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SegmentType</span> <span class="ow">in</span> <span class="p">(</span><span class="n">SegmentType</span><span class="o">.</span><span class="n">Cinematic</span><span class="p">,</span> <span class="n">SegmentType</span><span class="o">.</span><span class="n">Subtitles</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mh">0x10</span> <span class="o">+</span> <span class="mi">8</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_segment_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[(</span><span class="mh">0x10</span><span class="o">+</span><span class="mi">8</span><span class="p">):</span><span class="mh">0x10</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span><span class="p">]</span>
+            <span class="k">return</span>
+
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span><span class="p">:</span>
+            <span class="n">bck</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
+            <span class="n">bck</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">pos</span><span class="p">:],</span> <span class="n">endian</span><span class="o">=</span><span class="n">endian</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bck</span><span class="p">)</span>
+
+            <span class="n">pos</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SegmentSize</span> <span class="o">+</span> <span class="mh">0xF</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mh">0x0F</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="o">~</span><span class="mh">0x0F</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Segment.swap"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Segment.swap">[docs]</a>    <span class="k">def</span> <span class="nf">swap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="n">byte_swap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span><span class="p">)</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_data</span>
+        <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blocks</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">bl</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">out_data</span></div>
+
+<div class="viewcode-block" id="Segment.to_bytes"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.Segment.to_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_header_data</span>
+        <span class="n">out_data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_data</span>
+        <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Blocks</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">bl</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">out_data</span></div></div>
+
+
+<div class="viewcode-block" id="MultiplexStream"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStream">[docs]</a><span class="k">class</span> <span class="nc">MultiplexStream</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="p">:</span> <span class="n">MultiplexStreamHeader</span> <span class="o">=</span> <span class="n">MultiplexStreamHeader</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Segments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Segment</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        Sample Rate </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SampleRate</span><span class="si">}</span>
+<span class="s2">        Sample Count  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SampleCount</span><span class="si">}</span>
+<span class="s2">        Channel Count  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">ChannelCount</span><span class="si">}</span>
+<span class="s2">        Face Data Count  </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">FaceDataCount</span><span class="si">}</span>
+<span class="s2">        Segment Count </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">SegmentCount</span><span class="si">}</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MultiplexStream.deserialize"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStream.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">pos</span> <span class="o">=</span> <span class="mh">0x800</span>
+        <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">seg</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">()</span>
+            <span class="n">seg</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">pos</span><span class="p">:],</span> <span class="n">endian</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">Endian</span><span class="p">)</span>
+
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">seg</span><span class="o">.</span><span class="n">SegmentSize</span> <span class="o">+</span> <span class="mh">0xF</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Segments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mh">0x0F</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="o">~</span><span class="mh">0x0F</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MultiplexStream.swap"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStream.swap">[docs]</a>    <span class="k">def</span> <span class="nf">swap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="c1"># flip the endianness for the headers but leave the block data alone</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Segments</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">seg</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+
+            <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mi">16</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data</span><span class="p">))</span> <span class="o">%</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">16</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="o">*</span><span class="n">len_diff</span>
+        <span class="k">return</span> <span class="n">out_data</span></div>
+
+<div class="viewcode-block" id="MultiplexStream.to_bytes"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStream.to_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">to_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Header</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Segments</span><span class="p">:</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="n">seg</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+
+            <span class="n">len_diff</span> <span class="o">=</span> <span class="p">((</span><span class="mi">16</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_data</span><span class="p">))</span> <span class="o">%</span> <span class="mi">16</span><span class="p">)</span> <span class="o">%</span> <span class="mi">16</span>
+            <span class="n">out_data</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="o">*</span><span class="n">len_diff</span>
+        <span class="k">return</span> <span class="n">out_data</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">Streams</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="c1"># self.Header.ChannelCount</span>
+        <span class="n">out_data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">Segments</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="n">seg</span><span class="o">.</span><span class="n">Blocks</span><span class="p">:</span>
+                <span class="n">out_data</span> <span class="o">+=</span> <span class="n">blk</span><span class="o">.</span><span class="n">Data</span>
+
+        <span class="k">return</span> <span class="n">out_data</span>
+
+<div class="viewcode-block" id="MultiplexStream.to_archive_entry"><a class="viewcode-back" href="../../../../docs/pyDXHR.cdcEngine.Sound.html#pyDXHR.cdcEngine.Sound.MultiplexStream.MultiplexStream.to_archive_entry">[docs]</a>    <span class="k">def</span> <span class="nf">to_archive_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">name_hash</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="n">locale</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mh">0xffffffff</span><span class="p">,</span>
+                         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                         <span class="n">swap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+                         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArchiveEntry</span><span class="p">:</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">ArchiveEntry</span><span class="p">()</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">CompressedSize</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># I believe MUL files are not compressed at all...</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">UncompressedSize</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">())</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">Locale</span> <span class="o">=</span> <span class="n">locale</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">NameHash</span> <span class="o">=</span> <span class="n">name_hash</span>
+        <span class="n">entry</span><span class="o">.</span><span class="n">Offset</span> <span class="o">=</span> <span class="n">offset</span>
+
+        <span class="k">if</span> <span class="n">swap</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">EntryData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">entry</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">Archive</span>
+
+    <span class="n">never_asked_for_this</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;audio\streams\vo\eng\det1\adam_jensen\sq02\det1_sq02_dia_adam_006b.mul&quot;</span>
+    <span class="n">problematic</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;audio\streams\vo\eng\det_sam\npcs\unique\det_david_sarif\cp01\sam_cp01_dia_sari_037_alt.mul&quot;</span>
+
+    <span class="n">pc_dc</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Program Files (x86)\GOG Galaxy\Games\Deus Ex HRDC\BIGFILE.000&quot;</span>
+    <span class="n">ps3_bigfile</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">pc_arc</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+    <span class="n">pc_arc</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="n">pc_dc</span><span class="p">)</span>
+
+    <span class="n">pc_en_data</span> <span class="o">=</span> <span class="n">pc_arc</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">never_asked_for_this</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="mh">0xffffe081</span><span class="p">)</span>
+
+    <span class="n">pc_en</span> <span class="o">=</span> <span class="n">MultiplexStream</span><span class="p">()</span>
+    <span class="n">pc_en</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">pc_en_data</span><span class="p">)</span>
+
+    <span class="n">ps3_jap</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;C:\Users\vardo\DXHR_Research\JAP\BIGFILE.000&quot;</span>
+
+    <span class="n">ps3_arc</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+    <span class="n">ps3_arc</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="n">ps3_jap</span><span class="p">)</span>
+
+    <span class="n">ps3_en_data</span> <span class="o">=</span> <span class="n">ps3_arc</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">never_asked_for_this</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="mh">0xffffe001</span><span class="p">)</span>
+    <span class="n">ps3_ja_data</span> <span class="o">=</span> <span class="n">ps3_arc</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">never_asked_for_this</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="mh">0xffffe020</span><span class="p">)</span>
+
+    <span class="n">ps3_en</span> <span class="o">=</span> <span class="n">MultiplexStream</span><span class="p">()</span>
+    <span class="n">ps3_en</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">ps3_en_data</span><span class="p">)</span>
+
+    <span class="n">ps3_en_swapped_data</span> <span class="o">=</span> <span class="n">ps3_en</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+    <span class="n">ps3_en_swapped</span> <span class="o">=</span> <span class="n">MultiplexStream</span><span class="p">()</span>
+    <span class="n">ps3_en_swapped</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">ps3_en_swapped_data</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">ps3_en_swapped</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">()</span> <span class="o">==</span> <span class="n">pc_en_data</span>
+
+    <span class="n">ps3_ja</span> <span class="o">=</span> <span class="n">MultiplexStream</span><span class="p">()</span>
+    <span class="n">ps3_ja</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">ps3_ja_data</span><span class="p">)</span>
+    <span class="n">ps3_ja_swapped_data</span> <span class="o">=</span> <span class="n">ps3_ja</span><span class="o">.</span><span class="n">swap</span><span class="p">()</span>
+
+    <span class="c1"># breakpoint()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000202E97E16F0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

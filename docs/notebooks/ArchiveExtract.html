@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Archive Extraction &mdash; pyDXHR 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="FMOD Testing" href="FMODTesting.html" />
+    <link rel="prev" title="Demos" href="../demos/sound.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../demos/sound.html">Demos</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Archive Extraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="FMODTesting.html">FMOD Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RenderModelViewer.html">RenderModel Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="StreamgroupViewer.html">Stream group viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="TextureViewer.html">Texture Viewer/Reader</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../docs/modules.html">Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../demos/sound.html">Demos</a></li>
+      <li class="breadcrumb-item active">Archive Extraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Archive-Extraction">
+<h1>Archive Extraction<a class="headerlink" href="#Archive-Extraction" title="Permalink to this heading"></a></h1>
+<p>Using a bigfile in the PATH. This method is intended for accessing data from one version of the game</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PYDXHR_BIGFILE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;PATH/TO/BIGFILE.000&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>Unpack the files to a specific path. The unpacker tries to imitate the output produced by Gibbed’s DXHR unpacker, but it’s not yet complete.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.Archive</span> <span class="kn">import</span> <span class="n">Archive</span>
+<span class="kn">from</span> <span class="nn">pyDXHR.Export.ArchiveUnpack</span> <span class="kn">import</span> <span class="n">unpack_archive</span>
+
+<span class="n">arc</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">arc</span><span class="o">.</span><span class="n">deserialize_from_env</span><span class="p">()</span>
+
+<span class="n">unpacked_destination_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;DESTINATION/PATH&quot;</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;PATH/TO/REPO/external/filelist/generic.txt&quot;</span>
+<span class="n">unpack_archive</span><span class="p">(</span><span class="n">archive</span><span class="o">=</span><span class="n">arc</span><span class="p">,</span> <span class="n">dest_path</span><span class="o">=</span><span class="n">unpacked_destination_path</span><span class="p">,</span> <span class="n">file_list</span><span class="o">=</span><span class="n">file_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Processing archive entries: 100%|██████████| 15974/15974 [10:03&lt;00:00, 26.47it/s]
+</pre></div></div>
+</div>
+<p>Using bigfiles in specific paths. This is used for accessing and comparing data across different versions of the game</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pc_base</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">pc_base</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PC_BASE\BIGFILE.000&quot;</span><span class="p">)</span>
+
+<span class="n">pc_directorscut</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">pc_directorscut</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PC_DC\BIGFILE.000&quot;</span><span class="p">)</span>
+
+<span class="n">ps3_base_cache</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">ps3_base_cache</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PS3_BASE\CACHE.000&quot;</span><span class="p">)</span>
+
+<span class="n">ps3_base_bigfile</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">ps3_base_bigfile</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PS3_BASE\BIGFILE.000&quot;</span><span class="p">)</span>
+
+<span class="n">ps3_directorscut_cache</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">ps3_directorscut_cache</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PS3_DC\CACHE.000&quot;</span><span class="p">)</span>
+
+<span class="n">ps3_directorscut_bigfile</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">ps3_directorscut_bigfile</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\PS3_DC\BIGFILE.000&quot;</span><span class="p">)</span>
+
+<span class="n">xbox_base_bigfile</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">xbox_base_bigfile</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\XBOX_BASE\BIGFILE.000&quot;</span><span class="p">)</span>
+
+<span class="n">xbox_base_cache</span> <span class="o">=</span> <span class="n">Archive</span><span class="p">()</span>
+<span class="n">xbox_base_cache</span><span class="o">.</span><span class="n">deserialize_from_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.......\XBOX_BASE\CACHE.000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Comparing the number of entries - The console versions + the base PC version both separate the game’s voice files from everything else.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Number of entries per game:</span>
+<span class="s2">PC Base: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_base</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">PC Director&#39;s Cut: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pc_directorscut</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">PS3 Base: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_base_bigfile</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_base_cache</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">PS3 Director&#39;s Cut: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_directorscut_bigfile</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_directorscut_cache</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">XBOX Base: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">xbox_base_cache</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">xbox_base_bigfile</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Game data only:</span>
+<span class="s2">PS3 Base: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_base_cache</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">PS3 Director&#39;s Cut: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_directorscut_cache</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Voice data only:</span>
+<span class="s2">PS3 Base: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_base_bigfile</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">PS3 Director&#39;s Cut: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ps3_directorscut_bigfile</span><span class="o">.</span><span class="n">Entries</span><span class="p">)</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Number of entries per game:
+PC Base: 15974
+PC Director&#39;s Cut: 103372
+PS3 Base: 30175
+PS3 Director&#39;s Cut: 66169
+XBOX Base: 30178
+
+
+Game data only:
+PS3 Base: 13400
+PS3 Director&#39;s Cut: 13754
+
+
+Voice data only:
+PS3 Base: 16775
+PS3 Director&#39;s Cut: 52415
+
+</pre></div></div>
+</div>
+<p>DRM comparison</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">for_comparison</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_globe\sarif_office_globe.drm&quot;</span>
+
+<span class="kn">from</span> <span class="nn">pyDXHR.cdcEngine.DRM.DRMFile</span> <span class="kn">import</span> <span class="n">DRM</span>
+
+<span class="n">pc_base_raw_data</span> <span class="o">=</span> <span class="n">pc_base</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">for_comparison</span><span class="p">)</span>
+<span class="n">pc_base_drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+<span class="n">pc_base_drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">pc_base_raw_data</span><span class="p">)</span>
+
+<span class="n">pc_dc_raw_data</span> <span class="o">=</span> <span class="n">pc_directorscut</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">for_comparison</span><span class="p">)</span>
+<span class="n">pc_dc_drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+<span class="n">pc_dc_drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">pc_dc_raw_data</span><span class="p">)</span>
+
+<span class="n">ps3_base_raw_data</span> <span class="o">=</span> <span class="n">ps3_base_cache</span><span class="o">.</span><span class="n">get_from_filename</span><span class="p">(</span><span class="n">for_comparison</span><span class="p">)</span>
+<span class="n">ps3_base_drm</span> <span class="o">=</span> <span class="n">DRM</span><span class="p">()</span>
+<span class="n">ps3_base_drm</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">ps3_base_raw_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+<p>Comparing the individual sections:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PS3 base sections&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ps3_base_drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PS3 base sections
+000079ec : 2160 bytes : Material | Unknown18
+000079ed : 2160 bytes : Material | Unknown18
+000079ee : 2160 bytes : Material | Unknown18
+000079ef : 2144 bytes : Material | Unknown18
+00001140 : 87428 bytes : RenderResource | Texture
+00001141 : 5508 bytes : RenderResource | Texture
+00001142 : 43780 bytes : RenderResource | Texture
+000079f0 : 144 bytes : RenderMesh | RenderModel
+000079f1 : 75472 bytes : RenderMesh | RenderModelBuffer
+000077a0 : 20 bytes : DTPData | Generic
+00006bfc : 2816 bytes : Material | Unknown18
+00000f37 : 174812 bytes : RenderResource | Texture
+00000f38 : 10972 bytes : RenderResource | Texture
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PC base sections&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pc_base_drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PC base sections
+0000780d : 2160 bytes : Material | Unknown18
+0000780d : 2832 bytes : Material | Unknown18
+0000780e : 2160 bytes : Material | Unknown18
+0000780e : 2832 bytes : Material | Unknown18
+0000780f : 2160 bytes : Material | Unknown18
+0000780f : 2832 bytes : Material | Unknown18
+00007810 : 2144 bytes : Material | Unknown18
+00007810 : 2816 bytes : Material | Unknown18
+00001260 : 87420 bytes : RenderResource | Texture
+00001261 : 5500 bytes : RenderResource | Texture
+00001262 : 43772 bytes : RenderResource | Texture
+00007811 : 115248 bytes : RenderMesh | RenderModel
+0000765c : 20 bytes : DTPData | Generic
+00006c51 : 2816 bytes : Material | Unknown18
+00006c51 : 3488 bytes : Material | Unknown18
+0000105b : 174804 bytes : RenderResource | Texture
+0000105c : 10964 bytes : RenderResource | Texture
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PC DC sections&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pc_dc_drm</span><span class="o">.</span><span class="n">Sections</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PC DC sections
+00007a33 : 2160 bytes : Material | Unknown18
+00007a33 : 2832 bytes : Material | Unknown18
+00007a34 : 2160 bytes : Material | Unknown18
+00007a34 : 2832 bytes : Material | Unknown18
+00007a35 : 2160 bytes : Material | Unknown18
+00007a35 : 2832 bytes : Material | Unknown18
+00007a36 : 2144 bytes : Material | Unknown18
+00007a36 : 2816 bytes : Material | Unknown18
+0000127a : 87420 bytes : RenderResource | Texture
+0000127b : 5500 bytes : RenderResource | Texture
+0000127c : 43772 bytes : RenderResource | Texture
+00000057 : 724 bytes : RenderResource | Texture
+0000005d : 2772 bytes : RenderResource | Texture
+00000061 : 36 bytes : RenderResource | Texture
+00007a37 : 115248 bytes : RenderMesh | RenderModel
+00007882 : 20 bytes : DTPData | Generic
+00006dd5 : 3344 bytes : Material | Unknown18
+00006dd5 : 4016 bytes : Material | Unknown18
+00001070 : 174804 bytes : RenderResource | Texture
+00001071 : 10964 bytes : RenderResource | Texture
+</pre></div></div>
+</div>
+<p>Notes: * PS3 texture headers are slightly smaller than the PC textures * Both PC versions have twice more materials compared to the PS3 version. I think this is because DX9 and DX11 handle them differently? * The same file has more textures attached to it in the DC version compared to the base version. One of the smaller-sized textures in the DC version is the generic flat black material.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x00000219934299C0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

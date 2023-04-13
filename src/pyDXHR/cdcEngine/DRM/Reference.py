@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 from typing import List, TYPE_CHECKING
+
 from pyDXHR.cdcEngine.DRM.Section import Section
 from pyDXHR.cdcEngine.DRM.Resolver import UnknownResolver, LocalDataResolver, RemoteDataResolver, MissingResolver
 

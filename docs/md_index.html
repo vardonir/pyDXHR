@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pyDXHR Documentation &mdash; pyDXHR 0.0.1 documentation</title>
+  <title>pyDXHR Documentation &mdash; pyDXHR 0.0.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/colors.css" type="text/css" />
@@ -47,14 +47,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Home</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#progress">Progress</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mods/mods.html">Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="demos/sound.html">Demos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docs/modules.html">Documentation</a></li>
 </ul>
 
         </div>
@@ -84,18 +84,27 @@
 <h1>pyDXHR Documentation<a class="headerlink" href="#pydxhr-documentation" title="Permalink to this heading"></a></h1>
 <p>Python-based tools for data exploration and extraction of Deus Ex Human Revolution, intended for use in another project of mine: <a class="reference external" href="https://six.vardonir.com/">Project SI-X</a></p>
 <p>Although I went a bit too far and somehow managed to make mod tools?</p>
-<p>This page will detail documentation for the tools + some notes on stuff I’ve found while digging through the files.</p>
+<p>Documentation be here, when I feel like writing it + some notes on stuff I’ve found while digging through the files.</p>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.10</p></li>
+<li><p>Numpy</p></li>
+<li><p>fastcrc</p></li>
+<li><p><a class="reference external" href="https://kaitai.io/">kaitaistruct</a> - The python-generated code is part of the repo, but the raw KSY files are also included.</p></li>
+<li><p>scipy</p></li>
+</ul>
+<p>For the exporters:</p>
+<ul class="simple">
+<li><p>Textures: Pillow</p></li>
+<li><p>Models: <a class="reference external" href="https://gitlab.com/dodgyville/pygltflib">pygltflib</a></p></li>
+<li><p>Audio: <a class="reference external" href="https://github.com/vgmstream/vgmstream">vgmstream</a> - used as a CLI tool</p></li>
+<li><p>Cinematics: <a class="reference external" href="https://github.com/donmai-me/WannaCRI">WannaCRI</a></p></li>
+</ul>
+</section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
-<p>I’m planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you’re doing, I have the poetry file that I used to build the environment for the package. In this version, the only main external dependencies are <code class="docutils literal notranslate"><span class="pre">tqdm</span></code>, <code class="docutils literal notranslate"><span class="pre">fastcrc</span></code> and <code class="docutils literal notranslate"><span class="pre">numpy</span></code>. Later versions use <code class="docutils literal notranslate"><span class="pre">Pillow</span></code> and <code class="docutils literal notranslate"><span class="pre">kaitaistruct</span></code></p>
-</section>
-<section id="progress">
-<h2>Progress<a class="headerlink" href="#progress" title="Permalink to this heading"></a></h2>
-<ul class="simple">
-<li><p>[x] Read MUL files and export to FSB</p></li>
-<li><p>[ ] Read RenderMesh sections and export to GLTF</p></li>
-<li><p>[ ] Read RenderResource sections (i.e., textures) and export to DDS/TGA</p></li>
-</ul>
+<p>I’m planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you’re doing, I have the poetry file that I used to build the environment for the package.</p>
 </section>
 </section>
 
@@ -107,7 +116,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002F465EB5FF0>
+<jinja2.runtime.BlockReference object at 0x0000021993542560>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>
