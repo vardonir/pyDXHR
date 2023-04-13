@@ -2,7 +2,8 @@ import struct
 from typing import List
 from enum import IntEnum
 from pyDXHR.utils import byte_swap
-from utils import Endian
+from pyDXHR.cdcEngine.Archive import ArchiveEntry
+from pyDXHR.utils import Endian
 
 
 class MultiplexStreamHeader:
@@ -92,6 +93,9 @@ class MultiplexStreamHeader:
     def swap(self) -> bytes:
         return byte_swap(self._header_data)
 
+    def to_bytes(self):
+        return self._header_data
+
 
 class Block:
     def __init__(self):
@@ -114,6 +118,9 @@ class Block:
 
     def swap(self) -> bytes:
         return byte_swap(self._header_data) + self.Data
+
+    def to_bytes(self):
+        return self._header_data + self.Data
 
 
 class SegmentType(IntEnum):
@@ -143,7 +150,8 @@ class Segment:
         assert unk8 == 0
 
         if self.SegmentType in (SegmentType.Cinematic, SegmentType.Subtitles):
-            self._segment_data = data[0x10:self.SegmentSize]
+            self._header_data = data[:0x10 + 8]
+            self._segment_data = data[(0x10+8):0x10+self.SegmentSize]
             return
 
         pos = 4 * 4
@@ -160,8 +168,13 @@ class Segment:
         out_data += self._segment_data
         for bl in self.Blocks:
             out_data += bl.swap()
-            for pad in range((4 - (self.SegmentSize % 4)) % 4):
-                out_data += b"\x00"
+        return out_data
+
+    def to_bytes(self):
+        out_data = self._header_data
+        out_data += self._segment_data
+        for bl in self.Blocks:
+            out_data += bl.to_bytes()
         return out_data
 
 
@@ -171,7 +184,13 @@ class MultiplexStream:
         self.Segments: List[Segment] = []
 
     def __repr__(self):
-        return f"Sample Rate {self.Header.SampleRate} | Channels {self.Header.ChannelCount}"
+        return f"""
+        Sample Rate {self.Header.SampleRate}
+        Sample Count  {self.Header.SampleCount}
+        Channel Count  {self.Header.ChannelCount}
+        Face Data Count  {self.Header.FaceDataCount}
+        Segment Count {self.Header.SegmentCount}
+        """
 
     def deserialize(self, data: bytes):
         self.Header.deserialize(data)
@@ -183,7 +202,7 @@ class MultiplexStream:
 
             pos += seg.SegmentSize + 0xF
             self.Segments.append(seg)
-            pos = (pos + 0x0F) & (~0x0F)
+            pos = (pos + 1 + 0x0F) & (~0x0F)
 
         assert pos == len(data)
 
@@ -193,62 +212,87 @@ class MultiplexStream:
 
         for seg in self.Segments:
             out_data += seg.swap()
-            for pad in range((4 - (len(out_data) % 4)) % 4):
-                out_data += b"\x00"
+
+            len_diff = ((16 - len(out_data)) % 16) % 16
+            out_data += b"\x00"*len_diff
+        return out_data
+
+    def to_bytes(self):
+        out_data = self.Header.to_bytes()
+
+        for seg in self.Segments:
+            out_data += seg.to_bytes()
+
+            len_diff = ((16 - len(out_data)) % 16) % 16
+            out_data += b"\x00"*len_diff
         return out_data
 
     @property
     def Streams(self) -> bytes:
         # self.Header.ChannelCount
         out_data = b""
-        pos = 0
         for seg in self.Segments:
             for blk in seg.Blocks:
                 out_data += blk.Data
 
         return out_data
 
+    def to_archive_entry(self,
+                         name_hash: int = 0,
+                         locale: int = 0xffffffff,
+                         offset: int = 0,
+                         swap: bool = False
+                         ) -> ArchiveEntry:
+        entry = ArchiveEntry()
+        entry.CompressedSize = 0  # I believe MUL files are not compressed at all...
+        entry.UncompressedSize = len(self.to_bytes())
+        entry.Locale = locale
+        entry.NameHash = name_hash
+        entry.Offset = offset
+
+        if swap:
+            entry.EntryData = self.swap()
+        else:
+            entry.EntryData = self.to_bytes()
+        return entry
+
 
 if __name__ == "__main__":
-    pc_en = r"..\..\..\..\..\Never Asked For This\pc-w\FFFFE081\det1_sq02_dia_adam_006b.mul"
-    pc_fr = r"..\..\..\..\..\Never Asked For This\pc-w\FFFFE002\det1_sq02_dia_adam_006b.mul"
-    pc_gr = r"..\..\..\..\..\Never Asked For This\pc-w\FFFFE004\det1_sq02_dia_adam_006b.mul"
-    pc_ru = ""
+    from pyDXHR.cdcEngine.Archive import Archive
 
-    ps3_en = r"..\..\..\..\..\Never Asked For This\ps3-w\FFFFE001\det1_sq02_dia_adam_006b.mul"
-    ps3_jap = r"..\..\..\..\..\Never Asked For This\ps3-jap\det1_sq02_dia_adam_006b.mul"
+    never_asked_for_this = r"audio\streams\vo\eng\det1\adam_jensen\sq02\det1_sq02_dia_adam_006b.mul"
+    problematic = r"audio\streams\vo\eng\det_sam\npcs\unique\det_david_sarif\cp01\sam_cp01_dia_sari_037_alt.mul"
 
-    # with open(ps3_en, "rb") as f:
-    #     ps3_en_mul = MultiplexStream()
-    #     ps3_en_bytes = f.read()
-    #     ps3_en_mul.deserialize(ps3_en_bytes)
+    pc_dc = r"C:\Program Files (x86)\GOG Galaxy\Games\Deus Ex HRDC\BIGFILE.000"
+    ps3_bigfile = ""
 
-    with open(pc_en, "rb") as f:
-        pc_en_mul = MultiplexStream()
-        pc_en_bytes = f.read()
-        pc_en_mul.deserialize(pc_en_bytes)
+    pc_arc = Archive()
+    pc_arc.deserialize_from_file(pc_dc)
 
-    with open(pc_fr, "rb") as f:
-        pc_fr_mul = MultiplexStream()
-        pc_fr_bytes = f.read()
-        pc_fr_mul.deserialize(pc_fr_bytes)
+    pc_en_data = pc_arc.get_from_filename(never_asked_for_this, spec=0xffffe081)
 
-    with open(pc_gr, "rb") as f:
-        pc_gr_mul = MultiplexStream()
-        pc_gr_bytes = f.read()
-        pc_gr_mul.deserialize(pc_gr_bytes)
+    pc_en = MultiplexStream()
+    pc_en.deserialize(pc_en_data)
 
-    ps3_swapped = ps3_en_mul.swap()
+    ps3_jap = r"C:\Users\vardo\DXHR_Research\JAP\BIGFILE.000"
 
-    ps3_swapped_mul = MultiplexStream()
-    ps3_swapped_mul.deserialize(ps3_swapped)
+    ps3_arc = Archive()
+    ps3_arc.deserialize_from_file(ps3_jap)
 
-    assert len(ps3_swapped) == len(ps3_en_bytes)
-    assert len(ps3_swapped) == len(pc_en_bytes)
+    ps3_en_data = ps3_arc.get_from_filename(never_asked_for_this, spec=0xffffe001)
+    ps3_ja_data = ps3_arc.get_from_filename(never_asked_for_this, spec=0xffffe020)
 
-    with open(ps3_jap, "rb") as f:
-        ps3_jap_mul = MultiplexStream()
-        ps3_jap_bytes = f.read()
-        ps3_jap_mul.deserialize(ps3_jap_bytes)
+    ps3_en = MultiplexStream()
+    ps3_en.deserialize(ps3_en_data)
+
+    ps3_en_swapped_data = ps3_en.swap()
+    ps3_en_swapped = MultiplexStream()
+    ps3_en_swapped.deserialize(ps3_en_swapped_data)
+
+    assert ps3_en_swapped.to_bytes() == pc_en_data
+
+    ps3_ja = MultiplexStream()
+    ps3_ja.deserialize(ps3_ja_data)
+    ps3_ja_swapped_data = ps3_ja.swap()
 
     breakpoint()

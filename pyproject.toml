@@ -5,11 +5,15 @@ description = "Data inspection/extraction tools for Deus Ex: Human Revolution"
 authors = ["Vardonir <vardonir@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.12"
 tqdm = "^4.64.1"
 numpy = "^1.24.2"
 fastcrc = "^0.2.1"
 wannacri = { git = "https://github.com/donmai-me/WannaCRI.git", branch = "master" }
+pygltflib = "^1.15.5"
+kaitaistruct = "^0.10"
+Pillow = "^9.5.0"
+scipy = "^1.10.1"
 
 [tool.poetry.dev-dependencies]
 notebook = "^6.5.2"

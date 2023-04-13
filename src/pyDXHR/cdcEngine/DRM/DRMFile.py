@@ -1,10 +1,13 @@
 import struct
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
+from pyDXHR.cdcEngine.DRM.Section import SectionHeader
 from pyDXHR.cdcEngine.DRM import CompressedDRM
-from cdcEngine.DRM import Section
-from cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
-from utils import Endian
+from pyDXHR.cdcEngine.DRM import Section
+from pyDXHR.cdcEngine.DRM.Reference import Reference
+
+from pyDXHR.utils import Endian
+from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
 
 
 class DRMHeader:
@@ -25,7 +28,7 @@ class DRMHeader:
         self.OBJDependencies: list = []
         self.Flags: int = 0
         self.RootSection: int = 0
-        self.SectionHeaders: list = []
+        self.SectionHeaders: List[SectionHeader] = []
 
     def deserialize(self, header_data: bytes):
         assert len(header_data) > 32
@@ -71,51 +74,182 @@ class DRMHeader:
         else:
             self.DRMDependencies = []
 
+        cursor += len_drm_dep
+        return (cursor + 15) & ~15
+        # return cursor
+
 
 class DRM:
     def __init__(self):
         self.Header = DRMHeader()
-        self.Sections: List[Section] = []
+        self.Sections: list = []
+        self.SectionData: List[bytes] = []
 
-    def deserialize(self, data: bytes, header_only: bool = False):
+    def lookup_section(self, section_type: SectionType, section_id: int):
+        # ugly af, but it's not like it's used often...
+        if self.Sections:
+            for sec in self.Sections:
+                if sec.Header.SectionType.value == section_type.value and sec.Header.SecId == section_id:
+                    return sec
+
+        return None
+        # [sec for sec in self.Sections if sec.Header.SectionType == SectionType.DTPData]
+
+    def lookup_reference(self, section_type: SectionType, section_id: int):
+        sec = self.lookup_section(section_type, section_id)
+        if sec:
+            return Reference.from_drm_section(drm=self, section=sec)
+        else:
+            return None
+
+    def to_gltf(self):
+        raise NotImplementedError
+
+    def deserialize(self, data: bytes, header_only: bool = False, merge_generic_sections: bool = False):
         magic, = struct.unpack(">L", data[0:4])
         if magic == CompressedDRM.Magic:
             block_data = CompressedDRM.decompress(data, header_only=header_only)
         else:
-            raise NotImplementedError
+            return False
 
-        self.Header.deserialize(block_data[0])
+        if merge_generic_sections:
+            # the notes in the xnalara script mention that a generic section type just means that it's supposed to continue from the previous
+            # section. but i havent been able to recreate that. so...
+            data = CompressedDRM.rebuild_aligned(block_data)
+            header_cursor_end = self.Header.deserialize(data)
 
-        if not header_only:
-            self.Sections = Section.from_drm_blocks(
-                drm_block_list=block_data[1:],
-                sec_header_list=self.Header.SectionHeaders,
-                drm_flag=self.Header.Flags,
-                endian=self.Header.Endian
-            )
+            section_data = data[header_cursor_end:]
 
-    def __getitem__(self, item: SectionSubtype) -> Section:
+            l = [(sec_header.SectionType == SectionType.Generic, sec_header) for sec_header in self.Header.SectionHeaders]
+
+            ll = []
+            for idx, (is_gen, sec_header) in enumerate(l):
+                if not is_gen:
+                    ll.append(idx)
+
+            lll = [self.Header.SectionHeaders[p:c] for p, c in zip(ll, ll[1:])]
+
+            llll = []
+            headers = []
+            for i in lll:
+                if len(i) > 1:
+                    data_size = sum([h.DataSize for h in i])
+                    header_size = sum([h.HeaderSize for h in i])
+                    llll.append((i[0], data_size, header_size))
+
+                else:
+                    llll.append((i[0], i[0].DataSize, i[0].HeaderSize))
+
+                headers.append(i[0])
+
+            if not header_only:
+                self.Sections, self.SectionData = Section.from_drm_sizes(
+                    block_data=section_data,
+                    size_data=llll,
+                    header_list=headers,
+                    drm_flag=self.Header.Flags,
+                    endian=self.Header.Endian
+                )
+
+        try:
+            # TODO: this should be revised to handle large unit DRMs, particularly det_city_sarif from the ps3 version
+            # * the first block is not necessarily the *entire* DRM header
+
+            self.Header.deserialize(block_data[0])
+
+            if not header_only:
+                self.Sections, self.SectionData = Section.from_drm_blocks(
+                    drm_block_list=block_data[1:],
+                    # drm_block_list=block_data,
+                    sec_header_list=self.Header.SectionHeaders,
+                    drm_flag=self.Header.Flags,
+                    endian=self.Header.Endian
+                )
+        except Exception as e:
+            print(e)
+            return False
+        else:
+            return True
+
+    def __getitem__(self, item: SectionSubtype | SectionSubtype):
         # TODO: generalize this. type checks aren't working??
-        # if isinstance(item, SectionType):
-        #     return [sec for sec in self.Sections if sec.Header.SectionType == item]
-        return [sec for sec in self.Sections if sec.Header.SectionSubtype == item]
+        if isinstance(item, SectionType):
+            return [sec for sec in self.Sections if sec.Header.SectionType == item]
+        else:
+            return [sec for sec in self.Sections if sec.Header.SectionSubtype == item]
 
-    # def filter(self, section_type: SectionType | Tuple[SectionType, SectionSubtype]) -> List[Section]:
-    #     if isinstance(section_type, SectionType):
-    #         return [sec for sec in self.Sections if sec.Header.SectionType == section_type]
-    #     if isinstance(section_type, tuple):
-    #         return [sec for sec in self.Sections if sec.Header.SectionType == section_type[0] and sec.Header.SectionSubtype == section_type[1]]
-    #     else:
-    #         raise KeyError
+    # TODO: hahaha clean this shit up
+    def filter_by_type(self, filter_list: tuple | list):
+        if self.Sections:
+            return [sec for sec in self.Sections if sec.Header.SectionType in filter_list]
+        else:
+            return [sec_header for sec_header in self.Header.SectionHeaders if sec_header.SectionType in filter_list]
 
-    def filter_out_dx9_materials(self):
+    def filter_by_subtype(self, filter_list: tuple | list):
+        if self.Sections:
+            return [sec for sec in self.Sections if sec.Header.SectionSubtype in filter_list]
+        else:
+            return [sec_header for sec_header in self.Header.SectionHeaders if sec_header.SectionSubtype in filter_list]
+
+    def filter_out_by_type(self, filter_list: tuple | list):
+        if self.Sections:
+            return [sec for sec in self.Sections if sec.Header.SectionType not in filter_list]
+        else:
+            return [sec_header for sec_header in self.Header.SectionHeaders if sec_header.SectionType not in filter_list]
+
+    def filter_out_by_subtype(self, filter_list: tuple | list):
+        if self.Sections:
+            return [sec for sec in self.Sections if sec.Header.SectionSubtype not in filter_list]
+        else:
+            return [sec_header for sec_header in self.Header.SectionHeaders if sec_header.SectionSubtype not in filter_list]
+
+    def filter_out_dx9_materials(self, materials_only: bool = True):
         # only for pc-w
-        out = []
-        for sec in self.Sections:
-            if sec.Header.SectionType != SectionType.Material:
-                out.append(sec)
-            else:
-                if sec.Header.Language >> 30 != 1:
-                    out.append(sec)
+        if self.Sections:
+            return filter_section_list(sec_list=self.Sections, by_type="dx9_materials", materials_only=materials_only)
+        else:
+            return filter_section_list(sec_header_list=self.Header.SectionHeaders, materials_only=materials_only, by_type="dx9_materials")
 
-        return out
+
+def filter_section_list(sec_list: tuple | list | None = None,
+                        sec_header_list: tuple | list | None = None,
+                        by_type: Optional[str | SectionType | SectionSubtype] = None,
+                        **kwargs
+                        ):
+    if isinstance(by_type, str):
+        if by_type == "dx9_materials":
+            mat_only = kwargs["materials_only"] if "materials_only" in kwargs else True
+            if sec_list:
+                return [sec for sec in sec_list if _filter_out_dx9_materials(sec.Header, mat_only)]
+            else:
+                return [sec_header for sec_header in sec_header_list if _filter_out_dx9_materials(sec_header, mat_only)]
+    if isinstance(by_type, SectionType):
+        action = kwargs["action"] if "action" in kwargs else "include"
+        if action == "include":
+            if sec_list:
+                return [sec for sec in sec_list if sec.Header.SectionType == by_type]
+            else:
+                return [sec_header for sec_header in sec_header_list if sec_header.SectionType == by_type]
+        if action == "remove":
+            if sec_list:
+                return [sec for sec in sec_list if sec.Header.SectionType != by_type]
+            else:
+                return [sec_header for sec_header in sec_header_list if sec_header.SectionType != by_type]
+
+
+def _filter_out_dx9_materials(inp: SectionHeader,
+                              keep_only_materials: bool = True):
+    if inp.SectionType != SectionType.Material:
+        if keep_only_materials:
+            return False
+        else:
+            return True
+    else:
+        if inp.Language >> 30 != 1:
+            return True
+        else:
+            return False
+
+
+def filter_out_render_model_buffer(sec_header_list: tuple | list):
+    return [sec_header for sec_header in sec_header_list if sec_header.SectionSubtype != SectionSubtype.RenderModelBuffer]

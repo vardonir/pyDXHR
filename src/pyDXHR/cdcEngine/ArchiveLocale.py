@@ -1,7 +1,5 @@
 """
 Adapted from https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.CrystalDynamics.FileFormats/ArchiveLocale.cs
-
-Still mostly a work in progress
 """
 
 from enum import IntEnum
@@ -26,3 +24,27 @@ class ArchiveLocale(IntEnum):
     Korean = 1 << 14
     Chinese = 1 << 15
     Default = 0xFFFFFFFF
+
+
+def get_locale(value: int) -> ArchiveLocale:
+    get = [i for i in ArchiveLocale if i & value == value]
+    if len(get) == 1:
+        return get[0]
+    else:
+        return ArchiveLocale.NONE
+
+
+    # @classmethod
+    # def __init__(cls, value):
+    #     # [k for k, v in cls.__dict__.items() if isinstance(v, int)]
+    #     for k, v in cls.__dict__.items():
+    #         if isinstance(v, int):
+    #             if v & value == value:
+    #                 a = k
+
+        # breakpoint()
+
+
+loc = get_locale(4294959120)
+
+breakpoint()

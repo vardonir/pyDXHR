@@ -1,21 +1,17 @@
 import struct
-from typing import List
+from copy import copy
+from typing import List, Optional, TYPE_CHECKING, Tuple
 
-from cdcEngine.DRM.CompressedDRM import rebuild_aligned
-from cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
-from utils import Endian
+import pyDXHR.cdcEngine.DRM.CompressedDRM
+import pyDXHR.cdcEngine.DRM.Resolver
+from pyDXHR.utils import Endian
+from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
+
+if TYPE_CHECKING:
+    from pyDXHR.cdcEngine.DRM.Resolver import Resolver
 
 
 class SectionHeader:
-    __slots__ = (
-        "DataSize",
-        "SectionType",
-        "Flags",
-        "SecId",
-        "Language",
-        "Endian"
-    )
-
     # noinspection PyPep8Naming
     @property
     def Specialization(self):
@@ -48,7 +44,7 @@ class SectionHeader:
     # noinspection PyPep8Naming
     @property
     def HeaderSize(self):
-        return self.Flags >> 8
+        return (self.Flags & 0xFFFFFF00) >> 8
 
     # noinspection PyPep8Naming
     @property
@@ -73,6 +69,12 @@ class SectionHeader:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def get_file_name(self, archive):
+        if self.SectionType == SectionType.RenderResource:
+            return archive.texture_list[self.SecId]
+        else:
+            return archive.section_list[self.SecId]
+
 
 def deserialize_section_headers(drm_header: bytes,
                                 len_sections: int,
@@ -92,15 +94,23 @@ class Section:
         "Header",
         "Resolvers",
         "Data",
+        "Deserialized",
+        "Filename",
     )
 
     def __init__(self):
         self.Header: SectionHeader = SectionHeader()
-        # self.Resolvers: List[Resolver] = []
+        self.Resolvers: List[Resolver] = []
+        self.Deserialized = None
+        self.Filename: Optional[str] = None
         self.Data: bytes = b''
 
     def __repr__(self):
-        return f"{self.Header.IdHexString} : {self.Header.DataSize} bytes : {self.Header.SectionType.name} | {self.Header.SectionSubtype.name}"
+        if self.Filename:
+            return self.Filename
+
+        else:
+            return f"{self.Header.IdHexString} : {self.Header.DataSize} bytes : {self.Header.SectionType.name} | {self.Header.SectionSubtype.name}"
 
     # noinspection PyPep8Naming
     @property
@@ -113,20 +123,103 @@ class Section:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def deserialize(self, archive=None):
+        from pyDXHR.cdcEngine.DRM.Sections.Material import Material
+        from pyDXHR.cdcEngine.DRM.Sections.RenderResource import RenderResource
+        from pyDXHR.cdcEngine.DRM.Sections.DTPData import DTPData
+        from pyDXHR.cdcEngine.DRM.Sections.RenderModel import RenderModel
+        from pyDXHR.cdcEngine.DRM.Sections.RenderModelBuffer import RenderModelBuffer
+
+        match self.Header.SectionType:
+            case SectionType.CollisionMesh:
+                pass
+            case SectionType.DTPData:
+                self.Deserialized = DTPData(section=self, archive=archive)
+            case SectionType.RenderMesh:
+                match self.Header.SectionSubtype:
+                    case SectionSubtype.RenderModel:
+                        self.Deserialized = RenderModel(section=self, archive=archive)
+                    case SectionSubtype.RenderModelBuffer:
+                        self.Deserialized = RenderModelBuffer(section=self, archive=archive)
+                    case SectionSubtype.RenderTerrain:
+                        pass
+                    case _:
+                        pass
+            case SectionType.RenderResource:
+                match self.Header.SectionSubtype:
+                    case SectionSubtype.Texture:
+                        self.Deserialized = RenderResource(section=self, archive=archive)
+                    case _:
+                        pass
+            case SectionType.Material:
+                self.Deserialized = Material(section=self, archive=archive)
+            case _:
+                pass
+
+        if self.Deserialized:
+            self.Filename = self.Deserialized.Name
+        return self.Deserialized
+
+
+def from_drm_sizes(
+        block_data: bytes,
+        size_data: list,
+        header_list: list,
+        drm_flag: int,
+        endian: Endian = Endian.Little
+):
+    # an attempt to merge the generic sections... it's not working yet
+    cursor = 0
+    sections = []
+    section_data = []
+    for idx, (header, data_size, header_size) in enumerate(size_data):
+        sec = Section()
+        sec.Header = header
+        sec_start = copy(cursor)
+
+        resolver_data = block_data[cursor: cursor + header_size]
+        cursor += header_size
+
+        if drm_flag & 1:
+            cursor = (cursor + 15) & ~15
+
+        sec.Data = block_data[cursor: cursor + data_size]
+        cursor += data_size
+
+        if drm_flag & 1:
+            cursor = (cursor + 15) & ~15
+
+        sec_end = copy(cursor)
+        sec.Resolvers = pyDXHR.cdcEngine.DRM.Resolver.deserialize_resolver_list(
+            data=resolver_data,
+            header_list=header_list,
+            section_data=sec.Data,
+            endian=endian)
+
+        sections.append(sec)
+        section_data.append(block_data[sec_start:sec_end])
+
+    return sections, section_data
+
 
 def from_drm_blocks(
         drm_block_list: List[bytes],
         sec_header_list: List[SectionHeader],
         drm_flag: int,
         endian: Endian = Endian.Little
-) -> List[Section]:
-    block_data = rebuild_aligned(drm_block_list)
+) -> Tuple[List[Section], List[bytes]]:
+    block_data = pyDXHR.cdcEngine.DRM.CompressedDRM.rebuild_aligned(drm_block_list)
 
     cursor = 0
     sections = []
+    section_data = []
     for idx, header in enumerate(sec_header_list):
         sec = Section()
         sec.Header = header
+        sec_start = cursor
+
+        # if sec.Header.SectionType == SectionType.Material:
+        #     breakpoint()
 
         resolver_data = block_data[cursor: cursor + header.HeaderSize]
         cursor += header.HeaderSize
@@ -140,13 +233,14 @@ def from_drm_blocks(
         if drm_flag & 1:
             cursor = (cursor + 15) & ~15
 
-        # NOT IMPLEMENTED IN THIS VERSION
-        # sec.Resolvers = deserialize_resolver_list(
-        #     data=resolver_data,
-        #     header_list=sec_header_list,
-        #     section_data=sec.Data,
-        #     endian=endian)
+        sec.Resolvers = pyDXHR.cdcEngine.DRM.Resolver.deserialize_resolver_list(
+            data=resolver_data,
+            header_list=sec_header_list,
+            section_data=sec.Data,
+            endian=endian)
 
+        sec_end = cursor
         sections.append(sec)
+        section_data.append(block_data[sec_start:sec_end])
 
-    return sections
+    return sections, section_data

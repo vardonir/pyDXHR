@@ -8,7 +8,7 @@ def to_wav(mul):
         with os.fdopen(fd, 'wb') as tf:
             tf.write(mul.Streams)
 
-        result = subprocess.run(['..\\external\\vgmstream\\vgmstream-cli.exe', '-i', "-P", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(['..\\external\\vgmstream-win64\\vgmstream-cli.exe', '-i', "-P", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     finally:
         os.remove(path)
