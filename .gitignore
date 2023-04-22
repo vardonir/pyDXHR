@@ -1,5 +1,10 @@
-external/**
-!external/**/NOTE.md
+/external/
+!/external/**/NOTE.md
 
 .idea/**
 **/__pycache__/**
+
+/playground/
+/output/
+/.run/
+/.venv/

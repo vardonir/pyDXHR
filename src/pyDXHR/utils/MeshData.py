@@ -271,15 +271,13 @@ class MeshData:
                 name: Optional[str],
                 save_to: Optional[str | Path] = None,
                 as_bytes: bool = False,
-                apply_scale: bool = False,
                 blank_materials: bool = False):
-        from pyDXHR.utils.gltf import build_gltf
-        return build_gltf(
+        from pyDXHR.utils.gltf import build
+        return build(
             mesh_data=self,
             as_bytes=as_bytes,
             name=name,
             save_to=save_to,
-            apply_scale=apply_scale,
             blank_materials=blank_materials
         )
 

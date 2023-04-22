@@ -1,18 +1,15 @@
 import os
 from pathlib import Path
 import pygltflib as gltf
-from typing import List, Optional, Tuple, Dict, Final
+from typing import List, Optional, Tuple, Dict
 import numpy as np
 import warnings
 import itertools
 import shutil
-from scipy.spatial.transform import Rotation
 
 from pyDXHR.cdcEngine.Sections.Material import Material, guess_materials
 from pyDXHR.cdcEngine.Sections import RenderResource
 from pyDXHR.utils.MeshData import MeshData, VertexSemantic
-
-GLTF_SCALE: Final[float] = 0.002
 
 
 def build_gltf(mesh_data: MeshData,
@@ -20,7 +17,6 @@ def build_gltf(mesh_data: MeshData,
                name: Optional[str] = None,
                as_bytes: bool = False,
                share_textures: bool = True,
-               apply_scale: bool = False,
                scale: float = 1.0,
                blank_materials: bool = False,
                ):
@@ -28,8 +24,7 @@ def build_gltf(mesh_data: MeshData,
     "share_textures": will create a folder called "textures"
     "blank materials": create the materials, but do not assign textures
     """
-    if apply_scale:
-        scale = GLTF_SCALE
+    # det_building_scifi_a_lod_00003fab
 
     # region setup
     asset_data = gltf.Asset()
@@ -43,8 +38,8 @@ def build_gltf(mesh_data: MeshData,
 
     parent_node = gltf.Node(name=name)
     parent_node_index = _add_to_gltf(gltf_root, parent_node)
-    parent_node.scale = 3 * [scale]
-    parent_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
+    # parent_node.scale = 3 * [scale]
+    # parent_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
 
     scene_node = gltf.Scene()
     scene_node.nodes = [parent_node_index]
@@ -77,7 +72,9 @@ def build_gltf(mesh_data: MeshData,
                 vtx_array=array,
                 binary_blob=binary_blob,
                 mesh_num=idx,
-                scale=scale)
+                scale=scale,
+                name=name,
+            )
 
             binary_blob += vtx_byte_data
             vtx_buffer_view_index = _add_to_gltf(gltf_root=gltf_root, item=vtx_buffer_view)
@@ -97,7 +94,8 @@ def build_gltf(mesh_data: MeshData,
                 array=arr,
                 binary_blob=binary_blob,
                 mesh_num=idx,
-                submesh_num=imp
+                submesh_num=imp,
+                name=name
             )
 
             binary_blob += idx_byte_data
@@ -108,7 +106,11 @@ def build_gltf(mesh_data: MeshData,
             mesh_prim = gltf.Primitive(
                 attributes=mesh_attributes,
                 indices=accessor_index,
-                material=mat_index_dict[mat]
+                material=mat_index_dict[mat],
+                extras={
+                    "MESH_NAME": name,
+                    "cdcMatID": mat.Name
+                }
             )
 
             mesh.primitives.append(mesh_prim)
@@ -178,9 +180,9 @@ def _populate_material(
         img = gltf.Image(
             name="I_" + f"{tx_id:x}".rjust(8, '0'),
             extras={
-                "cdcTextureID": tx_id,
+                "cdcTextureID": tx_id,  # keep this as a decimal int, used to get the image from the library
                 "guessed_key": mat_key,
-                "cdcMaterialID": cdc_material_id
+                "cdcMaterialID": "M_" + f"{cdc_material_id:x}".rjust(8, '0')
             }
         )
         gltf_im_id = _add_to_gltf(gltf_root, img)
@@ -198,7 +200,7 @@ def _populate_material(
             extras={
                 "cdcTextureID": tx_id,
                 "guessed_key": mat_key,
-                "cdcMaterialID": cdc_material_id
+                "cdcMaterialID": "M_" + f"{cdc_material_id:x}".rjust(8, '0')
             }
         )
         return _add_to_gltf(gltf_root, tx)
@@ -208,7 +210,6 @@ def _populate_material(
     if blank_materials:
         gltf_mat = gltf.Material(name=f"{mat_name}")
         _add_to_gltf(gltf_root, gltf_mat)
-        return {}
 
     if pydxhr_matlib is None:
         raise Exception
@@ -218,11 +219,13 @@ def _populate_material(
 
     seen = []
     materials = {}
+    matlib_data = {}
     for tex_id, tex_info in zip(tex_arr[:, 1], tex_arr[:, 2:]):
         if tex_id in seen:
             continue
 
         mat_type = guess_materials(*tex_info)
+        matlib_data[tex_id] = tex_info
 
         if mat_type not in materials:
             materials[mat_type] = []
@@ -236,13 +239,21 @@ def _populate_material(
 
     image_dict: Dict[int, gltf.Image] = {}
     for i, mat in enumerate(materials_fixed):
-        gltf_mat = gltf.Material(name=f"{mat_name}")
+        gltf_mat = gltf.Material(
+            name=f"{mat_name}",
+            extras=mat,
+        )
+
         if i == 0:
             for mat_key, tx_id in mat.items():
                 if not tx_id:
                     continue
 
                 gltf_tx_id = _add_image()
+
+                if blank_materials:
+                    continue
+
                 if gltf_tx_id:
                     tf = gltf.TextureInfo(index=gltf_tx_id)
 
@@ -255,6 +266,8 @@ def _populate_material(
                             pass
                         case _:
                             pass
+
+            gltf_mat.extras |= {"matlib_data": str(matlib_data)}
             _add_to_gltf(gltf_root, gltf_mat)
         else:  # add dangling images + textures, but not attach to any materials - these can be fixed later,
             # depending on the settings of the GLTF importer
@@ -271,7 +284,8 @@ def _add_index_data(
         array: np.ndarray,
         binary_blob: bytes,
         mesh_num: int = -1,
-        submesh_num: int = -1
+        submesh_num: int = -1,
+        name: str = ""
 ) -> Tuple[gltf.BufferView, gltf.Accessor, bytes]:
     current_byte_offset = len(binary_blob)
 
@@ -281,7 +295,12 @@ def _add_index_data(
         byteOffset=current_byte_offset,
         byteLength=len(byte_data),
         target=gltf.ELEMENT_ARRAY_BUFFER,
-        name=f"Mesh_{mesh_num}_Prim_{submesh_num}_indices"
+        name=f"Mesh_{mesh_num}_Prim_{submesh_num}_indices",
+        extras={
+            "MESH_NAME": name,
+            "MESH_IDX": mesh_num,
+            "PRIM_IDX": submesh_num,
+        },
     )
 
     accessor = gltf.Accessor(
@@ -290,7 +309,13 @@ def _add_index_data(
         type=gltf.SCALAR,
         max=[int(array.max())],
         min=[int(array.min())],
-        name=f"Mesh_{mesh_num}_Prim_{submesh_num}_indices"
+        name=f"Mesh_{mesh_num}_Prim_{submesh_num}_indices",
+        extras={
+            "MESH_NAME": name,
+            "MESH_IDX": mesh_num,
+            "PRIM_IDX": submesh_num,
+        },
+
     )
 
     return view, accessor, byte_data
@@ -334,6 +359,7 @@ def _add_vertex_data(
         binary_blob: bytes,
         mesh_num: int = -1,
         scale: float = 1.0,
+        name: str = ""
 ) -> Tuple[gltf.BufferView, gltf.Accessor, bytes]:
     """
     Transforms a vertex semantic/vertex numpy array to a GLTF bufferview + Accessor + byte data
@@ -345,7 +371,7 @@ def _add_vertex_data(
     :return:
     """
     if vtx_sem.value in VertexSemantic.tangents():
-        vtx_array = add_tangent_handedness(vtx_array)
+        vtx_array = _add_tangent_handedness(vtx_array)
 
     elif vtx_sem.value in VertexSemantic.colors():
         # I'm not sure if this is correct, but if it gets the GLTF validator to shut up...
@@ -362,6 +388,11 @@ def _add_vertex_data(
         byteOffset=current_byte_offset,
         byteLength=len(byte_data),
         target=gltf.ARRAY_BUFFER,
+        extras={
+            "MESH_NAME": name,
+            "MESH_IDX": mesh_num,
+            "VTX_SEM": vtx_sem.name,
+        },
         name=f"Mesh_{mesh_num}_{vtx_sem.name}"
     )
 
@@ -370,7 +401,12 @@ def _add_vertex_data(
         count=len(vtx_array),
         # max=[round(i, 2) for i in np.max(v, axis=0).tolist()],
         # min=[round(i, 2) for i in np.min(v, axis=0).tolist()],
-        name=f"Mesh_{mesh_num}_{vtx_sem.name}"
+        name=f"Mesh_{mesh_num}_{vtx_sem.name}",
+        extras={
+            "MESH_NAME": name,
+            "MESH_IDX": mesh_num,
+            "VTX_SEM": vtx_sem.name,
+        },
     )
 
     if vtx_sem.value in VertexSemantic.tex_coords():
@@ -389,7 +425,7 @@ def _add_vertex_data(
     return view, accessor, byte_data
 
 
-def _add_to_gltf(gltf_root: gltf.GLTF2, item: gltf.Property) -> int:
+def _add_to_gltf(gltf_root: gltf.GLTF2, item: gltf.Property, **extras) -> int:
     """
     Adds a GLTF property to the GLTF object according to its type and returns the index of the property
 
@@ -397,6 +433,8 @@ def _add_to_gltf(gltf_root: gltf.GLTF2, item: gltf.Property) -> int:
     :param item:
     :return:
     """
+    item.extras |= extras
+
     li: List[gltf.Property]
     match type(item).__qualname__:
         case gltf.Node.__qualname__:
@@ -439,7 +477,7 @@ def _create_buffer(gltf_root: gltf.GLTF2, binary_blob: bytes) -> None:
     gltf_root.set_binary_blob(binary_blob)
 
 
-def add_tangent_handedness(v: np.ndarray, reverse: bool = False) -> np.ndarray:
+def _add_tangent_handedness(v: np.ndarray, reverse: bool = False) -> np.ndarray:
     """
     See GLTF spec
 
