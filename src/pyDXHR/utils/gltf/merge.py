@@ -43,9 +43,10 @@ def merge_single_node_gltf(
         for m in f.materials
     }
 
+    # the materials are just copied in bulk to the GLTF file
     merged_file.materials = list(compiled_materials.values())
     mat_id_list = list(compiled_materials.keys())
-    # to get the index given a cdcMatID: mat_id_list.index(cdcMatID)
+    # to get the mat index given a cdcMatID: mat_id_list.index(cdcMatID)
 
     compiled_images = {
         i.name: copy(i)
@@ -53,16 +54,42 @@ def merge_single_node_gltf(
         for i in f.images
     }
 
+    # the URI attached to the image needs to be updated before it gets attached
     for im in compiled_images.values():
         im.uri = str(Path(*Path(im.uri).parts[1:]))
         merged_file.images.append(im)
+
+    im_id_list = list(compiled_images.keys())
+
+    # then the textures need to be copied
+    if len([t for _, f in gltf_files for t in f.textures]) != 0:
+        compiled_textures = {
+            t.name: copy(t)
+            for _, f in gltf_files
+            for t in f.textures
+        }
+
+        merged_file.textures = list(compiled_textures.values())
+        tex_id_list = list(compiled_textures.keys())
+        assert len(im_id_list) == len(tex_id_list)
+
+        for tex_name, gltf_tex in compiled_textures.items():
+            gltf_tex.source = im_id_list.index(tex_name)
+    else:
+        tex_id_list = None
 
     indices: Dict[str, Set[int]] = {
         "OBJ": set(),
         "NON_OBJ": set(),
         "ALL": set(),
+
+        # TODO
+        "I_IMF": set(),
+        "E_IMF": set(),
+        "STR": set(),
     }
-    count = 0
+
+    # transfer accessors / buffers / meshes
     for path, f in tqdm(gltf_files):
         # if count == 2: break
         # count += 1
@@ -127,9 +154,18 @@ def merge_single_node_gltf(
             prim.attributes = gl.Attributes(**revised_attrs)
             prim.indices += acc_cursor
 
-            cdcMatID = prim.extras["cdcMatID"]
-            prim.material = mat_id_list.index(cdcMatID)
+            cdc_mat_id = prim.extras["cdcMatID"]
+            prim.material = mat_id_list.index(cdc_mat_id)
 
+    # transfer materials / textures
+    if tex_id_list is not None:
+        for mat in tqdm(merged_file.materials):
+            if mat.pbrMetallicRoughness:
+                mat.pbrMetallicRoughness.baseColorTexture.index = tex_id_list.index(mat.extras["diffuse"])
+            if mat.normalTexture:
+                mat.normalTexture.index = tex_id_list.index(mat.extras["normal"])
+
+    # finalize node tree
     merged_file.scene = 0
     scene.nodes = [len(merged_file.nodes)]  # scene node is top node only
     merged_file.nodes.append(top_node)
@@ -155,6 +191,26 @@ def merge_single_node_gltf(
         top_node.children = list(indices['ALL'])
 
     merged_file.save(outfile)
+
+    # TODO: uncomment this when materials are fixed
+    for_checking = set()
+    for mat in tqdm(merged_file.materials):
+        for k, v in mat.extras.items():
+            if len(v.split(",")) > 1:
+                for_checking.add(mat.name)
+                break
+        if len(set(mat.extras.keys()).difference({"diffuse", "normal", "colors"})):
+            for_checking.add(mat.name)
+            continue
+
+        if "colors" in mat.extras:
+            if len([c for c in mat.extras['colors'].split(",") if "dummy" not in c]):
+                for_checking.add(mat.name)
+                continue
+
+    with open(Path(output_path) / f"materials.csv", "w") as f:
+        for i in for_checking:
+            f.write(f"{i} \n")
 
 
 def merge_multinode_gltf(

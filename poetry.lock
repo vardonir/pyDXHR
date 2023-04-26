@@ -2125,6 +2125,18 @@ files = [
 tests = ["pytest"]
 
 [[package]]
+name = "pycdlib"
+version = "1.14.0"
+description = "Pure python ISO manipulation library"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pycdlib-1.14.0-py2.py3-none-any.whl", hash = "sha256:a905827335f0066af3fd416c5cf9b1f29dffaf4d0914b714555213d1809f38d4"},
+    {file = "pycdlib-1.14.0.tar.gz", hash = "sha256:8ec306b31d9c850f28c5fda52438d904edd1e8fcf862c5ffd756272efac9f422"},
+]
+
+[[package]]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
@@ -3192,4 +3204,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "936245a9691ebf80c665e35e3905bed43adfd7cfbe3b60ed658f61c9e2227594"
+content-hash = "d5ead0f51da633841730b572e728c497f26aa3208291f5fc7a1dbbc3d14415ae"

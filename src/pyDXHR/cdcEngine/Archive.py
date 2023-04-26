@@ -42,7 +42,7 @@ class ArchiveEntry:
 
 
 class Archive:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.endian: Endian = Endian.Little
         self.data_alignment: int = 0
         self.max_block_size: int = 0

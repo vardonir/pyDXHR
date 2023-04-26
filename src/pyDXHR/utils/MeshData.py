@@ -213,6 +213,7 @@ class MeshData:
                 np_indices = np.array(index_buffer[start_index:start_index+count], dtype=np.uint32).reshape((-1, 3))
                 self._rt_index_dict[idx_buffer].append((idx_mat, np_indices))
 
+        # breakpoint()
         # probably material-related?
         # for g in groups:
         #     if g.idx_vb == idx_buffer and g.idx_material == idx_mat :
@@ -232,8 +233,6 @@ class MeshData:
 
     # noinspection PyPep8Naming
     def _from_RenderModel(self, data):
-        # TODO: insert *dramatic Shatner voice* here: BONES!
-
         ksy = KaitaiRenderModel.from_bytes(data)
         index_buffer = ksy.IndexBuffer
 

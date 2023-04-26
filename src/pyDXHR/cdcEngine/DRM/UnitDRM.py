@@ -71,7 +71,7 @@ class UnitDRM(DRM):
         return [self._linked_drm_ref.get_string(0x100 * i, "utf-8") for i in range(self._rel_count)]
 
     def _process_collision(self):
-        # TODO
+        # TODO - would be partially useful for UE demos?
         for i in range(self._coll_count):
             cd0s = self._collision_ref.add_offset(i * 0x80)
             trs_mat = self._collision_ref.access_array("f", 16)
@@ -123,22 +123,17 @@ class UnitDRM(DRM):
             self.ObjectData[ObjectType.EXT_IMF] = ext_imf_dict
 
     def _get_obj_indices(self):
-        # seems like there's a correlation between that and the list of linked DRMs
-
-        # from collections import Counter
-        # c = Counter(self.obj)
-        # c["mapboundary"]
-
         obj_indices = []
         for i in trange(self._obj_count, desc="Reading OBJ data"):
-            index,  = struct.unpack_from("<H", self._obj_ref.section.Data,
-                                         0x30 + self._obj_ref.offset + i * 0x70)
-            pos = struct.unpack_from("<fff", self._obj_ref.section.Data,
-                                     0x10 + self._obj_ref.offset + i * 0x70)
             rot = struct.unpack_from("<fff", self._obj_ref.section.Data,
                                      self._obj_ref.offset + i * 0x70)
+            pos = struct.unpack_from("<fff", self._obj_ref.section.Data,
+                                     0x10 + self._obj_ref.offset + i * 0x70)
             scl = struct.unpack_from("<fff", self._obj_ref.section.Data,
                                      0x20 + self._obj_ref.offset + i * 0x70)
+
+            index,  = struct.unpack_from("<H", self._obj_ref.section.Data,
+                                         0x30 + self._obj_ref.offset + i * 0x70)
 
             rot_as_matrix = Rotation.from_euler("xyz", rot, degrees=False).as_matrix().T
 
@@ -153,7 +148,7 @@ class UnitDRM(DRM):
 
     def _process_obj2(self):
         # ???
-        obj2_count = self._obj_ref.access("I", 0x1C)
+        # obj2_count = self._obj_ref.access("I", 0x1C)
         pass
     # endregion
 
@@ -165,10 +160,13 @@ class UnitDRM(DRM):
         #     breakpoint()
 
     def _process_streamgroup(self):
+        # TODO - not all render terrain show up (see det_city_tunnel)
         streamgroup_data: Dict[tuple, List[np.ndarray]] = {}
         for i in trange(self._streamgroup_count, desc="Reading stream objects"):
             streamgroup_ref = self._streamgroup_ref.add_offset(i * 0x14)
             streamgroup_name = streamgroup_ref.deref(0x0)
+            # num_cells = streamgroup_ref.access("L", 0x4)  # ???
+            # cells = streamgroup_ref.deref(0x8)  # ???
             streamgroup_path = streamgroup_ref.deref(0xC)
             if streamgroup_path:
                 streamgroup_name = streamgroup_name.get_string()
@@ -178,7 +176,7 @@ class UnitDRM(DRM):
                 if key not in streamgroup_data:
                     streamgroup_data[key] = []
 
-                # TRS mat for streamobjects is 4x4 unit matrix
+                # TRS mat for streamobjects is 4x4 unit matrix...?
                 streamgroup_data[key].append(np.eye(4).astype(float))
 
         self.ObjectData[ObjectType.Stream] = streamgroup_data
@@ -206,10 +204,29 @@ class UnitDRM(DRM):
 
         sub50_ref = unit_ref.deref(0x50)  # CellGroupData
         if sub50_ref:
+
+            # struct CellGroupData { // 61
+            # 	CellGroupDataHeader *header; // 0
+            # 	uint32_t admd_maybe; // 4
+            # 	SceneCellBSPNode *bspNodes; // 8
+            # 	CellStreamGroupData *streamgroups; // C
+            # 	const char **symbols; // 10
+            # 	CellData **cells; // 14
+            # 	CellStreamData *void_terrain_maybe; // 18
+            # 	CellStreamData *exterior_terrain_maybe; // 1C
+            # };
+
             sub50_0 = sub50_ref.deref(0)  # CellGroupDataHeader
+            # cell_group_data_header = sub50_0.access_array("L", 7)
+            # bsp_nodes = sub50_ref.deref(0x8)
+            # test_xyzdist = bsp_nodes.access_array("f", 4)
+
             self._streamgroup_ref = sub50_ref.deref(0xC)  # CellStreamGroupData*
+
             sub50_14 = sub50_ref.deref(0x14)  # CellData*[] # RDRs here are just the occlusion
+
             sub50_18 = sub50_ref.deref(0x18)  # CellStreamData (void terrain)
+            sub50_1c = sub50_ref.deref(0x1c)  # CellStreamData (exterior terrain)
 
             if sub50_0 and self._streamgroup_ref:
                 self._streamgroup_count = sub50_0.access("I", 0xC)
@@ -331,113 +348,6 @@ class UnitDRM(DRM):
                         gltf_object.save(dest / folder / file_name)
             else:
                 pass
-
-    def to_ue5_csv(self,
-                   save_to: Path | str,
-                   apply_universal_scale: bool = False,
-                   action: str = "overwrite"
-                   ):
-        # the UE5 importer expects to receive blank materials since those are intended to be fixed later. for now.
-        # no transformations are added to the gltf nodes, the CSV file + the importer script is supposed to handle it, in theory
-        if Path(save_to).suffix == ".drm":
-            save_to = Path(save_to).parent / Path(save_to).stem
-
-        import csv
-        dest = create_directory(save_to=save_to, action=action)
-        csvfile = open(dest / "locations.csv", 'w', newline='')
-        csvwriter = csv.writer(csvfile)
-
-        def write_csv_row(row_name: str, trs: np.ndarray):
-            # loc, rot, scl = _decompose_trs_matrix(trs, apply_gltf_scale=apply_universal_scale)
-            # row = [row_name]
-            # row.extend(loc)
-            # row.extend(rot)
-            # row.extend(scl)
-            csvwriter.writerow([row_name] + trs.flatten().tolist())
-
-        if self._archive:
-            # streamobjects
-            for (name, path), trs_mat_list in tqdm(self.ObjectData[ObjectType.Stream].items(),
-                                                   desc="Processing stream objects"):
-                drm_data = self._archive.get_from_filename(fr"streamgroups\{path}.drm")
-                drm = DRM()
-                drm.deserialize(drm_data)
-
-                for sec in drm.Sections:
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        if idx == 0:
-                            self._read_section_data(rm_section=sec,
-                                                    trs_mat=trs_mat,
-                                                    folder="stream",
-                                                    file_name=f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
-                                                    dest=dest,
-                                                    apply_scale=apply_universal_scale,
-                                                    blank_materials=True
-                                                    )
-                        write_csv_row(f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
-                        # csvwriter.writerow([f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0')] + trs_mat.T.flatten().tolist())
-
-            # external IMFs
-            pbar = tqdm(self.ObjectData[ObjectType.EXT_IMF].items(), desc="Processing external IMFs")
-            for imf_path, trs_mat_list in pbar:
-                imf_name = Path(imf_path).stem
-                pbar.set_description(f"Processing {imf_name}")
-
-                drm_data = self._archive.get_from_filename(imf_path)
-                drm = DRM()
-                drm.deserialize(drm_data)
-                for sec in drm.Sections:
-
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        if idx == 0:
-                            self._read_section_data(rm_section=sec,
-                                                    folder="imf_ext",
-                                                    file_name=f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
-                                                    dest=dest,
-                                                    apply_scale=apply_universal_scale,
-                                                    blank_materials=True
-                                                    )
-                        write_csv_row(f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
-                        # csvwriter.writerow([f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0')] + trs_mat.T.flatten().tolist())
-
-            # objects
-            pbar = tqdm(self.ObjectData[ObjectType.OBJ].items(), desc="Processing OBJs")
-            for obj_name, trs_mat_list in pbar:
-                pbar.set_description(f"Processing {obj_name}")
-                drm_data = self._archive.get_from_filename(obj_name + ".drm")
-                drm = DRM()
-                drm.deserialize(drm_data)
-
-                for sec in drm.Sections:
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        if idx == 0:
-                            self._read_section_data(rm_section=sec,
-                                                    trs_mat=trs_mat,
-                                                    folder="obj",
-                                                    file_name=f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
-                                                    dest=dest,
-                                                    apply_scale=apply_universal_scale,
-                                                    blank_materials=True
-                                                    )
-
-                        write_csv_row(f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
-
-        # internal IMFs
-        for rm_id, trs_mat_list in tqdm(self.ObjectData[ObjectType.IMF].items(), desc="Processing internal IMFs"):
-            for idx, trs_mat in enumerate(trs_mat_list):
-                rm_sec = self.lookup_section(SectionType.RenderMesh, rm_id)
-
-                if idx == 0:
-                    self._read_section_data(rm_section=rm_sec,
-                                            folder="imf_int",
-                                            file_name="RM_" + f"{rm_id:x}".rjust(8, '0') + ".gltf",
-                                            dest=dest,
-                                            apply_scale=apply_universal_scale,
-                                            blank_materials=True
-                                            )
-                write_csv_row(f"RenderModel_" + f"{rm_sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
-
-        csvfile.close()
 
     def to_gltf(self,
                 apply_universal_scale: bool = False,

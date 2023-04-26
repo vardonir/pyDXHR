@@ -25,11 +25,17 @@ class SectionHeader:
         self.Language: int = 0
         self.Endian: Endian = Endian.Little
 
+        self.unk06 = None
+
     def deserialize(self, data, endian: Endian = Endian.Little):
         self.Endian = endian
         self.DataSize, section_type, \
-            _05, _06, \
+            _05, self.unk06, \
             self.Flags, self.SecId, self.Language = struct.unpack_from(f"{endian.value}LBBHLLL", data, offset=0)
+
+        # _05, _06a, _06b, \
+        # self.Flags, self.SecId, self.Language = struct.unpack_from(f"{endian.value}LBBBBLLL", data, offset=0)
+        # self.unk06 = _06a, _06b
 
         self.SectionType = SectionType(section_type)
 
@@ -96,6 +102,7 @@ class Section:
         "Data",
         "Deserialized",
         "Filename",
+        "FirstInt"
     )
 
     def __init__(self):
@@ -104,6 +111,9 @@ class Section:
         self.Deserialized = None
         self.Filename: Optional[str] = None
         self.Data: bytes = b''
+
+        # testing - it's just the number of local resolvers tho...
+        self.FirstInt: int = -1
 
     def __repr__(self):
         if self.Filename:
@@ -197,8 +207,10 @@ def from_drm_sizes(
             section_data=sec.Data,
             endian=endian)
 
+        sec_data = block_data[sec_start:sec_end]
+        section_data.append(sec_data)
+        sec.FirstInt = struct.unpack_from(f"{endian.value}L", sec_data)
         sections.append(sec)
-        section_data.append(block_data[sec_start:sec_end])
 
     return sections, section_data
 
@@ -241,7 +253,10 @@ def from_drm_blocks(
             endian=endian)
 
         sec_end = cursor
+
+        sec_data = block_data[sec_start:sec_end]
+        section_data.append(sec_data)
+        sec.FirstInt, = struct.unpack_from(f"{endian.value}L", sec_data)
         sections.append(sec)
-        section_data.append(block_data[sec_start:sec_end])
 
     return sections, section_data

@@ -1,5 +1,5 @@
 import struct
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 from pathlib import Path
 from PIL import Image
 
@@ -7,14 +7,16 @@ from pyDXHR.cdcEngine.Archive import ArchivePlatform
 from pyDXHR.cdcEngine.DRM.Section import Section
 from pyDXHR.cdcEngine.DRM.Resolver import find_resolver, MissingResolver
 from pyDXHR.cdcEngine.Sections import AbstractSection
-from pyDXHR.cdcEngine.Sections.RenderResource import RenderResource, from_library
+from pyDXHR.cdcEngine.Sections.RenderResource import RenderResource, from_library, from_named_textures
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 
 
 class Material(AbstractSection):
     def __init__(self, **kwargs):
-        self._raw_texture_list = {k: [] for k in range(1, 13)}
-        self.TextureLibrary: Optional[str | Path] = kwargs["texture_library"] if "texture_library" in kwargs else None
+        self._raw_texture_list = {k: [] for k in range(16)}
+        self._texture_library_path: Optional[str | Path] = kwargs.get("texture_library_path", None)
+        self._named_textures_path: Optional[str | Path] = kwargs.get("named_textures_path", None)
+        self._debug: bool = kwargs.get("debug", False)
 
         self.ImageDict = {}
         self.Diffuse: List[RenderResource | Image] = []
@@ -24,8 +26,16 @@ class Material(AbstractSection):
         self.Blend: List[RenderResource | Image] = []
         self.Cubemap: List[RenderResource | Image] = []
         self.Unknown: List[RenderResource | Image] = []
+        self.FlatColors: List[str] = []
+        self.LightTex: List[Tuple[str, int]] = []
+        self.HasAlpha: bool = False
+
+        self.NeedsChecking: bool = False
 
         super().__init__(**kwargs)
+
+        if self.section is not None:
+            self.MaterialSpec: int = self.section.Header.Language
 
     @staticmethod
     def _get_name_from_archive(archive, m_id):
@@ -38,52 +48,11 @@ class Material(AbstractSection):
                 as_library: bool = False,
                 library_dir: Optional[Path | str] = None
                 ):
-        pass
-        # import pygltflib as gltf
-        #
-        # if as_library and library_dir:
-        #     if not self.TextureLibrary:
-        #         raise NotImplementedError
-        #     else:
-        #         index = 0
-        #         gltf_image_list, gltf_texture_list = [], []
-        #         for key, value in self.ImageDict.items():
-        #             for t_id, image in value:
-        #                 gltf_image = gltf.Image()
-        #                 gltf_image.name = "T_" + f"{t_id:x}".rjust(8, '0')
-        #                 gltf_image.uri = str(image.relative_to(library_dir))
-        #                 gltf_image.extras = {
-        #                     "cdcTextureId": t_id
-        #                 }
-        #
-        #                 gltf_texture_info = gltf.TextureInfo()
-        #                 gltf_texture_info.index = index
-        #                 gltf_texture_list.append(gltf_texture_info)
-        #
-        #                 gltf_image_list.append(gltf_image)
-        #
-        #     gltf_mat = gltf.Material()
-        #     gltf_mat.name = self.Name
-        #     gltf_mat.extras = {
-        #         "cdcMaterialID": self.ID
-        #     }
-        #     gltf_mat.emissiveTexture = gltf.TextureInfo(
-        #         index=0
-        #     )
-        #
-        #     return gltf_mat, gltf_image_list, gltf_texture_list
-
-    def to_json(self, indent: Optional[int] = 2, use_texture_dict: bool = False):
-
-        if use_texture_dict:
-            raise NotImplementedError
-            return json.dumps(self.ImageDict, indent=indent)
-        else:
-            return self._raw_texture_list[3]
+        raise NotImplementedError
 
     def _get_texture_ids(self):
 
-        for idx in range(1, 13):
+        for idx in range(16):
             offset = 0x4c + 4 * idx
 
             submat_blob_data_offset = find_resolver(self.section.Resolvers, offset).DataOffset
@@ -98,59 +67,119 @@ class Material(AbstractSection):
                 continue
 
             texture_data_offset = texture_resolver.DataOffset
-            _, _, tex_count, _ = struct.unpack_from("4B", self.section.Data, submat_blob_data_offset + 0x14)
+            # which byte is the real tex count??
+            tex_byte1, tex_byte2, tex_byte3, tex_count = struct.unpack_from(f"{self._endian.value}4B",
+                                                                            self.section.Data,
+                                                                            submat_blob_data_offset + 0x14)
 
             if tex_count:
+                tb3_data = []
                 for i in range(tex_count):
                     tx_off = texture_data_offset + (16 * i)
+                    tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LfLBBH", self.section.Data, tx_off)
+                    tb3_data.append((tex_id, tex_data))
 
-                    tex_id, \
-                        int1a, int1b1, int1b2, int2, byte1, \
-                        tbind, byte3, byte4 = struct.unpack_from(f"{self._endian.value}LHBBLBBBB", self.section.Data,
-                                                                 tx_off)
+                    # see https://github.com/rrika/cdcEngineDXHR/blob/d3d9/rendering/MaterialData.h#L11
+                    # tex_id, lod, cat, fallback_index, slot_index, f = struct.unpack_from(f"{self._endian.value}LfLBBH", self.section.Data, tx_off)
 
-                    self._raw_texture_list[idx].append((tex_id, int1a, int1b1, int1b2, int2, byte1, tbind, byte3, byte4))
+                    self._raw_texture_list[idx].append((tex_id, *tex_data))
 
     def _deserialize_from_section(self, section):
         super()._deserialize_from_section(section)
         self._get_texture_ids()
         self._get_textures()
 
+    def debug_print(self):
+        print("Material table for ", "M_" + f"{self.section.Header.SecId:x}".rjust(8, '0'))
+        print(f"unk6: {self.section.Header.unk06}")
+        for k, v in self._raw_texture_list.items():
+            if len(v):
+                print("submat ", k)
+                for i in v:
+                    row_format = "{:>8}" * len(i)
+                    print(row_format.format(*i))
+
+                    # if self._archive.platform.value not in ArchivePlatform.has_complete_file_lists():
+                    #     print(row_format.format(*i))
+                    # else:
+                    #     tex_id = i[0]
+                    #     tex_path = self._archive.texture_list[tex_id]
+                    #     print(row_format.format(*i), Path(tex_path).stem)
+
+    # def debug_data(self):
+    #     return [k for k, v in self._raw_texture_list.items() if len(v) > 0]
+
     def _get_textures(self):
-        # TODO: a biiiiit handwavy, but idc anymore
+        # TODO: handwavy as fck, but idc anymore
+        if len(self._raw_texture_list[1]):
+            self.HasAlpha = True
+
         seen = []
         submat_3 = self._raw_texture_list[3]
-        for tex_id, int1a, int1b1, int1b2, int2, byte1, tbind, byte3, byte4 in submat_3:
-            # tex_data = tex_id, int1a, int1b1, int1b2, int2, byte1, tbind, byte3, byte4
+        for tex_data in submat_3:
+            tex_id, tex_info = tex_data[0], tex_data[1:]
+            # tex_info = lod, cat, fallback_index, slot_index, f
 
-            if self.TextureLibrary:
-                tex = (tex_id, from_library(tex_id, self.TextureLibrary))
+            if self._texture_library_path:
+                tex = (tex_id, from_library(tex_id, self._texture_library_path))
                 # tex = tex_data, from_library(tex_id, self.TextureLibrary)
             else:
                 tex = tex_id
 
-            if byte1 == 96:
-                self.Cubemap.append(tex)
-                continue
-
             if tex_id in seen:
                 continue
-            else:
-                # int1b1, int1b2
-                # 0,0
-                # 128, 191
-                # 0, 191
 
-                if int2 == 4:
+            seen.append(tex_id)
+
+            if self._named_textures_path:
+                tex_type = from_named_textures(tex_id, self._named_textures_path)
+                if tex_type is not None:
+                    match tex_type:
+                        case "diffuse":
+                            self.Diffuse.append(tex)
+                        case "normal":
+                            self.Normal.append(tex)
+                        case "mask":
+                            self.Mask.append(tex)
+                        case "blend":
+                            self.Blend.append(tex)
+                        case "specular":
+                            self.Specular.append(tex)
+                        case "cubemap":
+                            self.Cubemap.append(tex)
+                        case "light":
+                            name = from_named_textures(tex_id, self._named_textures_path, get_name_only=True)
+                            self.LightTex.append((tex, name))
+                        case "flat":
+                            name = from_named_textures(tex_id, self._named_textures_path, get_name_only=True)
+                            self.FlatColors.append(name.strip())
+                        case _:
+                            name = from_named_textures(tex_id, self._named_textures_path, get_name_only=True)
+                            self.Unknown.append((tex, name))
+                    continue
+
+            # if the texture is not in the named textures file...
+            match tex_info[1]:
+                case 0x4:
                     self.Blend.append(tex)
                     continue
-                else:
-                    if byte1 == 32:
-                        self.Diffuse.append(tex)
-                        continue
-                    elif byte1 == 128:
-                        self.Normal.append(tex)
-                        continue
+                case 0x5:
+                    if self._debug:
+                        self.debug_print()
+
+            match tex_info[2]:
+                case 0x60:
+                    self.Cubemap.append(tex)
+                    continue
+                case 0x20:
+                    self.Diffuse.append(tex)
+                    continue
+                case 0x40:
+                    if self._debug:
+                        self.debug_print()
+                case 0x80:
+                    self.Normal.append(tex)
+                    continue
 
             self.Unknown.append(tex)
             seen.append(tex_id)
@@ -162,22 +191,25 @@ class Material(AbstractSection):
             "mask": self.Mask,
             "blend": self.Blend,
             "unknown": self.Unknown,
+            "colors": self.FlatColors,
+            "light": self.LightTex,
+            "alpha": 1 if self.HasAlpha else 0
         }
 
+        if len(self.Unknown):
+            self.NeedsChecking = True
 
-def guess_materials(int1a, int1b1, int1b2, int2, byte1, tbind, byte3, byte4):    
-    # some handwavy bullshit
+        for k, v in self.ImageDict.items():
+            if k == "colors":
+                continue
+            if k == "light":
+                continue
+            if k == "alpha":
+                continue
 
-    if byte1 == 96:
-        return "cubemap"
-
-    if int2 == 4:
-        return "blend"
-    else:
-        if byte1 == 32:
-            return "diffuse"
-        elif byte1 == 128:
-            return "normal"
+            if len(v) > 1:
+                self.NeedsChecking = True
+                break
 
 
 def get_material_ids(sec: Section, offset: int = 0) -> List[int]:

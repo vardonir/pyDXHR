@@ -70,7 +70,7 @@ class RenderResource(AbstractSection):
         self.Image.save_as(image_format=image_format, save_to=save_to)
 
 
-def from_library(tex_id: str | int, tex_lib_dir: str | Path, as_path: bool = True):
+def from_library(tex_id: int, tex_lib_dir: str | Path, as_path: bool = True):
     from glob import glob
     from PIL import Image
 
@@ -85,6 +85,56 @@ def from_library(tex_id: str | int, tex_lib_dir: str | Path, as_path: bool = Tru
             return Path(file)
         else:
             return Image.open(file)
+
+
+def from_named_textures(tex_id: int, named_tex_dir: str | Path, get_name_only: bool = False):
+    with open(named_tex_dir, "r") as file:
+        for ln in file:
+            t_id, name = ln.strip().split(",")
+            if int(t_id) == tex_id:
+                break
+        else:
+            # not found in file
+            return None
+
+    if "_" not in name:
+        if "flat" in name:
+            return "flat" if not get_name_only else name
+        if "dummy" in name:
+            return "flat" if not get_name_only else name
+        if "light" in name:
+            return "light" if not get_name_only else name
+        else:
+            return "unknown" if not get_name_only else name
+    if "cube" in name:
+        return "cubemap"
+
+    found_name = name.split("_")
+
+    if "diffuse" in name:
+        return "diffuse" if not get_name_only else name
+    if "normal" in name:
+        return "normal" if not get_name_only else name
+    if "specula" in name: # there's one there called "speculaire"...
+        return "specular" if not get_name_only else name
+    if "blend" in name:
+        return "blend" if not get_name_only else name
+    if "mask" in name:
+        return "mask" if not get_name_only else name
+
+    if found_name[-1] == "d":
+        return "diffuse" if not get_name_only else name
+    if found_name[-1] == "n":
+        return "normal" if not get_name_only else name
+    if found_name[-1] == "m":
+        return "mask" if not get_name_only else name
+    if found_name[-1] == "s":
+        return "specular" if not get_name_only else name
+    # if found_name[-1] == "b":
+        # this could really be anything, not necessarily "blend"
+        # pass
+
+    return "unknown" if not get_name_only else name
 
 
 if __name__ == "__main__":

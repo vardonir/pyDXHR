@@ -4,10 +4,9 @@ import pygltflib as gltf
 from typing import List, Optional, Tuple, Dict
 import numpy as np
 import warnings
-import itertools
 import shutil
 
-from pyDXHR.cdcEngine.Sections.Material import Material, guess_materials
+from pyDXHR.cdcEngine.Sections.Material import Material
 from pyDXHR.cdcEngine.Sections import RenderResource
 from pyDXHR.utils.MeshData import MeshData, VertexSemantic
 
@@ -173,28 +172,37 @@ def _populate_material(
         cdc_material_id: int,
         blank_materials: bool = False
 ):
-
+    import json
     pydxhr_matlib = os.getenv('PYDXHR_MATLIB')
+    if pydxhr_matlib is None:
+        raise Exception
 
-    def _add_image():
+    with open(Path(pydxhr_matlib) / "mtl_lib_v2.json", 'r') as f:
+        mtl_lib = json.load(f)
+    with open(Path(pydxhr_matlib) / "mtl_lib_for_checking.json", 'r') as f:
+        inc_mtl_lib = json.load(f)
+
+    def _add_image(tx_id: int, ignore_mat_key: bool = False):
+        if tx_id in tx_dict:
+            return tx_dict[tx_id]
+
         img = gltf.Image(
             name="I_" + f"{tx_id:x}".rjust(8, '0'),
             extras={
                 "cdcTextureID": tx_id,  # keep this as a decimal int, used to get the image from the library
-                "guessed_key": mat_key,
+                "guessed_key": None if ignore_mat_key else mat_key,
                 "cdcMaterialID": "M_" + f"{cdc_material_id:x}".rjust(8, '0')
             }
         )
         gltf_im_id = _add_to_gltf(gltf_root, img)
+        image_dict[gltf_im_id] = img
 
         if blank_materials:
             return None
         # the images are added to the gltf image list regardless if they'll be used later on
         # so that the textures directory will be created and they'll still be saved there
 
-        image_dict[gltf_im_id] = img
-
-        tx = gltf.Texture(
+        gltf_tx = gltf.Texture(
             source=gltf_im_id,
             name="T_" + f"{tx_id:x}".rjust(8, '0'),
             extras={
@@ -203,7 +211,8 @@ def _populate_material(
                 "cdcMaterialID": "M_" + f"{cdc_material_id:x}".rjust(8, '0')
             }
         )
-        return _add_to_gltf(gltf_root, tx)
+        gltf_txid = _add_to_gltf(gltf_root, gltf_tx)
+        return gltf_txid
 
     mat_name = "M_" + f"{cdc_material_id:x}".rjust(8, '0')
 
@@ -211,71 +220,162 @@ def _populate_material(
         gltf_mat = gltf.Material(name=f"{mat_name}")
         _add_to_gltf(gltf_root, gltf_mat)
 
-    if pydxhr_matlib is None:
-        raise Exception
+    # arr = np.loadtxt(pydxhr_matlib, delimiter=",", dtype=int)
+    # tex_arr = arr[np.where(arr[:, 0] == cdc_material_id)]
 
-    arr = np.loadtxt(pydxhr_matlib, delimiter=",", dtype=int)
-    tex_arr = arr[np.where(arr[:, 0] == cdc_material_id)]
+    tx_dict: Dict[int, int] = {}  # key: cdcTX ID, v: gltfTX index
+    image_dict: Dict[int, gltf.Image] = {}
 
-    seen = []
-    materials = {}
-    matlib_data = {}
-    for tex_id, tex_info in zip(tex_arr[:, 1], tex_arr[:, 2:]):
-        if tex_id in seen:
+    gltf_mat = gltf.Material(
+        name=f"{mat_name}",
+        extras={},
+        alphaCutoff=None
+    )
+
+    if mat_name in mtl_lib:
+        mat_info = mtl_lib[mat_name]
+    else:
+        mat_info = inc_mtl_lib[mat_name]
+
+    for mat_key, tx_id in mat_info.items():
+        if mat_key == "unknown" and len(tx_id):
+            gltf_mat.extras |= {mat_key: str(tx_id)}
+            continue
+        if mat_key == "alpha":
+            if tx_id == 1:
+                gltf_mat.alphaMode = gltf.MASK
+                gltf_mat.alphaCutoff = 0.5
             continue
 
-        mat_type = guess_materials(*tex_info)
-        matlib_data[tex_id] = tex_info
+        if len(tx_id) == 0:
+            continue
 
-        if mat_type not in materials:
-            materials[mat_type] = []
-        materials[mat_type].append(tex_id.item())
+        if len(tx_id) > 1:
+            gltf_mat.extras |= {
+                mat_key: ",".join(["T_" + f"{t:x}".rjust(8, '0') if isinstance(t, int) else t for t in tx_id])
+            }
+            if mat_key == "colors":
+                continue
+            for tx in tx_id:
+                _ = _add_image(int(tx), ignore_mat_key=True)
+            continue
 
-        seen.append(tex_id.item())
+        if len(tx_id) == 1:
+            gltf_mat.extras |= {
+                mat_key: "T_" + f"{tx_id[0]:x}".rjust(8, '0') if isinstance(tx_id[0], int) else tx_id[0]
+            }
 
+            try:
+                tx = int(tx_id[0])
+            except ValueError:
+                pass  # TODO
+            else:
+                gltf_tx_id = _add_image(int(tx), ignore_mat_key=True)
+
+                if gltf_tx_id is None:
+                    continue
+
+                tf = gltf.TextureInfo(index=gltf_tx_id)
+
+                match mat_key:
+                    case "diffuse":
+                        gltf_mat.pbrMetallicRoughness = gltf.PbrMetallicRoughness(
+                            baseColorTexture=tf,
+                            metallicFactor=0,
+                            roughnessFactor=0.5,
+                        )
+                    case "normal":
+                        gltf_mat.normalTexture = gltf.NormalMaterialTexture(index=gltf_tx_id)
+                    # case "blend":
+                    #     pass
+                    # case "specular":
+                    #     pass
+                    # case "mask":
+                    #     pass
+                    # case "colors":
+                    #     pass
+                    # case "light":
+                        # gltf_mat.emissiveTexture = gltf.(index=gltf_tx_id)
+                    case _:
+                        pass
+
+    # elif mat_name in inc_mtl_lib:
+    #     gltf_mat = gltf.Material(
+    #         name=f"{mat_name}",
+    #         extras=inc_mtl_lib[mat_name]
+    #     )
+    #
+    #     for mat_key, tx_id in inc_mtl_lib[mat_name].items():
+    #         breakpoint()
+        # _add_image(int(tx), ignore_mat_key=True)
+
+    _add_to_gltf(gltf_root, gltf_mat)
+
+    # seen = []
+    # materials = {}
+    # matlib_data = {}
+    # for tex_id, tex_info in zip(tex_arr[:, 1], tex_arr[:, 2:]):
+    #     if tex_id in seen:
+    #         continue
+    #
+    #     mat_type = guess_materials(*tex_info)
+    #     matlib_data[str(tex_id.item())] = str(tex_info.tolist())
+    #
+    #     if mat_type not in materials:
+    #         materials[mat_type] = []
+    #     materials[mat_type].append(tex_id.item())
+    #
+    #     seen.append(tex_id.item())
+    #
     # len_mats = max(len(images) for images in materials.values())
-    materials_fixed = [dict(zip(materials, t)) for t in itertools.zip_longest(*materials.values())]
+    # materials_fixed = [dict(zip(materials, t)) for t in itertools.zip_longest(*materials.values())]
     # image_list = list(itertools.chain.from_iterable(materials.values()))
-
-    image_dict: Dict[int, gltf.Image] = {}
-    for i, mat in enumerate(materials_fixed):
-        gltf_mat = gltf.Material(
-            name=f"{mat_name}",
-            extras=mat,
-        )
-
-        if i == 0:
-            for mat_key, tx_id in mat.items():
-                if not tx_id:
-                    continue
-
-                gltf_tx_id = _add_image()
-
-                if blank_materials:
-                    continue
-
-                if gltf_tx_id:
-                    tf = gltf.TextureInfo(index=gltf_tx_id)
-
-                    match mat_key:
-                        case "diffuse":
-                            gltf_mat.pbrMetallicRoughness = gltf.PbrMetallicRoughness(baseColorTexture=tf)
-                        case "normal":
-                            gltf_mat.normalTexture = gltf.NormalMaterialTexture(index=gltf_tx_id)
-                        case "blend":
-                            pass
-                        case _:
-                            pass
-
-            gltf_mat.extras |= {"matlib_data": str(matlib_data)}
-            _add_to_gltf(gltf_root, gltf_mat)
-        else:  # add dangling images + textures, but not attach to any materials - these can be fixed later,
-            # depending on the settings of the GLTF importer
-            for mat_key, tx_id in mat.items():
-                if not tx_id:
-                    continue
-
-                _ = _add_image()
+    #
+    # if blank_materials:
+    #     gltf_mat = gltf.Material(
+    #         name=f"{mat_name}",
+    #         extras=matlib_data
+    #     )
+    #
+    #     for tx_id in matlib_data.keys():
+    #         _add_image(int(tx_id), ignore_mat_key=True)
+    #
+    #     _add_to_gltf(gltf_root, gltf_mat)
+    # else:
+    #     for i, mat in enumerate(materials_fixed):
+    #         gltf_mat = gltf.Material(
+    #             name=f"{mat_name}",
+    #             extras=mat,
+    #         )
+    #
+    #         if i == 0:
+    #             for mat_key, tx_id in mat.items():
+    #                 if not tx_id:
+    #                     continue
+    #
+    #                 gltf_tx_id = _add_image(tx_id)
+    #
+    #                 if gltf_tx_id:
+    #                     tf = gltf.TextureInfo(index=gltf_tx_id)
+    #
+    #                     match mat_key:
+    #                         case "diffuse":
+    #                             gltf_mat.pbrMetallicRoughness = gltf.PbrMetallicRoughness(baseColorTexture=tf)
+    #                         case "normal":
+    #                             gltf_mat.normalTexture = gltf.NormalMaterialTexture(index=gltf_tx_id)
+    #                         case "blend":
+    #                             pass
+    #                         case _:
+    #                             pass
+    #
+    #             _add_to_gltf(gltf_root, gltf_mat)
+    #         else:  # add dangling images + textures, but not attach to any materials - these can be fixed later,
+    #             # depending on the settings of the GLTF importer
+    #             for mat_key, tx_id in mat.items():
+    #                 if not tx_id:
+    #                     continue
+    #
+    #                 _ = _add_image()
 
     return image_dict
 
