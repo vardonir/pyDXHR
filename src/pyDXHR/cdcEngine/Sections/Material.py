@@ -37,6 +37,11 @@ class Material(AbstractSection):
         if self.section is not None:
             self.MaterialSpec: int = self.section.Header.Language
 
+        self._parse_data()
+
+    def _parse_data(self):
+        pass
+
     @staticmethod
     def _get_name_from_archive(archive, m_id):
         if archive is not None and archive.platform.value in ArchivePlatform.has_complete_file_lists():
@@ -52,7 +57,7 @@ class Material(AbstractSection):
 
     def _get_texture_ids(self):
 
-        for idx in range(16):
+        for idx in range(16):  # might just be 8?
             offset = 0x4c + 4 * idx
 
             submat_blob_data_offset = find_resolver(self.section.Resolvers, offset).DataOffset
@@ -76,7 +81,7 @@ class Material(AbstractSection):
                 tb3_data = []
                 for i in range(tex_count):
                     tx_off = texture_data_offset + (16 * i)
-                    tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LfLBBH", self.section.Data, tx_off)
+                    tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LHHLBBH", self.section.Data, tx_off)
                     tb3_data.append((tex_id, tex_data))
 
                     # see https://github.com/rrika/cdcEngineDXHR/blob/d3d9/rendering/MaterialData.h#L11
@@ -90,13 +95,14 @@ class Material(AbstractSection):
         self._get_textures()
 
     def debug_print(self):
+        print("Material table for ", self.Name)
         print("Material table for ", "M_" + f"{self.section.Header.SecId:x}".rjust(8, '0'))
-        print(f"unk6: {self.section.Header.unk06}")
+        # print(f"unk6: {self.section.Header.unk06}")
         for k, v in self._raw_texture_list.items():
             if len(v):
                 print("submat ", k)
                 for i in v:
-                    row_format = "{:>8}" * len(i)
+                    row_format = "{:>8x}" * len(i)
                     print(row_format.format(*i))
 
                     # if self._archive.platform.value not in ArchivePlatform.has_complete_file_lists():

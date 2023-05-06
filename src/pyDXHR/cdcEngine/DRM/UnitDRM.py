@@ -2,7 +2,7 @@
 Mostly adapted from https://github.com/rrika/dxhr/blob/main/tools/cdcunit.py
 
 Nodes:
-    - transpose???
+    - why transpose???
 """
 
 import os
@@ -17,7 +17,7 @@ from enum import Enum
 
 from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
-from pyDXHR.cdcEngine.DRM.DRMFile import DRM
+from pyDXHR.cdcEngine.DRM.DRMFile import DRM, Section
 from pyDXHR.cdcEngine.DRM.Reference import Reference
 from pyDXHR.utils import create_directory
 
@@ -28,12 +28,17 @@ class ObjectType(Enum):
     OBJ = "OBJ"  # not confusing at all
     Stream = "Stream"
     Collision = "Collision"
+    Cell = "Cell"
+    Occlusion = "Occlusion"
 
 
 class UnitDRM(DRM):
+    _identity_trs = np.eye(4).astype(float)
+
     def __init__(self, **kwargs):
         super().__init__()
         self.ObjectData: Dict[ObjectType, Dict[Any, List[np.ndarray]]] = {}
+        self.CellSectionData: List[Section] = []
 
         self._archive: Optional[Archive] = None
         self._split_objects: bool = False
@@ -152,12 +157,20 @@ class UnitDRM(DRM):
         pass
     # endregion
 
-    # region sub50 - occlusion, stream
+    # region sub50 - occlusion, cell, stream
+    def _process_cell(self):
+        self.ObjectData[ObjectType.Cell] = {
+            (cell_name, cell.section.Header.SecId): [self._identity_trs]
+            for cell, cell_name in self._cell_ref_list
+        }
+
+        self.CellSectionData = [cell.section for cell, _ in self._cell_ref_list]
+
     def _process_occlusion(self):
-        # TODO
-        pass
-        # for i in range(self._cell_count):
-        #     breakpoint()
+        self.ObjectData[ObjectType.Occlusion] = {
+            sec.section.Header.SecId: [self._identity_trs]
+            for sec in self._occlusion_ref_list
+        }
 
     def _process_streamgroup(self):
         # TODO - not all render terrain show up (see det_city_tunnel)
@@ -177,7 +190,7 @@ class UnitDRM(DRM):
                     streamgroup_data[key] = []
 
                 # TRS mat for streamobjects is 4x4 unit matrix...?
-                streamgroup_data[key].append(np.eye(4).astype(float))
+                streamgroup_data[key].append(self._identity_trs)
 
         self.ObjectData[ObjectType.Stream] = streamgroup_data
     # endregion
@@ -298,6 +311,9 @@ class UnitDRM(DRM):
         if kwargs.get("occlusion", True):
             self._process_occlusion()
 
+        if kwargs.get("cell", True):
+            self._process_cell()
+
     @staticmethod
     def _read_section_data(rm_section,
                            folder: str,
@@ -315,7 +331,7 @@ class UnitDRM(DRM):
         try:
             rm = RenderMesh.deserialize(rm_section)
         except kaitaistruct.ValidationNotEqualError as e:
-            # some RM sections are apparently badly formed? idk
+            # some RM sections are apparently badly formed? they're rare, but they exist
             # warnings.warn("Encountered RenderMesh error")
             pass
         else:
@@ -409,12 +425,13 @@ class UnitDRM(DRM):
                             if idx == 0:
                                 self._read_section_data(rm_section=sec,
                                                         folder="imf_ext",
-                                                        file_name=f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
+                                                        # file_name=f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
+                                                        file_name=f"{imf_name}.gltf",
                                                         dest=dest,
                                                         apply_scale=apply_universal_scale,
                                                         blank_materials=blank_materials
                                                         )
-                            write_to_dir(f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
+                            write_to_dir(imf_name, trs_mat)
 
             # objects
             if ObjectType.OBJ in self.ObjectData:
@@ -431,12 +448,13 @@ class UnitDRM(DRM):
                                 self._read_section_data(rm_section=sec,
                                                         trs_mat=trs_mat,
                                                         folder="obj",
-                                                        file_name=f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
+                                                        # file_name=f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
+                                                        file_name=f"{obj_name}.gltf",
                                                         dest=dest,
                                                         apply_scale=apply_universal_scale,
                                                         blank_materials=blank_materials
                                                         )
-                            write_to_dir(f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
+                            write_to_dir(obj_name, trs_mat)
 
         # internal IMFs
         if ObjectType.IMF in self.ObjectData:
@@ -453,6 +471,40 @@ class UnitDRM(DRM):
                                                 blank_materials=blank_materials
                                                 )
                     write_to_dir(f"RenderModel_" + f"{rm_id:x}".rjust(8, '0'), trs_mat)
+
+        # cell data
+        if ObjectType.Cell in self.ObjectData:
+            # TODO: check in the case of DRMs with many cells - possible collisions?
+            for (cell_name, sec_id), trs_mat_list in tqdm(self.ObjectData[ObjectType.Cell].items(), desc="Processing cells"):
+                sanitized_cell_name = cell_name.replace('|', '_')
+                for idx, trs_mat in enumerate(trs_mat_list):
+                    rm_sec = self.lookup_section(SectionType.RenderMesh, sec_id)
+
+                    if idx == 0:
+                        self._read_section_data(rm_section=rm_sec,
+                                                folder="cell",
+                                                file_name=f"{sanitized_cell_name}.gltf",
+                                                dest=dest,
+                                                apply_scale=apply_universal_scale,
+                                                blank_materials=blank_materials
+                                                )
+                    write_to_dir(sanitized_cell_name, trs_mat)
+
+        # occlusion
+        if ObjectType.Occlusion in self.ObjectData:
+            for sec_id, trs_mat_list in tqdm(self.ObjectData[ObjectType.Occlusion].items(), desc="Processing occlusion"):
+                for idx, trs_mat in enumerate(trs_mat_list):
+                    rm_sec = self.lookup_section(SectionType.RenderMesh, sec_id)
+
+                    if idx == 0:
+                        self._read_section_data(rm_section=rm_sec,
+                                                folder="occlusion",
+                                                file_name="RenderModel_" + f"{sec_id:x}".rjust(8, '0') + ".gltf",
+                                                dest=dest,
+                                                apply_scale=apply_universal_scale,
+                                                blank_materials=blank_materials
+                                                )
+                    write_to_dir("RenderModel_" + f"{sec_id:x}".rjust(8, '0'), trs_mat)
 
         merge_single(
             output_path=dest,

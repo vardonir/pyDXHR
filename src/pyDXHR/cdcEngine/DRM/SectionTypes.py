@@ -10,8 +10,8 @@ class SectionType(IntEnum):
     Generic = 0
     Empty = 1
     Animation = 2
-    Unknown03 = 3
-    Unknown04 = 4
+    Unknown03 = 3  # PushBuffer?
+    Unknown04 = 4  # PushBuffer
     RenderResource = 5
     FMODSoundBank = 6  # or Wave
     DTPData = 7

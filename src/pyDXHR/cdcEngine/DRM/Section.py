@@ -33,10 +33,6 @@ class SectionHeader:
             _05, self.unk06, \
             self.Flags, self.SecId, self.Language = struct.unpack_from(f"{endian.value}LBBHLLL", data, offset=0)
 
-        # _05, _06a, _06b, \
-        # self.Flags, self.SecId, self.Language = struct.unpack_from(f"{endian.value}LBBBBLLL", data, offset=0)
-        # self.unk06 = _06a, _06b
-
         self.SectionType = SectionType(section_type)
 
     # noinspection PyPep8Naming

@@ -13,12 +13,10 @@ from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 
 class ArchivePlatform(Enum):
     PC_W = "pc-w"
-    PC_JAP = "pc-jap"  # this doesn't exist, but it's here for the sake of completeness
     PS3_W = "ps3-w"
     PS3_JAP = "ps3-jap"
     XENON_W = "xenon-w"
-    XENON_JAP = "xenon-jap"  # probably not correct lmao
-    WII_W = "wii-w"  # need to check
+    WII_W = "wiiu-w"
     UNK = ""
 
     @staticmethod
@@ -135,6 +133,10 @@ class Archive:
                 self.data_alignment, = struct.unpack_from(">L", data)
             # xbox DC
             case 0x0000D06A:
+                self.endian = Endian.Big
+                self.data_alignment, = struct.unpack_from(">L", data)
+            # wiiu
+            case 0x0000401F:
                 self.endian = Endian.Big
                 self.data_alignment, = struct.unpack_from(">L", data)
             case _:

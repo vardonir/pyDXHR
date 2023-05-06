@@ -47,6 +47,7 @@ class VertexSemantic(Enum):
     TexCoord2 = 0x8e54b6f3
     TexCoord3 = 0x8a95ab44
     TexCoord4 = 0x94d2fb41
+    InstanceID = 0xE7623ECF
 
     @staticmethod
     def tex_coords() -> set:
@@ -270,14 +271,17 @@ class MeshData:
                 name: Optional[str],
                 save_to: Optional[str | Path] = None,
                 as_bytes: bool = False,
-                blank_materials: bool = False):
+                blank_materials: bool = False,
+                skip_materials: bool = False,
+                ):
         from pyDXHR.utils.gltf import build
         return build(
             mesh_data=self,
             as_bytes=as_bytes,
             name=name,
             save_to=save_to,
-            blank_materials=blank_materials
+            blank_materials=blank_materials,
+            skip_materials=skip_materials,
         )
 
 
@@ -296,7 +300,8 @@ def read_vertex_buffer(vertex_data: bytes,
         0x06                4x  uint8       divide by 255      (or 3x?)   blendweights
         0x07                4x  uint8                          (or 3x?)   blendindices
         0x13                 2x sint16      divide by 2048.0              texcoords
-        0xA     3x float32 + 2x uint16                                    packedNTB - shows up in RenderTerrain
+        0xA                     ???                                       packedNTB - shows up in RenderTerrain
+        0x11                    ???                                       wii-u version. related to Normal/Binormal/Tangent
 
     :param vertex_data: mesh data starting from the vtx buffer offset
     :param semantic_type: see table above
@@ -313,7 +318,7 @@ def read_vertex_buffer(vertex_data: bytes,
         case 0x02:
             vtx = [struct.unpack_from(f"{endian.value}fff", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             return np.array(vtx, dtype=np.float32)
-        case 0x04 | 0x05 | 0x06 | 0xA:
+        case 0x04 | 0x05 | 0x06 | 0xA | 0x11:
             # not sure if 0xA belongs here, but it works?
             vtx = [struct.unpack_from(f"{endian.value}BBB", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             out_array = np.array(vtx, dtype=np.float32)
@@ -326,5 +331,8 @@ def read_vertex_buffer(vertex_data: bytes,
         case 0x13:
             vtx = [struct.unpack_from(f"{endian.value}hh", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             return np.array(vtx, dtype=np.float32) / 2048
+        # case 0x11:
+        #     # TODO
+        #     breakpoint()
         case _:
             raise Exception(f"Unknown vertex semantic type: {semantic_type}")

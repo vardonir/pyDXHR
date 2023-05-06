@@ -93,7 +93,7 @@ class MissingResolver(Resolver):
         return f"MissingResolver {self.PointerOffset}"
 
     def deserialize(self, data, endian: Endian = Endian.Little):
-        raise Exception("whut")
+        pass
 
 
 def deserialize_resolver_list(

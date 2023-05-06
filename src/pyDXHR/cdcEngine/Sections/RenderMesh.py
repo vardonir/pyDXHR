@@ -32,7 +32,8 @@ class RenderMesh(AbstractSection):
     def to_gltf(self,
                 save_to: Optional[str | Path] = None,
                 as_bytes: bool = False,
-                blank_materials: bool = False
+                blank_materials: bool = False,
+                skip_materials: bool = False,
                 ):
         dest = None
         if save_to:
@@ -45,7 +46,8 @@ class RenderMesh(AbstractSection):
             name=Path(self.Name).stem,
             save_to=dest,
             as_bytes=as_bytes,
-            blank_materials=blank_materials
+            blank_materials=blank_materials,
+            skip_materials=skip_materials,
         )
 
 

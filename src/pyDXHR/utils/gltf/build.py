@@ -18,6 +18,7 @@ def build_gltf(mesh_data: MeshData,
                share_textures: bool = True,
                scale: float = 1.0,
                blank_materials: bool = False,
+               skip_materials: bool = False,
                ):
     """
     "share_textures": will create a folder called "textures"
@@ -55,7 +56,7 @@ def build_gltf(mesh_data: MeshData,
     mat_index_dict: Dict[Material, int] = {}
     for mat_index, mat in enumerate(mesh_data.MaterialIDList):
         if mat not in mat_index_dict:
-            image_dict = _populate_material(gltf_root, mat.ID, blank_materials=blank_materials)
+            image_dict = _populate_material(gltf_root, mat.ID, blank_materials=blank_materials, skip_materials=skip_materials)
             mat_index_dict[mat] = mat_index
             complete_image_dict |= image_dict
         else:
@@ -170,9 +171,22 @@ def _copy_texture_images(
 def _populate_material(
         gltf_root: gltf.GLTF2,
         cdc_material_id: int,
-        blank_materials: bool = False
+        blank_materials: bool = False,
+        skip_materials: bool = False,
 ):
     import json
+    mat_name = "M_" + f"{cdc_material_id:x}".rjust(8, '0')
+
+    if skip_materials:
+        gltf_mat = gltf.Material(
+            name=f"{mat_name}",
+            extras={},
+            alphaCutoff=None
+        )
+
+        _add_to_gltf(gltf_root, gltf_mat)
+        return {}
+
     pydxhr_matlib = os.getenv('PYDXHR_MATLIB')
     if pydxhr_matlib is None:
         raise Exception
@@ -214,8 +228,6 @@ def _populate_material(
         gltf_txid = _add_to_gltf(gltf_root, gltf_tx)
         return gltf_txid
 
-    mat_name = "M_" + f"{cdc_material_id:x}".rjust(8, '0')
-
     if blank_materials:
         gltf_mat = gltf.Material(name=f"{mat_name}")
         _add_to_gltf(gltf_root, gltf_mat)
@@ -245,6 +257,8 @@ def _populate_material(
             if tx_id == 1:
                 gltf_mat.alphaMode = gltf.MASK
                 gltf_mat.alphaCutoff = 0.5
+            continue
+        if mat_key == "light" and len(tx_id):
             continue
 
         if len(tx_id) == 0:

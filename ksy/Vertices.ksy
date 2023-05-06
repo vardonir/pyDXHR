@@ -1,3 +1,5 @@
+# https://github.com/rrika/cdcEngineDXHR/blob/main/rendering/VertexDeclaration.h#LL34C20-L34C20
+
 meta:
   id: vtxinfo
   endian: le

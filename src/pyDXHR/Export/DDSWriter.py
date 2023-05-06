@@ -1,5 +1,5 @@
 """
-Flags values adapted from
+Flags/values adapted from
 https://github.com/drewcassidy/quicktex/blob/main/quicktex/dds.py
 https://www.xnalara.org/viewtopic.php?t=1001
 """
