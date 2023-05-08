@@ -26,8 +26,8 @@ class MasterunitDRM:
             filename = linked + ".drm"
             drm_data = self._archive.get_from_filename(filename)
 
-            unit = UnitDRM(kwargs=kwargs)
-            unit.deserialize(drm_data, archive=self._archive, kwargs=kwargs)
+            unit = UnitDRM(**kwargs)
+            unit.deserialize(drm_data, archive=self._archive, **kwargs)
             self._unit_list[linked] = unit
 
     def _read_masterunit(self):
@@ -35,8 +35,8 @@ class MasterunitDRM:
         name = self.Name if self.Name.endswith("__masterunit.drm") else self.Name + "__masterunit.drm"
 
         mu_data = self._archive.get_from_filename(name)
-        unit = UnitDRM(kwargs=self._kwargs)
-        unit.deserialize(mu_data, archive=self._archive, kwargs=self._kwargs)
+        unit = UnitDRM(**self._kwargs)
+        unit.deserialize(mu_data, archive=self._archive, **self._kwargs)
         self._unit_list[self.Name] = unit
         self._linked_drm_names = unit.linked_drm()
 

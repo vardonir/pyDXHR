@@ -1,0 +1,25 @@
+tqdm==4.64.1
+numpy==1.24.2
+fastcrc==0.2.1
+# wannacri = { git = https://github.com/donmai-me/WannaCRI.git, branch = master }
+pygltflib==1.15.5
+kaitaistruct==0.10
+Pillow==9.5.0
+scipy==1.10.1
+networkx==3.1
+#bitstring==4.0.2
+
+
+#[tool.poetry.group.dev.dependencies]
+# flask==2.2.3
+notebook==6.5.2
+jupyter==1.0.0
+ipython==8.11.0
+Sphinx==6.1.3
+sphinx-rtd-theme==1.2.0
+myst-parser==1.0.0
+pandoc==2.3
+nbsphinx==0.9.1
+trimesh==3.21.5
+pyglet==2.0.5
+matplotlib==3.7.1

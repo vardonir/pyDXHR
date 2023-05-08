@@ -15,10 +15,10 @@ kaitaistruct = "^0.10"
 Pillow = "^9.5.0"
 scipy = "^1.10.1"
 networkx = "^3.1"
-bitstring = "^4.0.2"
+#bitstring = "^4.0.2"
 
 
-[tool.poetry.group.dev.dependencies]
+#[tool.poetry.group.dev.dependencies]
 flask = "^2.2.3"
 notebook = "^6.5.2"
 jupyter = "^1.0.0"

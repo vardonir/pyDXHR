@@ -14,7 +14,8 @@ pc_drm = MasterunitDRM(
     uniform_scale=0.002,
     z_up=True,
 
-    imf=False,
+    imf=True,
+    skip_int_imf=True,
     stream=True,
     obj=False,
     occlusion=False,
