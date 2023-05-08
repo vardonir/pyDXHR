@@ -60,11 +60,12 @@ class RenderResource(AbstractSection):
             return "RenderResource_" + f"{sec_id:x}".rjust(8, '0')
 
     def to_gltf(self, use_dds: bool = False, as_blob: bool = False):
-        import pygltflib as gltf
-        if use_dds:
-            gltf_image = gltf.Image(
-
-            )
+        pass
+        # import pygltflib as gltf
+        # if use_dds:
+        #     gltf_image = gltf.Image(
+        #
+        #     )
 
     def to_file(self, image_format: OutputFormat, save_to: Path | str):
         self.Image.save_as(image_format=image_format, save_to=save_to)

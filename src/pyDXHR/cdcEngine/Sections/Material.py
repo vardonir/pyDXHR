@@ -57,12 +57,23 @@ class Material(AbstractSection):
 
     def _get_texture_ids(self):
 
-        for idx in range(16):  # might just be 8?
+        for idx in range(16):
+            # it might just be 8?
+            # TODO: find where that note is
             offset = 0x4c + 4 * idx
 
             submat_blob_data_offset = find_resolver(self.section.Resolvers, offset).DataOffset
             if not submat_blob_data_offset:
                 continue
+
+            # out = {}
+            # for dep in drm.Header.DRMDependencies:
+            #     t_drm = DRM()
+            #     t_drm.deserialize(arc.get_from_filename(dep))
+            #
+            #     for sec in t_drm.Sections:
+            #         if sec.Header.SectionType == SectionType.ShaderLib:
+            #             out[hex(sec.Header.SecId)] = sec
 
             texture_resolver = find_resolver(self.section.Resolvers, submat_blob_data_offset + 0x18)
 
@@ -73,7 +84,7 @@ class Material(AbstractSection):
 
             texture_data_offset = texture_resolver.DataOffset
             # which byte is the real tex count??
-            tex_byte1, tex_byte2, tex_byte3, tex_count = struct.unpack_from(f"{self._endian.value}4B",
+            tex_byte1, tex_byte2, tex_count, tex_byte4 = struct.unpack_from(f"{self._endian.value}4B",
                                                                             self.section.Data,
                                                                             submat_blob_data_offset + 0x14)
 
@@ -93,6 +104,62 @@ class Material(AbstractSection):
         super()._deserialize_from_section(section)
         self._get_texture_ids()
         self._get_textures()
+        # self._process_refs()
+
+    def from_drm(self, drm, arc):
+        from cdcEngine.DRM.Reference import Reference
+        from cdcEngine.DRM.SectionTypes import SectionType
+        ref = Reference.from_drm_section(drm=drm, section=self.section, offset=0)
+
+        out = {}
+        for dep in drm.Header.DRMDependencies:
+            t_drm = DRM()
+            t_drm.deserialize(arc.get_from_filename(dep))
+
+            for sec in t_drm.Sections:
+                if sec.Header.SectionType == SectionType.ShaderLib:
+                    out[sec.Header.SecId] = sec
+
+        def read_submat(submatblob):
+            if submatblob is None:
+                return (None, None, None, None, [])
+
+            ps = submatblob.deref(0x00)
+            vs = submatblob.deref(0x04)
+            # hs = submatblob.deref(0x08)
+            # ds = submatblob.deref(0x0c)
+            tx = submatblob.deref(0x18)
+
+            # p = []
+            # if tx and tx.resolver:
+            #     tx_off = tx.resolver.DataOffset
+            #
+            #     tex_byte1, tex_byte2, tex_byte3, tex_count = struct.unpack_from(f"{self._endian.value}4B",
+            #                                                                     self.section.Data,
+            #                                                                     submatblob.offset + 0x14)
+            #
+            #     for r_i in range(tex_count):
+            #         tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LHHLBBH", self.section.Data, tx_off)
+            #
+            #         p.append((tex_id, *tex_data))
+            # return (ps, vs, hs, ds, p)
+
+            if isinstance(ps, int) or isinstance(vs, int):
+                ps_sec = out.get(ps)
+                vs_sec = out.get(vs)
+
+                if ps_sec:
+                    from cdcEngine.Sections.ShaderLib import ShaderLib
+                    sl = ShaderLib(section=ps_sec)
+                    if sl.section.Header.Specialization == 0xBFFFFFFF:
+                        breakpoint()
+
+        submats = [
+            read_submat(ref.deref(0x4c + 4 * i))
+            for i in range(16)
+        ]
+
+        breakpoint()
 
     def debug_print(self):
         print("Material table for ", self.Name)

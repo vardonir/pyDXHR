@@ -19,8 +19,10 @@ class DX11:
         VertexShader = 0xFFFE
 
     def __init__(self, data):
-        self.chunks = []
+        # self.chunks = []
         self.program_type = None
+        self.isgn = None
+        self.osgn = None
         baadf00d, self.length, unk1, unk2 = struct.unpack_from("4L", data)
         assert baadf00d == 0xbaadf00d
 
@@ -33,7 +35,7 @@ class DX11:
         return len(self.bytecode)
 
     def _parse_bytecode(self):
-        # temporary
+        # temporary, probably unnecessary
         one, size, len_chunks = struct.unpack_from("3L", self.bytecode, 0x14)
         assert one == 1
         # assert len(self._bytecode) == size # ??
@@ -57,10 +59,14 @@ class DX11:
 
                         d_values.append(d)
 
+                    if self.ChunkTypes(chunk_type) == self.ChunkTypes.ISGN:
+                        self.isgn = names
+                    elif self.ChunkTypes(chunk_type) == self.ChunkTypes.OSGN:
+                        self.osgn = names
+
                     # if "TEXCOORD" in names:
                     #     breakpoint()
 
-                    # breakpoint()
                 case self.ChunkTypes.RDEF:
                     magic, chunk_length, \
                         len_const_buffer, off_const_buffer, \
@@ -81,7 +87,44 @@ class DX11:
                 case _:
                     pass
 
-        breakpoint()
+        # breakpoint()
+
+    @property
+    def disasm(self):
+        # https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/shader-model-5-assembly--directx-hlsl-
+
+        d3d1x_path = r"C:\Users\vardo\DXHR_Research\pyDXHR_public\external\d3d1x_rel_v090b\Release\fxdis.exe"
+        import tempfile
+        import subprocess
+        import os
+
+        fd, path = tempfile.mkstemp(
+            dir=r"C:\Users\vardo\DXHR_Research\pyDXHR_public\external\d3d1x_rel_v090b\Release",
+            suffix=".bin")
+        try:
+            with os.fdopen(fd, 'wb') as tf:
+                tf.write(self.bytecode)
+
+            result = subprocess.run([d3d1x_path, path],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+
+        finally:
+            os.remove(path)
+
+        return result.stdout.decode("utf-8")
+
+# out = {}
+# for dep in drm.Header.DRMDependencies:
+#     t_drm = DRM()
+#     t_drm.deserialize(arc.get_from_filename(dep))
+#
+#     for sec in t_drm.Sections:
+#         if sec.Header.SectionType == SectionType.ShaderLib:
+#             out[hex(sec.Header.SecId)] = sec
+#
+# a = ShaderLib(section=out.get("0x1d40")).bytecode_chunks[0]
+# aa = a.d3d1x_run()
 
 class DX9:
     def __init__(self, data):

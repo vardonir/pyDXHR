@@ -78,19 +78,18 @@ class UnknownResolver(Resolver):
             if s.SectionType == section_type and s.SecId == section_id:
                 return idx
         else:
-            return MissingResolver(self.PointerOffset)
+            mr = MissingResolver()
+            mr.SectionId = section_id
+            mr.PointerOffset = self.PointerOffset
+            return mr
 
     def __repr__(self):
         return f"UR {self.PointerOffset} | {self.SectionType} {self.SectionId}"
 
 
 class MissingResolver(Resolver):
-    def __init__(self, pointer_offset):
-        super().__init__()
-        self.PointerOffset = pointer_offset
-
     def __repr__(self):
-        return f"MissingResolver {self.PointerOffset}"
+        return f"MissingResolver {self.PointerOffset} | {self.SectionId}"
 
     def deserialize(self, data, endian: Endian = Endian.Little):
         pass
@@ -147,7 +146,8 @@ def find_resolver(resolver_list: List[Resolver],
                   unpacked_archive: Optional = None
                   ) -> Resolver:
 
-    found = MissingResolver(offset)
+    found = MissingResolver()
+    found.PointerOffset = offset
     for res in resolver_list:
         if offset == res.PointerOffset:
             found = res

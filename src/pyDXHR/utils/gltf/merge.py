@@ -215,7 +215,6 @@ def merge_single_node_gltf(
 
 def merge_multinode_gltf(
         output_path: str | Path,
-        trs_matrix: Optional[np.ndarray] = None,
         **kwargs,
 ):
     pass

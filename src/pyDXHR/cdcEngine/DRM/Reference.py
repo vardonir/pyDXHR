@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 class Reference:
     # adapted from https://github.com/rrika/dxhr/blob/main/tools/drm.py#L21
-    # i get the concept, but someday i'll figure out what the pancake is going on here...
     def __init__(self, section_list: List[Section], section: Section, offset: int = 0):
         self.section_list = section_list
         self.section = section
@@ -49,12 +48,12 @@ class Reference:
             match type(resolver).__qualname__:
                 case UnknownResolver.__qualname__:
                     if type(resolver.SectionId).__qualname__ == MissingResolver.__qualname__:
-                        return None
+                        return resolver.SectionId.SectionId
                     elif resolver.SectionId:
                         return Reference(self.section_list, self.section_list[resolver.SectionId], 0)
                     else:
                         # there has to be a much less brute force method for this...
-                        return MissingResolver(offset)
+                        return None
                         # external_reference = find_external_reference(reference.SectionType, reference.ExtId)
                         # print(f"MISSING REFERENCE U2R")
                         # print(reference.SectionType)

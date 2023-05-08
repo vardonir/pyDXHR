@@ -10,10 +10,19 @@ file = "det_city"
 pc_drm = MasterunitDRM(
     masterunit_name=file,
     archive=pc_arc,
+
+    uniform_scale=0.002,
+    z_up=True,
+
+    imf=False,
+    stream=True,
     obj=False,
-    skip_ext_imf=True
+    occlusion=False,
+    cell=True,
 )
 
-# pc_drm.to_gltf(save_to=fr"C:\Users\vardo\DXHR_Research\pyDXHR_public\output\masterunit_gltf\{file}",
-#                apply_universal_scale=False,
-#                blank_materials=True)
+pc_drm.to_gltf(save_to=fr"F:\pyDXHR\gltf\{file}",
+               blank_materials=True,
+               merge=False)
+
+breakpoint()
