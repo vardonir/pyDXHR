@@ -14,17 +14,16 @@ from pyDXHR.utils.MeshData import MeshData, VertexSemantic
 def build_gltf(mesh_data: MeshData,
                save_to: Optional[str | Path] = None,
                name: Optional[str] = None,
-               as_bytes: bool = False,
-               share_textures: bool = True,
-               scale: float = 1.0,
-               blank_materials: bool = False,
-               skip_materials: bool = False,
+               **kwargs,
                ):
     """
     "share_textures": will create a folder called "textures"
     "blank materials": create the materials, but do not assign textures
     """
-    # det_building_scifi_a_lod_00003fab
+    blank_materials = kwargs.get("blank_materials", False)
+    skip_materials = kwargs.get("skip_materials", False)
+    share_textures = kwargs.get("share_textures", True)
+    as_bytes = kwargs.get("as_bytes", False)
 
     # region setup
     asset_data = gltf.Asset()
@@ -56,7 +55,10 @@ def build_gltf(mesh_data: MeshData,
     mat_index_dict: Dict[Material, int] = {}
     for mat_index, mat in enumerate(mesh_data.MaterialIDList):
         if mat not in mat_index_dict:
-            image_dict = _populate_material(gltf_root, mat.ID, blank_materials=blank_materials, skip_materials=skip_materials)
+            image_dict = _populate_material(gltf_root, mat.ID,
+                                            blank_materials=blank_materials,
+                                            skip_materials=skip_materials
+                                            )
             mat_index_dict[mat] = mat_index
             complete_image_dict |= image_dict
         else:
@@ -72,7 +74,6 @@ def build_gltf(mesh_data: MeshData,
                 vtx_array=array,
                 binary_blob=binary_blob,
                 mesh_num=idx,
-                scale=scale,
                 name=name,
             )
 
@@ -429,7 +430,6 @@ def _add_index_data(
             "MESH_IDX": mesh_num,
             "PRIM_IDX": submesh_num,
         },
-
     )
 
     return view, accessor, byte_data
@@ -472,7 +472,6 @@ def _add_vertex_data(
         vtx_array: np.ndarray,
         binary_blob: bytes,
         mesh_num: int = -1,
-        scale: float = 1.0,
         name: str = ""
 ) -> Tuple[gltf.BufferView, gltf.Accessor, bytes]:
     """
@@ -490,9 +489,6 @@ def _add_vertex_data(
     elif vtx_sem.value in VertexSemantic.colors():
         # I'm not sure if this is correct, but if it gets the GLTF validator to shut up...
         vtx_array = np.abs(vtx_array)
-
-    elif vtx_sem.value == VertexSemantic.Position.value:
-        vtx_array *= scale
 
     current_byte_offset = len(binary_blob)
     byte_data = vtx_array.tobytes()

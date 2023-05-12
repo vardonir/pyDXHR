@@ -21,11 +21,13 @@ pc_drm.deserialize(
     pc_data,
     archive=arc,
     split_objects=True,
-    imf=False,
-    stream=True,
-    obj=False,
-    occlusion=False,
-    cell=True,
+
+    # imf=False,
+    # stream=False,
+    # obj=True,
+    # occlusion=True,
+    # cell=False,
+    # collision=False,
 )
 
 pc_drm.to_gltf(save_to=fr"F:\pyDXHR\unit_gltf\{file}",

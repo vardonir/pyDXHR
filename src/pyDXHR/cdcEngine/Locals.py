@@ -2,8 +2,8 @@
 Work in progress
 """
 
-locals_bin = r"C:\Users\vardo\DXHR_Research\DXHRDC_Unpacked\FFFFFD61\pc-w\local\locals.bin"
-locals_fr = r"C:\Users\vardo\DXHR_Research\DXHRDC_Unpacked\FFFFFD64\pc-w\local\locals.bin"
+locals_bin = r"F:\DXHRDC_Unpacked\FFFFFD61\pc-w\local\locals.bin"
+locals_fr = r"F:\DXHRDC_Unpacked\FFFFFD64\pc-w\local\locals.bin"
 
 # region ------------
 # This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
@@ -53,15 +53,27 @@ with open(locals_fr, "rb") as f:
 
 strings_en = []
 for prev, curr in zip(loc_en.u5, loc_en.u5[1:]):
-    strings_en.append(data_en[prev.str_offset:curr.str_offset].decode("latin1"))
+    # strings_en.append(data_en[prev.str_offset:curr.str_offset].decode("latin1"))
+    strings_en.append(data_en[prev.str_offset:curr.str_offset])
 
 strings_fr = []
 for prev, curr in zip(loc_fr.u5, loc_fr.u5[1:]):
-    strings_fr.append(data_fr[prev.str_offset:curr.str_offset])
+    strings_fr.append(data_fr[prev.str_offset:curr.str_offset].decode("latin1"))
 
 
-# breakpoint()
+breakpoint()
 # a = None
 # for idx, i in enumerate(loc.u5):
 #     if i.str_offset == 0xe0920:
 #         a = idx
+
+# step1 - change the text
+index = 427
+replacement_text = "Testing McTesterson"
+strings_en[index] = replacement_text.encode("latin1")
+
+# 2 - pack the text back to locals.bin
+
+# 3 - adjust the offset table
+
+# 4 - ???

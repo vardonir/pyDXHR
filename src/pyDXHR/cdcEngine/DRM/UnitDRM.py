@@ -1,8 +1,9 @@
 """
 Mostly adapted from https://github.com/rrika/dxhr/blob/main/tools/cdcunit.py
 
-Nodes:
+Notes:
     - why transpose???
+    - no, i mean why am i transposing a lot?
 """
 
 import os
@@ -12,13 +13,14 @@ import struct
 from tqdm import tqdm, trange
 from scipy.spatial.transform import Rotation
 import numpy as np
-from typing import Dict, List, Any, Optional
+from typing import *
 from enum import Enum
 
 from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM, Section
 from pyDXHR.cdcEngine.DRM.Reference import Reference
+from pyDXHR.cdcEngine.Sections.CollisionMesh import CollisionMesh
 from pyDXHR.utils import create_directory
 
 
@@ -39,6 +41,7 @@ class UnitDRM(DRM):
         super().__init__()
         self.ObjectData: Dict[ObjectType, Dict[Any, List[np.ndarray]]] = {}
         self.CellSectionData: List[Section] = []
+        self.CollisionMesh: List[CollisionMesh] = []
 
         self._archive: Optional[Archive] = None
         self._split_objects: bool = False
@@ -47,6 +50,8 @@ class UnitDRM(DRM):
         self._rotation: Optional[List[float]] = kwargs.get("rotation")
         self._scale: Optional[List[float]] = kwargs.get("scale")
         self._trs_mat: Optional[np.ndarray] = kwargs.get("matrix")
+
+        self._verbose: bool = kwargs.get("verbose", True)
 
         if "uniform_scale" in kwargs:
             self._scale = 3 * [kwargs["uniform_scale"]]
@@ -62,37 +67,39 @@ class UnitDRM(DRM):
         self._streamgroup_count: int = 0
         self._cell_count: int = 0
 
-        self._linked_drm_ref: Reference | None = None
-        self._collision_ref: Reference | None = None
-        self._obj_ref: Reference | None = None
-        self._imf_ref: Reference | None = None
-        self._streamgroup_ref: Reference | None = None
+        self._linked_drm_ref: Optional[Reference] = None
+        self._collision_ref: Optional[Reference] = None
+        self._obj_ref: Optional[Reference] = None
+        self._imf_ref: Optional[Reference] = None
+        self._streamgroup_ref: Optional[Reference] = None
 
-        self._cell_ref_list: List[Reference] | None = None
-        self._occlusion_ref_list: List[Reference] | None = None
+        self._cell_ref_list: Optional[List[Reference]] = None
+        self._occlusion_ref_list: Optional[List[Reference]] = None
 
     # region sub0 - linked drm and collision
-    def linked_drm(self):
+    def linked_drm(self) -> List[str]:
+        """ Get the names of the DRMs linked to this unit - used specifically for Masterunit DRMs """
         return [self._linked_drm_ref.get_string(0x100 * i, "utf-8") for i in range(self._rel_count)]
 
-    def _process_collision(self):
-        # TODO - would be partially useful for UE demos?
-        for i in range(self._coll_count):
-            cd0s = self._collision_ref.add_offset(i * 0x80)
-            trs_mat = self._collision_ref.access_array("f", 16)
-            bbs = self._collision_ref.access_array("f", 12, 0x40)
-
-            cd1 = self._collision_ref.deref(0x74)
-            vtx = cd1.deref(0x20)
-            idx = cd1.deref(0x24)
-        return []
+    def _process_collision(self) -> None:
+        """ Read collision references and generate collision meshes """
+        # although, I think it's the same mesh every time...
+        self.CollisionMesh = [CollisionMesh(self._collision_ref, offset=i * 0x80) for i in range(self._coll_count)]
     # endregion
 
     # region sub30 - imf and obj
     def _process_imf(self,
                      skip_ext_imf: bool = False,
                      skip_int_imf: bool = False
-                     ):
+                     ) -> None:
+        """
+        Process IMF references. Will process both internal and external IMFs regardless of input kwargs.
+        External IMFs only get the file names + TRS matrix, whereas internal IMFs get the section ID + TRS matrix.
+        Processing external IMFs require an attached archive.
+        """
+        if not self._imf_ref:
+            return
+            
         ext_imf_dict: Dict[str, List[np.ndarray]] = {}
         imf_dict: Dict[int, List[np.ndarray]] = {}
 
@@ -125,9 +132,20 @@ class UnitDRM(DRM):
             self.ObjectData[ObjectType.IMF] = imf_dict
 
         if not skip_ext_imf:
-            self.ObjectData[ObjectType.EXT_IMF] = ext_imf_dict
+            if self._archive is None:
+                warnings.warn("Cannot parse external IMF without attached archive")
+            else:
+                self.ObjectData[ObjectType.EXT_IMF] = ext_imf_dict
 
-    def _get_obj_indices(self):
+    def _get_obj_indices(self) -> List[Tuple[int, np.ndarray]]:
+        """
+        Get the indices of the objects in the unit + the associated TRS matrix.
+        The actual object names will be taken from the objlist.txt in the attached arcive.
+        TODO: some objects seem to be missing, e.g., the cars in det_city_sarif
+        """
+        if not self._obj_ref:
+            return []
+
         obj_indices = []
         for i in trange(self._obj_count, desc="Reading OBJ data"):
             rot = struct.unpack_from("<fff", self._obj_ref.section.Data,
@@ -140,40 +158,41 @@ class UnitDRM(DRM):
             index,  = struct.unpack_from("<H", self._obj_ref.section.Data,
                                          0x30 + self._obj_ref.offset + i * 0x70)
 
-            rot_as_matrix = Rotation.from_euler("xyz", rot, degrees=False).as_matrix().T
+            # see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
+            # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_euler.html
+            rot_as_matrix = Rotation.from_euler("XYZ", rot, degrees=False).as_matrix().T
 
             trs_mat = np.zeros((4, 4))
             trs_mat[0:3, 0:3] = np.diag(scl)
-            trs_mat[-1, :] = np.array(list(pos) + [1])
             trs_mat[0:3, 0:3] = rot_as_matrix
+            trs_mat[-1, :] = np.array(list(pos) + [1])
 
             obj_indices.append((index, trs_mat.T))
 
         return obj_indices
-
-    def _process_obj2(self):
-        # ???
-        # obj2_count = self._obj_ref.access("I", 0x1C)
-        pass
     # endregion
 
     # region sub50 - occlusion, cell, stream
-    def _process_cell(self):
-        self.ObjectData[ObjectType.Cell] = {
-            (cell_name, cell.section.Header.SecId): [self._identity_trs]
-            for cell, cell_name in self._cell_ref_list
-        }
+    def _process_cell(self) -> None:
+        """ Process "cells" - RenderTerrain sections embedded in the DRM """
+        if self._cell_ref_list:
+            self.ObjectData[ObjectType.Cell] = {
+                (cell_name, cell.section.Header.SecId): [self._identity_trs]
+                for cell, cell_name in self._cell_ref_list
+            }
 
         self.CellSectionData = [cell.section for cell, _ in self._cell_ref_list]
 
-    def _process_occlusion(self):
-        self.ObjectData[ObjectType.Occlusion] = {
-            sec.section.Header.SecId: [self._identity_trs]
-            for sec in self._occlusion_ref_list
-        }
+    def _process_occlusion(self) -> None:
+        """ Process occlusion boxes. """
+        if self._occlusion_ref_list:
+            self.ObjectData[ObjectType.Occlusion] = {
+                sec.section.Header.SecId: [self._identity_trs]
+                for sec in self._occlusion_ref_list
+            }
 
-    def _process_streamgroup(self):
-        # TODO - not all render terrain show up (see det_city_tunnel)
+    def _process_streamgroup(self) -> None:
+        """ Get streamgroup names - RenderTerrain sections defined outside the DRM. Requires an attached archive. """
         streamgroup_data: Dict[tuple, List[np.ndarray]] = {}
         for i in trange(self._streamgroup_count, desc="Reading stream objects"):
             streamgroup_ref = self._streamgroup_ref.add_offset(i * 0x14)
@@ -195,7 +214,8 @@ class UnitDRM(DRM):
         self.ObjectData[ObjectType.Stream] = streamgroup_data
     # endregion
 
-    def _get_references(self):
+    def _get_references(self) -> None:
+
         unit_ref = Reference.from_drm_root(self)
 
         sub0_ref = unit_ref.deref(0)  # Terrain?
@@ -217,7 +237,7 @@ class UnitDRM(DRM):
 
         sub50_ref = unit_ref.deref(0x50)  # CellGroupData
         if sub50_ref:
-
+            # Refer to: https://github.com/rrika/cdcEngineDXHR/blob/main/cdcScene/cdcSceneCookdata.h
             # struct CellGroupData { // 61
             # 	CellGroupDataHeader *header; // 0
             # 	uint32_t admd_maybe; // 4
@@ -236,8 +256,7 @@ class UnitDRM(DRM):
 
             self._streamgroup_ref = sub50_ref.deref(0xC)  # CellStreamGroupData*
 
-            sub50_14 = sub50_ref.deref(0x14)  # CellData*[] # RDRs here are just the occlusion
-
+            sub50_14 = sub50_ref.deref(0x14)  # CellData*[]
             sub50_18 = sub50_ref.deref(0x18)  # CellStreamData (void terrain)
             sub50_1c = sub50_ref.deref(0x1c)  # CellStreamData (exterior terrain)
 
@@ -254,25 +273,25 @@ class UnitDRM(DRM):
                 self._occlusion_ref_list = []
                 for i in range(self._cell_count):
                     cell = sub50_14.deref(4 * i)
-                    cellsub0 = cell.deref(0)
+                    cell_sub0 = cell.deref(0)
                     try:
-                        cellsub4 = cell.deref(0x4)
-                        cellsub4_0 = cellsub4.deref(0x0)
-                    except Exception as e:
-                        cellsub4_0 = None
+                        cell_sub4 = cell.deref(0x4)
+                        cell_sub4_0 = cell_sub4.deref(0x0)
+                    except AttributeError:
+                        cell_sub4_0 = None
 
-                    cellsub20 = cell.deref(0x20)
-                    cellname = cellsub0.deref(0x0).get_string()
+                    cell_sub20 = cell.deref(0x20)
+                    cell_name = cell_sub0.deref(0x0).get_string()
 
-                    if cellsub4_0:
-                        self._cell_ref_list.append((cellsub4_0, cellname))
+                    if cell_sub4_0:
+                        self._cell_ref_list.append((cell_sub4_0, cell_name))
 
-                    self._occlusion_ref_list.append(cellsub20)
+                    self._occlusion_ref_list.append(cell_sub20)
 
     def deserialize(self, data: bytes, **kwargs):
         super().deserialize(data=data, header_only=False)
         self._get_references()
-
+        self._archive: Archive = kwargs.get("archive")
         self._split_objects = kwargs.get("split_objects", False)
 
         if kwargs.get("imf", True):
@@ -281,32 +300,8 @@ class UnitDRM(DRM):
                 skip_int_imf=kwargs.get("skip_int_imf", False),
             )
 
-        if "archive" not in kwargs:
-            warnings.warn("Cannot parse OBJ without attached archive")
-            return
-
-        self._archive: Archive = kwargs["archive"]
-
         if kwargs.get("collision", True):
             self._process_collision()
-
-        if kwargs.get("obj2", True):
-            self._process_obj2()
-
-        if kwargs.get("obj", True):
-            object_dict: Dict[str, List[np.ndarray]] = {}
-
-            for obj_index, trs_mat in self._get_obj_indices():
-                obj_name = self._archive.object_list[obj_index]
-                if obj_name not in object_dict:
-                    object_dict[obj_name] = []
-
-                object_dict[obj_name].append(trs_mat)
-
-            self.ObjectData[ObjectType.OBJ] = object_dict
-
-        if kwargs.get('stream', True):
-            self._process_streamgroup()
 
         if kwargs.get("occlusion", True):
             self._process_occlusion()
@@ -314,13 +309,33 @@ class UnitDRM(DRM):
         if kwargs.get("cell", True):
             self._process_cell()
 
+        if kwargs.get("obj", True):
+            object_dict: Dict[str, List[np.ndarray]] = {}
+
+            if self._archive is None:
+                warnings.warn("Cannot parse OBJ without attached archive")
+            else:
+                for obj_index, trs_mat in self._get_obj_indices():
+                    obj_name = self._archive.object_list[obj_index]
+                    if obj_name not in object_dict:
+                        object_dict[obj_name] = []
+
+                    object_dict[obj_name].append(trs_mat)
+
+                self.ObjectData[ObjectType.OBJ] = object_dict
+
+        if kwargs.get('stream', True):
+            if self._archive is None:
+                warnings.warn("Cannot parse streamobjects without attached archive")
+            else:
+                self._process_streamgroup()
+
     @staticmethod
     def _read_section_data(rm_section,
                            folder: str,
                            file_name: str,
                            trs_mat: Optional[np.ndarray] = None,
                            dest: Optional[Path | str] = None,
-                           apply_scale: bool = False,
                            blank_materials: bool = False,
                            ):
         from pyDXHR.cdcEngine.Sections import RenderResource
@@ -387,34 +402,37 @@ class UnitDRM(DRM):
         if self._archive:
             # streamobjects
             if ObjectType.Stream in self.ObjectData:
-                for (name, path), trs_mat_list in tqdm(self.ObjectData[ObjectType.Stream].items(),
-                                                       desc="Processing stream objects"):
+                it = self.ObjectData[ObjectType.Stream].items()
+                pbar = tqdm(it, desc="Processing stream objects") if self._verbose else it
+                for (name, path), trs_mat_list in pbar:
                     drm_data = self._archive.get_from_filename(fr"streamgroups\{path}.drm")
                     drm = DRM()
                     drm.deserialize(drm_data)
 
                     for sec in drm.Sections:
+                        # specifying the section number is important here -
+                        # there are multiple RT sections in a single streamobject DRM
+                        file_name = f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0')
                         for idx, trs_mat in enumerate(trs_mat_list):
                             if idx == 0:
                                 self._read_section_data(rm_section=sec,
                                                         trs_mat=trs_mat,
                                                         folder="stream",
-                                                        file_name=f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
+                                                        file_name=file_name + ".gltf",
                                                         dest=dest,
-                                                        apply_scale=apply_universal_scale,
                                                         blank_materials=blank_materials
                                                         )
-                            write_to_dir(f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0'), trs_mat)
+                            write_to_dir(file_name, trs_mat)
 
             # external IMFs
             if ObjectType.EXT_IMF in self.ObjectData:
-                pbar = tqdm(self.ObjectData[ObjectType.EXT_IMF].items(), desc="Processing external IMFs")
+                it = self.ObjectData[ObjectType.EXT_IMF].items()
+                pbar = tqdm(it, desc="Processing external IMFs") if self._verbose else it
                 for imf_path, trs_mat_list in pbar:
                     imf_name = Path(imf_path).stem
-                    pbar.set_description(f"Processing {imf_name}")
 
-                    # if imf_name == "det_building_scifi_a_lod":
-                    #     breakpoint()
+                    if self._verbose:
+                        pbar.set_description(f"Processing {imf_name}")
 
                     drm_data = self._archive.get_from_filename(imf_path)
                     drm = DRM()
@@ -425,19 +443,21 @@ class UnitDRM(DRM):
                             if idx == 0:
                                 self._read_section_data(rm_section=sec,
                                                         folder="imf_ext",
-                                                        # file_name=f"{imf_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
                                                         file_name=f"{imf_name}.gltf",
                                                         dest=dest,
-                                                        apply_scale=apply_universal_scale,
                                                         blank_materials=blank_materials
                                                         )
                             write_to_dir(imf_name, trs_mat)
 
             # objects
             if ObjectType.OBJ in self.ObjectData:
-                pbar = tqdm(self.ObjectData[ObjectType.OBJ].items(), desc="Processing OBJs")
+                it = self.ObjectData[ObjectType.OBJ].items()
+                pbar = tqdm(it, desc="Processing OBJs") if self._verbose else it
                 for obj_name, trs_mat_list in pbar:
-                    pbar.set_description(f"Processing {obj_name}")
+
+                    if self._verbose:
+                        pbar.set_description(f"Processing {obj_name}")
+
                     drm_data = self._archive.get_from_filename(obj_name + ".drm")
                     drm = DRM()
                     drm.deserialize(drm_data)
@@ -448,34 +468,36 @@ class UnitDRM(DRM):
                                 self._read_section_data(rm_section=sec,
                                                         trs_mat=trs_mat,
                                                         folder="obj",
-                                                        # file_name=f"{obj_name}_" + f"{sec.Header.SecId:x}".rjust(8, '0') + ".gltf",
                                                         file_name=f"{obj_name}.gltf",
                                                         dest=dest,
-                                                        apply_scale=apply_universal_scale,
                                                         blank_materials=blank_materials
                                                         )
                             write_to_dir(obj_name, trs_mat)
 
         # internal IMFs
         if ObjectType.IMF in self.ObjectData:
-            for rm_id, trs_mat_list in tqdm(self.ObjectData[ObjectType.IMF].items(), desc="Processing internal IMFs"):
+            it = self.ObjectData[ObjectType.IMF].items()
+            pbar = tqdm(it, desc="Processing internal IMFs") if self._verbose else it
+            for rm_id, trs_mat_list in pbar:
                 for idx, trs_mat in enumerate(trs_mat_list):
                     rm_sec = self.lookup_section(SectionType.RenderMesh, rm_id)
+                    file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
 
                     if idx == 0:
                         self._read_section_data(rm_section=rm_sec,
                                                 folder="imf_int",
-                                                file_name="RenderModel_" + f"{rm_id:x}".rjust(8, '0') + ".gltf",
+                                                file_name=file_name + ".gltf",
                                                 dest=dest,
-                                                apply_scale=apply_universal_scale,
                                                 blank_materials=blank_materials
                                                 )
-                    write_to_dir(f"RenderModel_" + f"{rm_id:x}".rjust(8, '0'), trs_mat)
+                    write_to_dir(file_name, trs_mat)
 
         # cell data
         if ObjectType.Cell in self.ObjectData:
             # TODO: check in the case of DRMs with many cells - possible collisions?
-            for (cell_name, sec_id), trs_mat_list in tqdm(self.ObjectData[ObjectType.Cell].items(), desc="Processing cells"):
+            it = self.ObjectData[ObjectType.Cell].items()
+            pbar = tqdm(it, desc="Processing cells") if self._verbose else it
+            for (cell_name, sec_id), trs_mat_list in pbar:
                 sanitized_cell_name = cell_name.replace('|', '_')
                 for idx, trs_mat in enumerate(trs_mat_list):
                     rm_sec = self.lookup_section(SectionType.RenderMesh, sec_id)
@@ -485,26 +507,27 @@ class UnitDRM(DRM):
                                                 folder="cell",
                                                 file_name=f"{sanitized_cell_name}.gltf",
                                                 dest=dest,
-                                                apply_scale=apply_universal_scale,
                                                 blank_materials=blank_materials
                                                 )
                     write_to_dir(sanitized_cell_name, trs_mat)
 
         # occlusion
         if ObjectType.Occlusion in self.ObjectData:
-            for sec_id, trs_mat_list in tqdm(self.ObjectData[ObjectType.Occlusion].items(), desc="Processing occlusion"):
+            it = self.ObjectData[ObjectType.Occlusion].items()
+            pbar = tqdm(it, desc="Processing occlusion") if self._verbose else it
+            for sec_id, trs_mat_list in pbar:
                 for idx, trs_mat in enumerate(trs_mat_list):
                     rm_sec = self.lookup_section(SectionType.RenderMesh, sec_id)
+                    file_name = "RenderModel_" + f"{sec_id:x}".rjust(8, '0')
 
                     if idx == 0:
                         self._read_section_data(rm_section=rm_sec,
                                                 folder="occlusion",
-                                                file_name="RenderModel_" + f"{sec_id:x}".rjust(8, '0') + ".gltf",
+                                                file_name=file_name + ".gltf",
                                                 dest=dest,
-                                                apply_scale=apply_universal_scale,
                                                 blank_materials=blank_materials
                                                 )
-                    write_to_dir("RenderModel_" + f"{sec_id:x}".rjust(8, '0'), trs_mat)
+                    write_to_dir(file_name, trs_mat)
 
         merge_single(
             output_path=dest,
@@ -514,4 +537,5 @@ class UnitDRM(DRM):
             scale=self._scale,
             rotation=self._rotation,
             trs_matrix=self._trs_mat,
+            verbose=self._verbose,
         )

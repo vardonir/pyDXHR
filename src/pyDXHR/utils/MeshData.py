@@ -14,6 +14,8 @@ from pyDXHR.utils import Endian
 
 
 class KaitaiRenderModel(RenderModel):
+    # Overloading the kaitai-generated RenderModel class so that the rest of the code
+    # is easier to read
     @property
     def Header(self):
         return self.header.header
@@ -154,6 +156,8 @@ class MeshData:
     # noinspection PyPep8Naming
     def _from_RenderTerrain(self, mesh_data):
         # adapted from https://github.com/rrika/cdcEngineDXHR/blob/main/rendering/TerrainData.h
+        # https://github.com/rrika/dxhr/blob/main/tools/cdcmesh.py
+        # ...kinda
         header = RenderTerrainHeader.from_io(BytesIO(mesh_data))
 
         # offset indices
@@ -161,7 +165,7 @@ class MeshData:
 
         # offset layout
         vtx_info_data_buffer = BytesIO(mesh_data[header.offset_layout:])
-        vtx_info = [VertexInfo.from_io(vtx_info_data_buffer) for i in range(header.len_layout)]
+        vtx_info = [VertexInfo.from_io(vtx_info_data_buffer) for _ in range(header.len_layout)]
 
         # offset vb
         vb_data_buffer = BytesIO(mesh_data[header.offset_vb:])
@@ -200,7 +204,7 @@ class MeshData:
                 continue
             n_ranges, = struct.unpack_from(f"{self._endian.value}H", mesh_data, off_list)
 
-            for j in range(n_ranges):
+            for j in range(n_ranges):  # range = prim?
                 off_range = off_list + 4 + 16*j
                 target, count, start_index = struct.unpack_from(f"{self._endian.value}HHL", mesh_data, off_range)
 
@@ -216,21 +220,30 @@ class MeshData:
 
         # breakpoint()
         # probably material-related?
-        # for g in groups:
-        #     if g.idx_vb == idx_buffer and g.idx_material == idx_mat :
-        #         test[g] = (self.VertexBuffers[idx_buffer], index_buffer[start_index:start_index+count])
-        #     if g in test:
-        #         found_test = test[g]
-        #         if index_buffer[start_index:start_index+count] == found_test[1]:
-        #             continue
-        #         else:
-        #             breakpoint()
 
-        # offset geom something is missing here
-        # geom_data_buffer = BytesIO(mesh_data[header.offset_geom:])
+                # test = {}
+                # for g in groups:
+                #     if g.idx_vb == idx_buffer and g.idx_material == idx_mat :
+                #         test[g] = (self.VertexBuffers[idx_buffer], index_buffer[start_index:start_index+count])
+                #     if g in test:
+                #         found_test = test[g]
+                #         if index_buffer[start_index:start_index+count] == found_test[1]:
+                #             continue
+                #         else:
+                #             breakpoint()
+                #
+                # breakpoint()
 
-        # offset dword3c something (not used)
-        # not implemented
+        # # offset geom something is missing here
+        # # or badly named. it's unclear
+        # # geom_data_buffer = BytesIO(mesh_data[header.offset_geom:])
+        # geom_data = mesh_data[header.offset_geom:]
+        #
+        # # offset dword3c something (not used)
+        # # not implemented
+        # unknown_data = mesh_data[header.dword3c:]
+        #
+        # breakpoint()
 
     # noinspection PyPep8Naming
     def _from_RenderModel(self, data):
@@ -320,6 +333,7 @@ def read_vertex_buffer(vertex_data: bytes,
             return np.array(vtx, dtype=np.float32)
         case 0x04 | 0x05 | 0x06 | 0xA | 0x11:
             # not sure if 0xA belongs here, but it works?
+            # 0x11 seems to work but the output looks weird
             vtx = [struct.unpack_from(f"{endian.value}BBB", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             out_array = np.array(vtx, dtype=np.float32)
             out_array = out_array / 255 * 2 - 1

@@ -2,7 +2,7 @@ from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 from pyDXHR.cdcEngine.Sections import RenderMesh
 
-file_dest = r"C:\Users\vardo\DXHR_Research\pyDXHR_public\output\gltf"
+file_dest = r"F\pyDXHR\output\gltf"
 
 models = [
     # has transparency

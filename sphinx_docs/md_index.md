@@ -3,9 +3,11 @@
 
 Python-based tools for data exploration and extraction of Deus Ex Human Revolution, intended for use in another project of mine: [Project SI-X](https://six.vardonir.com/)
 
-Although I went a bit too far and somehow managed to make mod tools?
+Although I went a bit too far and somehow managed to make basic mod tools? 
 
 Documentation be here, when I feel like writing it + some notes on stuff I've found while digging through the files.
+
+There was an attempt to make the docs look and feel like a professionally-written document. An attempt. I didn't succeed. 
 
 ## Dependencies
 
@@ -13,7 +15,7 @@ Documentation be here, when I feel like writing it + some notes on stuff I've fo
 * Numpy
 * fastcrc
 * [kaitaistruct](https://kaitai.io/) - The python-generated code is part of the repo, but the raw KSY files are also included.
-* scipy
+* scipy - mostly for handling rotations
 
 For the exporters:
 
@@ -29,4 +31,6 @@ Demos:
 
 ## Usage
 
-I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package.
+Install python using your preferred method of installing python. I initially used poetry, but migrating it to another computer turned out to be a real nightmare, so a requirements.txt file is also provided. 
+
+There's some sample scripts provided under the tests/ directory, but you may need to add src/pyDXHR to the path. I'm lazy and I use PyCharm to set the source root.

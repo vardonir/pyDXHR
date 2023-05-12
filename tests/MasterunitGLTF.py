@@ -14,16 +14,21 @@ pc_drm = MasterunitDRM(
     uniform_scale=0.002,
     z_up=True,
 
-    imf=True,
-    skip_int_imf=True,
-    stream=True,
+    imf=False,
+    # skip_int_imf=True,
+    stream=False,
     obj=False,
-    occlusion=False,
-    cell=True,
+    occlusion=True,
+    cell=False,
+    collision=False,
 )
 
-pc_drm.to_gltf(save_to=fr"F:\pyDXHR\gltf\{file}",
+# TODO:
+#       - run the finish the masterunit merge code
+
+pc_drm.to_gltf(save_to=fr"F:\pyDXHR\masterunit\{file}",
                blank_materials=True,
-               merge=False)
+               merge=True
+               )
 
 breakpoint()

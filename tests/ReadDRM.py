@@ -11,30 +11,31 @@ arc = Archive()
 arc.deserialize_from_env()
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRDCWII\bigfile-wiiu.000")
+# arc.deserialize_from_file(r"F:\DXHRDCWII\bigfile-wiiu.000")
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRPS3\CACHE.000")
+# arc.deserialize_from_file(r"F:\DXHRPS3\CACHE.000")
 
 # per-file comparison
 # renderterrain
-# data = pc_arc.get_from_filename("streamgroups/det_city_tunnel1_tunel.drm")
+data = arc.get_from_filename("streamgroups/det_city_tunnel1_tunel.drm")
 
 # unit
 # data = pc_arc.get_from_filename("det_city_tunnel1.drm")
 
 # imf - has transparency
-data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_fire_a\sarif_office_fire_a.drm")
+# data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_fire_a\sarif_office_fire_a.drm")
 
 # imf - has emission
 # data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_globe\sarif_office_globe.drm")
 drm = DRM()
 drm.deserialize(data)
 
-# rm = RenderMesh.deserialize_drm(drm)
+rm = RenderMesh.deserialize_drm(drm)
 # rm0 = list(rm)[0]
-# rm0.to_gltf(r"C:\Users\vardo\DXHR_Research\pyDXHR_public\playground\wii_imf\test.gltf",
-#             skip_materials=True)
+# rm0.to_gltf()
+
+breakpoint()
 
 # out = {}
 # for dep in drm.Header.DRMDependencies:
@@ -48,15 +49,15 @@ drm.deserialize(data)
 # a = ShaderLib(section=out.get("0x1d40")).bytecode_chunks[0]
 # aa = a.d3d1x_run()
 
-
-for s in drm.Sections:
-    if s.Header.SectionType == SectionType.Material:
-        m = Material(section=s)
-        m.debug_print()
-
-        m.from_drm(drm=drm, arc=arc)
-
-        breakpoint()
+#
+# for s in drm.Sections:
+#     if s.Header.SectionType == SectionType.Material:
+#         m = Material(section=s)
+#         m.debug_print()
+#
+#         m.from_drm(drm=drm, arc=arc)
+#
+#         breakpoint()
 
 # scaleform database
 # data = arc.get_from_filename(r"globalscaleformdatabase.drm")

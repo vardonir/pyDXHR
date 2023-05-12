@@ -4,22 +4,22 @@ from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHR\BIGFILE.000")
+# arc.deserialize_from_file(r"F:\DXHR\BIGFILE.000")
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRPS3\CACHE.000")
+# arc.deserialize_from_file(r"F:\DXHRPS3\CACHE.000")
 
 arc = Archive()
-arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRDCWII\bigfile-wiiu.000")
+arc.deserialize_from_file(r"F:\DXHRDCWII\bigfile-wiiu.000")
 
 # arc = Archive()
 # arc.deserialize_from_file(r"C:\Program Files (x86)\GOG Galaxy\Games\Deus Ex HRDC\BIGFILE.000")
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRDCPS3\CACHE.000")
+# arc.deserialize_from_file(r"F:\DXHRDCPS3\CACHE.000")
 
 # arc = Archive()
-# arc.deserialize_from_file(r"C:\Users\vardo\DXHR_Research\DXHRX360Beta\BIGFILE.000")
+# arc.deserialize_from_file(r"F:\DXHRX360Beta\BIGFILE.000")
 
 filename = r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_fire_a\sarif_office_fire_a.drm"
 # filename = r"shaderlibs\2d1n1s_710c5b2d66d6588e.drm"

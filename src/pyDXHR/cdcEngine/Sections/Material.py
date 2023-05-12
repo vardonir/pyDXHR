@@ -10,6 +10,91 @@ from pyDXHR.cdcEngine.Sections import AbstractSection
 from pyDXHR.cdcEngine.Sections.RenderResource import RenderResource, from_library, from_named_textures
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 
+# ______________________NOTES______________________
+# https://forum.xentax.com/viewtopic.php?p=88434#p88434
+
+# -- Example:
+# -- main\bigfile\00d3\000002c7.mtl_a
+# -- In this example, the mtrl_a files starts with 0x15. This material does not use any texture files (it is some kind of material for color effects or something who knows).
+# -- So in this case, you just skip loading materials when you see this.
+#
+# -- the first 0x14 bytes is a header
+# 15 00 00 00 -- number of offset pairs to read
+# 00 00 00 00
+# 00 00 00 00
+# 00 00 00 00
+# 09 00 00 00
+#
+# -- the next data after header is a list of offset pairs
+# [0x00]: 4C 00 00 00 - 90 06 00 00
+# [0x01]: C8 06 00 00 - 90 00 00 00
+# [0x02]: CC 06 00 00 - C0 00 00 00
+# [0x03]: D0 06 00 00 - 30 01 00 00
+# [0x04]: 50 00 00 00 - F0 06 00 00
+# [0x05]: 28 07 00 00 - 80 01 00 00
+# [0x06]: 2C 07 00 00 - B0 01 00 00
+# [0x07]: 30 07 00 00 - 20 02 00 00
+# [0x08]: 58 00 00 00 - 50 07 00 00
+# [0x09]: 88 07 00 00 - 70 02 00 00
+# [0x0A]: 8C 07 00 00 - A0 02 00 00
+# [0x0B]: 90 07 00 00 - 10 03 00 00
+# [0x0C]: 5C 00 00 00 - B0 07 00 00
+# [0x0D]: E8 07 00 00 - 60 03 00 00
+# [0x0E]: EC 07 00 00 - 90 03 00 00
+# [0x0F]: F0 07 00 00 - 00 04 00 00
+# [0x10]: 68 00 00 00 - 10 08 00 00
+# [0x11]: 48 08 00 00 - 50 04 00 00
+# [0x12]: 4C 08 00 00 - F0 04 00 00
+# [0x13]: 50 08 00 00 - D0 05 00 00
+# [0x14]: 6C 00 00 00 - 50 07 00 00
+
+# -- When the type of material is 0x19, this is a material for character models, and it uses a lot of textures.
+# -- There are two offset pairs. It is suffice to use the textures from the first pair.
+# -- Here is an example of the offsets. In this case pair index 0x09 and 0x13 point
+# -- to a list of texture information.
+#
+# [0x00]: 4C 00 00 00 - 10 0A 00 00
+# [0x01]: 48 0A 00 00 - 90 00 00 00
+# [0x02]: 4C 0A 00 00 - E0 00 00 00
+# [0x03]: 50 0A 00 00 - 60 01 00 00
+# [0x04]: 50 00 00 00 - 70 0A 00 00
+# [0x05]: A8 0A 00 00 - D0 01 00 00
+# [0x06]: AC 0A 00 00 - 20 02 00 00
+# [0x07]: B0 0A 00 00 - A0 02 00 00
+# [0x08]: 58 00 00 00 - D0 0A 00 00
+# [0x09]: E8 0A 00 00 - 90 0C 00 00 (offsets to filenames A)
+# [0x0A]: F0 0A 00 00 - F0 0B 00 00
+# [0x0B]: 08 0B 00 00 - 10 03 00 00
+# [0x0C]: 0C 0B 00 00 - F0 03 00 00
+# [0x0D]: 10 0B 00 00 - 00 05 00 00
+# [0x0E]: 5C 00 00 00 - 30 0B 00 00
+# [0x0F]: 68 0B 00 00 - F0 05 00 00
+# [0x10]: 6C 0B 00 00 - 40 06 00 00
+# [0x11]: 70 0B 00 00 - C0 06 00 00
+# [0x12]: 68 00 00 00 - 90 0B 00 00
+# [0x13]: A8 0B 00 00 - 10 0D 00 00 (offsets to filenames B)
+# [0x14]: B0 0B 00 00 - 70 0C 00 00
+# [0x15]: C8 0B 00 00 - 30 07 00 00
+# [0x16]: CC 0B 00 00 - 10 08 00 00
+# [0x17]: D0 0B 00 00 - 20 09 00 00
+# [0x18]: 6C 00 00 00 - D0 0A 00 00
+#
+# -- 8 part A textures
+# 8B 0F 00 00 00 00 00 00 00 00 00 00 20 00 01 00 -- 00000F8B is texture ID, 0x20 is color/spec maps, 0x80 is normal map, 0x2C i think is lightmap, and 0x00 is texture index.
+# 8A 0F 00 00 00 00 00 00 00 00 00 00 20 01 01 00 -- 00000F8A is texture ID, 0x01 is texture index
+# 54 00 00 00 00 00 00 00 00 00 00 00 20 02 01 00  -- 0x02 is texture index
+# 16 0C 00 00 00 00 00 00 00 00 00 00 20 03 01 00
+# 8A 0F 00 00 00 00 00 00 00 00 00 00 20 04 01 00
+# 9E 0F 00 00 00 00 00 00 00 00 00 00 80 05 01 00
+# 19 0C 00 00 00 00 80 BF 00 00 00 00 80 06 01 00
+# 5D 00 00 00 00 00 00 00 00 00 00 00 2C 07 02 00 -- 0x2C i think is lightmap or something, 0x07 is texture index
+#
+# -- 3 part B textures
+# 19 0C 00 00 00 00 80 BF 00 00 00 00 80 00 01 00
+# 9E 0F 00 00 00 00 00 00 00 00 00 00 80 01 01 00
+# 8B 0F 00 00 00 00 00 00 00 00 00 00 20 02 01 00
+
+# ______________________NOTES______________________
 
 class Material(AbstractSection):
     def __init__(self, **kwargs):
@@ -248,6 +333,9 @@ class Material(AbstractSection):
                     self.Diffuse.append(tex)
                     continue
                 case 0x40:
+                    if self._debug:
+                        self.debug_print()
+                case 0x2C:  # lightmap???
                     if self._debug:
                         self.debug_print()
                 case 0x80:

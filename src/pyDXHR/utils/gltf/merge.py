@@ -7,11 +7,25 @@ import numpy as np
 from typing import *
 
 
+def apply_node_transformations(node: gl.Node, **kwargs):
+    trs_mat = kwargs.get("trs_matrix")
+    if trs_mat is not None:
+        if isinstance(trs_mat, np.ndarray):
+            node.matrix = trs_mat.flatten().tolist()
+            return node
+        else:
+            raise Exception
+
+    node.scale = kwargs.get("scale")
+    node.rotation = kwargs.get("rotation")
+    node.translation = kwargs.get("translation")
+    return node
+
+
 def merge_single_node_gltf(
         output_path: str | Path,
         location_table: dict,
         split_objects_to_separate_node: bool = False,
-        trs_matrix: Optional[np.ndarray] = None,
         **kwargs,
 ):
 
@@ -30,11 +44,13 @@ def merge_single_node_gltf(
     top_node = gl.Node(
         name=Path(output_path).stem,
     )
-    if trs_matrix is not None:
-        top_node.matrix = trs_matrix.flatten().tolist()
-    top_node.scale = kwargs.get("scale")
-    top_node.rotation = kwargs.get("rotation")
-    top_node.translation = kwargs.get("translation")
+    top_node = apply_node_transformations(top_node, **kwargs)
+
+    # if trs_matrix is not None:
+    #     top_node.matrix = trs_matrix.flatten().tolist()
+    # top_node.scale = kwargs.get("scale")
+    # top_node.rotation = kwargs.get("rotation")
+    # top_node.translation = kwargs.get("translation")
 
     # materials and images
     compiled_materials = {
@@ -79,18 +95,19 @@ def merge_single_node_gltf(
         tex_id_list = None
 
     indices: Dict[str, Set[int]] = {
-        "OBJ": set(),
-        "NON_OBJ": set(),
         "ALL": set(),
 
-        # TODO
-        "I_IMF": set(),
-        "E_IMF": set(),
-        "STR": set(),
+        "stream": set(),
+        "imf_ext": set(),
+        "obj": set(),
+        "imf_int": set(),
+        "cell": set(),
+        "occlusion": set(),
     }
 
     # transfer accessors / buffers / meshes
-    for path, f in tqdm(gltf_files):
+    pbar = tqdm(gltf_files) if kwargs.get("verbose", True) else gltf_files
+    for path, f in pbar:
         # if count == 2: break
         # count += 1
 
@@ -116,10 +133,7 @@ def merge_single_node_gltf(
             indices["ALL"].add(current_node_index)
 
             if split_objects_to_separate_node:
-                if path.parent.stem == "obj":
-                    indices["OBJ"].add(current_node_index)
-                else:
-                    indices["NON_OBJ"].add(current_node_index)
+                indices[path.parent.stem].add(current_node_index)
 
             merged_file.nodes.append(node)
 
@@ -159,7 +173,8 @@ def merge_single_node_gltf(
 
     # transfer materials / textures
     if tex_id_list is not None:
-        for mat in tqdm(merged_file.materials):
+        pbar = tqdm(merged_file.materials) if kwargs.get("verbose", True) else merged_file.materials
+        for mat in pbar:
             if mat.pbrMetallicRoughness:
                 mat.pbrMetallicRoughness.baseColorTexture.index = tex_id_list.index(mat.extras["diffuse"])
             if mat.normalTexture:
@@ -170,47 +185,46 @@ def merge_single_node_gltf(
     scene.nodes = [len(merged_file.nodes)]  # scene node is top node only
     merged_file.nodes.append(top_node)
 
-    if len(indices['OBJ']):
-        obj_node = gl.Node(
-            name="OBJ",
-            children=list(indices['OBJ'])
-        )
-        imf_stream_node = gl.Node(
-            name="NON_OBJ",
-            children=list(indices['NON_OBJ'])
-        )
+    if split_objects_to_separate_node:
+        for name, idx in indices.items():
+            if name == "ALL":
+                pass
+            else:
+                if len(list(indices[name])):
+                    node = gl.Node(
+                        name=name,
+                        children=list(indices[name])
+                    )
 
-        obj_node_index = len(merged_file.nodes)
-        merged_file.nodes.append(obj_node)
-
-        imf_stream_node_index = len(merged_file.nodes)
-        merged_file.nodes.append(imf_stream_node)
-
-        top_node.children = [obj_node_index, imf_stream_node_index]
+                    node_index = len(merged_file.nodes)
+                    merged_file.nodes.append(node)
+                    top_node.children.append(node_index)
     else:
         top_node.children = list(indices['ALL'])
 
     merged_file.save(outfile)
 
     # TODO: uncomment this when materials are fixed
-    for_checking = set()
-    for mat in tqdm(merged_file.materials):
-        for k, v in mat.extras.items():
-            if len(v.split(",")) > 1:
-                for_checking.add(mat.name)
-                break
-        if len(set(mat.extras.keys()).difference({"diffuse", "normal", "colors"})):
-            for_checking.add(mat.name)
-            continue
-
-        if "colors" in mat.extras:
-            if len([c for c in mat.extras['colors'].split(",") if "dummy" not in c]):
+    if kwargs.get("test_generate_material", True):
+        for_checking = set()
+        pbar = tqdm(merged_file.materials) if kwargs.get("verbose", True) else merged_file.materials
+        for mat in pbar:
+            for k, v in mat.extras.items():
+                if len(v.split(",")) > 1:
+                    for_checking.add(mat.name)
+                    break
+            if len(set(mat.extras.keys()).difference({"diffuse", "normal", "colors"})):
                 for_checking.add(mat.name)
                 continue
 
-    with open(Path(output_path) / f"materials.csv", "w") as f:
-        for i in for_checking:
-            f.write(f"{i} \n")
+            if "colors" in mat.extras:
+                if len([c for c in mat.extras['colors'].split(",") if "dummy" not in c]):
+                    for_checking.add(mat.name)
+                    continue
+
+        with open(Path(output_path) / f"materials.csv", "w") as f:
+            for i in for_checking:
+                f.write(f"{i} \n")
 
 
 def merge_multinode_gltf(
@@ -218,3 +232,22 @@ def merge_multinode_gltf(
         **kwargs,
 ):
     pass
+    # top_level_gltf_files = [(f, gl.GLTF2().load(f))
+    #                         for f in Path(output_path).rglob("*.gltf")
+    #                         if len(f.relative_to(output_path).parts) == 2]
+    #
+    # outfile = Path(output_path) / f"{Path(output_path).stem}.gltf"
+    #
+    # merged_file = gl.GLTF2()
+    # scene = gl.Scene(
+    #     name=Path(output_path).stem
+    # )
+    # merged_file.scenes.append(scene)
+    #
+    # # the topmost node that will handle scaling for the entire file
+    # top_node = gl.Node(
+    #     name=Path(output_path).stem,
+    # )
+    # top_node = apply_node_transformations(top_node, **kwargs)
+    #
+    # breakpoint()
