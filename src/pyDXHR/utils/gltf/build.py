@@ -37,8 +37,6 @@ def build_gltf(mesh_data: MeshData,
 
     parent_node = gltf.Node(name=name)
     parent_node_index = _add_to_gltf(gltf_root, parent_node)
-    # parent_node.scale = 3 * [scale]
-    # parent_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
 
     scene_node = gltf.Scene()
     scene_node.nodes = [parent_node_index]
@@ -63,6 +61,11 @@ def build_gltf(mesh_data: MeshData,
             complete_image_dict |= image_dict
         else:
             continue
+    # TODO:
+    #   occlusion boxes should just be two-sided black mats, collision shouldn't have materials at all
+    #   materials should have one structure so that UE5 just creates one Material and uses that for everything else
+    # endregion
+
 
     # region vertex
     for idx, (_, vtx_sem_dict) in enumerate(mesh_data.VertexBuffers.items()):
@@ -232,6 +235,7 @@ def _populate_material(
     if blank_materials:
         gltf_mat = gltf.Material(name=f"{mat_name}")
         _add_to_gltf(gltf_root, gltf_mat)
+        return {}
 
     # arr = np.loadtxt(pydxhr_matlib, delimiter=",", dtype=int)
     # tex_arr = arr[np.where(arr[:, 0] == cdc_material_id)]

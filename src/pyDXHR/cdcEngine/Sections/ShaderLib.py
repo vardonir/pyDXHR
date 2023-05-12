@@ -1,3 +1,8 @@
+"""
+You might be asking: what the fcuk is this?
+Excellent question, future me. I don't know, hopefully you know.
+"""
+
 import struct
 from pyDXHR.cdcEngine.Sections import AbstractSection
 from pyDXHR.cdcEngine.Archive import ArchivePlatform
@@ -91,15 +96,16 @@ class DX11:
 
     @property
     def disasm(self):
+        return 0
         # https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/shader-model-5-assembly--directx-hlsl-
 
-        d3d1x_path = r"C:\Users\vardo\DXHR_Research\pyDXHR_public\external\d3d1x_rel_v090b\Release\fxdis.exe"
+        d3d1x_path = r"F:\pyDXHR\experiment\d3d1x_rel_v090b\Release\fxdis.exe"
         import tempfile
         import subprocess
         import os
 
         fd, path = tempfile.mkstemp(
-            dir=r"C:\Users\vardo\DXHR_Research\pyDXHR_public\external\d3d1x_rel_v090b\Release",
+            dir=r"F:\pyDXHR\experiment\d3d1x_rel_v090b\Release",
             suffix=".bin")
         try:
             with os.fdopen(fd, 'wb') as tf:

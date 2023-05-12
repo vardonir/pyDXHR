@@ -29,8 +29,8 @@ class CollisionMesh:
         vtx_ref = cd1.deref(0x20)
         idx_ref = cd1.deref(0x24)
 
-        vertexdata = vtx_ref.section.Data  # assume whole section
-        indices = idx_ref.section.Data  # assume whole section
+        vertexdata = vtx_ref.section.Data
+        indices = idx_ref.section.Data
         indices += b"\0" * ((-len(indices)) % 12)  # pad with zeros so that it's divisible by 12
 
         self._vertices = np.frombuffer(vertexdata,
@@ -38,7 +38,7 @@ class CollisionMesh:
 
         ic = np.frombuffer(indices,
                            dtype=np.dtype(np.uint16).newbyteorder(endian.value)).reshape((-1, 6))
-        self._indices = ic[:, 0:3].astype(np.uint32)  # what's the other BBHHH?
+        self._indices = ic[:, 0:3].astype(np.uint32)  # so what's the other BBHHH?
 
     def to_gltf(self,
                 save_to: Optional[str | Path] = None,
@@ -121,12 +121,6 @@ class CollisionMesh:
         buffer.byteLength = len(binary_blob)
         root.buffers.append(buffer)
         root.set_binary_blob(binary_blob)
-
-        root.asset = gltf.Asset(
-            generator="pyDXHR",
-            version="2.0",
-            copyright="2011 (c) Eidos Montreal"
-        )
 
         if save_to:
             save_to = Path(save_to)

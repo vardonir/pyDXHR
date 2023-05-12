@@ -69,7 +69,7 @@ class MasterunitDRM:
         Merge the collision meshes from the different unit DRMs to a single GLTF file -
         TODO: meshes are not positioned correctly
         """
-
+        import warnings
         import pygltflib as gl
         from pyDXHR.utils.gltf.merge import apply_node_transformations
 
@@ -150,4 +150,7 @@ class MasterunitDRM:
         merged_file.nodes.append(top_node)
 
         merged_file.set_binary_blob(binary_blob)
-        merged_file.save(outfile)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            merged_file.save(outfile)

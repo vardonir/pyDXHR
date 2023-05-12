@@ -1,12 +1,15 @@
+"""
+References:
+    https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py
+    https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/SectionType.cs
+
+Notes:
+    Can't say I've seen DXHR use type 03/04, but some code for one of the Tomb Raider games call them PushBuffer
+"""
 from enum import IntEnum
 
 
 class SectionType(IntEnum):
-    """
-    References:
-        https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py
-        https://github.com/gibbed/Gibbed.CrystalDynamics/blob/master/projects/Gibbed.DeusEx3.FileFormats/DRM/SectionType.cs
-    """
     Generic = 0
     Empty = 1
     Animation = 2
@@ -28,10 +31,6 @@ class SectionType(IntEnum):
 
 
 class SectionSubtype(IntEnum):
-    """
-    References:
-        https://github.com/rrika/dxhr/blob/main/tools/drmexplore.py
-    """
     Generic = 0  # I'm guessing
     Texture = 5
     Unknown11 = 11

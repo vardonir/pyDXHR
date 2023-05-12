@@ -335,7 +335,7 @@ class Material(AbstractSection):
                 case 0x40:
                     if self._debug:
                         self.debug_print()
-                case 0x2C:  # lightmap???
+                case 0x2C:  # lightmap apparent???
                     if self._debug:
                         self.debug_print()
                 case 0x80:

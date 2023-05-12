@@ -337,6 +337,7 @@ class UnitDRM(DRM):
                            trs_mat: Optional[np.ndarray] = None,
                            dest: Optional[Path | str] = None,
                            blank_materials: bool = False,
+                           skip_materials: bool = False,
                            ):
         from pyDXHR.cdcEngine.Sections import RenderResource
         from pyDXHR.cdcEngine.Sections import RenderMesh
@@ -383,10 +384,16 @@ class UnitDRM(DRM):
     def to_gltf(self,
                 apply_universal_scale: bool = False,
                 save_to: Optional[Path | str] = None,
-                action: str = "overwrite",
-                blank_materials: bool = False
+                **kwargs
                 ):
+        # TODO would be nice to separate the unit DRM into smaller sections. Importing to UE5 takes forever...
         from utils.gltf import merge_single
+
+        blank_materials = kwargs.get("blank_materials", False)
+        action = kwargs.get("action", "overwrite")
+        skip_materials = kwargs.get("skip_materials", False)
+        if skip_materials:
+            blank_materials = True
 
         if Path(save_to).suffix == ".drm":
             save_to = Path(save_to).parent / Path(save_to).stem
@@ -420,7 +427,8 @@ class UnitDRM(DRM):
                                                         folder="stream",
                                                         file_name=file_name + ".gltf",
                                                         dest=dest,
-                                                        blank_materials=blank_materials
+                                                        blank_materials=blank_materials,
+                                                        skip_materials=skip_materials,
                                                         )
                             write_to_dir(file_name, trs_mat)
 
@@ -445,7 +453,8 @@ class UnitDRM(DRM):
                                                         folder="imf_ext",
                                                         file_name=f"{imf_name}.gltf",
                                                         dest=dest,
-                                                        blank_materials=blank_materials
+                                                        blank_materials=blank_materials,
+                                                        skip_materials=skip_materials,
                                                         )
                             write_to_dir(imf_name, trs_mat)
 
@@ -470,7 +479,8 @@ class UnitDRM(DRM):
                                                         folder="obj",
                                                         file_name=f"{obj_name}.gltf",
                                                         dest=dest,
-                                                        blank_materials=blank_materials
+                                                        blank_materials=blank_materials,
+                                                        skip_materials=skip_materials,
                                                         )
                             write_to_dir(obj_name, trs_mat)
 
@@ -488,7 +498,8 @@ class UnitDRM(DRM):
                                                 folder="imf_int",
                                                 file_name=file_name + ".gltf",
                                                 dest=dest,
-                                                blank_materials=blank_materials
+                                                blank_materials=blank_materials,
+                                                skip_materials=skip_materials,
                                                 )
                     write_to_dir(file_name, trs_mat)
 
@@ -507,7 +518,8 @@ class UnitDRM(DRM):
                                                 folder="cell",
                                                 file_name=f"{sanitized_cell_name}.gltf",
                                                 dest=dest,
-                                                blank_materials=blank_materials
+                                                blank_materials=blank_materials,
+                                                skip_materials=skip_materials,
                                                 )
                     write_to_dir(sanitized_cell_name, trs_mat)
 
@@ -525,7 +537,8 @@ class UnitDRM(DRM):
                                                 folder="occlusion",
                                                 file_name=file_name + ".gltf",
                                                 dest=dest,
-                                                blank_materials=blank_materials
+                                                blank_materials=blank_materials,
+                                                skip_materials=skip_materials,
                                                 )
                     write_to_dir(file_name, trs_mat)
 

@@ -1,9 +1,13 @@
 """
 Work in progress
 """
+import struct
 
-locals_bin = r"F:\DXHRDC_Unpacked\FFFFFD61\pc-w\local\locals.bin"
-locals_fr = r"F:\DXHRDC_Unpacked\FFFFFD64\pc-w\local\locals.bin"
+locals_bin = r"F:\Game_Rips\deus-ex-human-revolution\raw\gibbed_dc\FFFFFD61\pc-w\local\locals.bin"
+locals_fr = r"F:\Game_Rips\deus-ex-human-revolution\raw\gibbed_dc\FFFFFD64\pc-w\local\locals.bin"
+
+# locals_bin = r"F:\DXHRDC_Unpacked\FFFFFD61\pc-w\local\locals.bin"
+# locals_fr = r"F:\DXHRDC_Unpacked\FFFFFD64\pc-w\local\locals.bin"
 
 # region ------------
 # This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
@@ -48,32 +52,77 @@ loc_fr = Locals.from_file(locals_fr)
 with open(locals_bin, "rb") as f:
     data_en = f.read()
 
-with open(locals_fr, "rb") as f:
-    data_fr = f.read()
+# with open(locals_fr, "rb") as f:
+#     data_fr = f.read()
 
 strings_en = []
 for prev, curr in zip(loc_en.u5, loc_en.u5[1:]):
     # strings_en.append(data_en[prev.str_offset:curr.str_offset].decode("latin1"))
-    strings_en.append(data_en[prev.str_offset:curr.str_offset])
+    if curr.str_offset > prev.str_offset:
+        strings_en.append(data_en[prev.str_offset:curr.str_offset])
+    else:
+        breakpoint()
 
-strings_fr = []
-for prev, curr in zip(loc_fr.u5, loc_fr.u5[1:]):
-    strings_fr.append(data_fr[prev.str_offset:curr.str_offset].decode("latin1"))
+# there's bits in the table that become zero for some reason. doesnt seem to have a pattern. kinda weird
+
+# strings_fr = []
+# for prev, curr in zip(loc_fr.u5, loc_fr.u5[1:]):
+#     strings_fr.append(data_fr[prev.str_offset:curr.str_offset].decode("latin1"))
 
 
-breakpoint()
+# breakpoint()
 # a = None
 # for idx, i in enumerate(loc.u5):
 #     if i.str_offset == 0xe0920:
 #         a = idx
 
 # step1 - change the text
-index = 427
-replacement_text = "Testing McTesterson"
-strings_en[index] = replacement_text.encode("latin1")
+# index = 427
+# replacement_text = "Testing McTesterson".encode("latin1") + b"\x00"
+# note that the replacement text is not the same length as the original text in string_en[index]
+
+index = 2
+replacement_text = "Testing McTesterson".encode("latin1") + b"\x00"
+
+# new_str_length = len(replacement_text)
+len_difference = len(replacement_text) - len(strings_en[index])
+
+# string_en[0] actually doesnt contain any actual text, but the byte data of the header table, so we can change the value of the offset there
+# strings_en[0][0x8:].index(loc_en.u5[index].str_offset)
+offsets = [i for i, in struct.iter_unpack("L", strings_en[0][0x8:])]
+for i in range(index+1, len(offsets)):
+    offsets[i] += len_difference
+
+strings_en[index] = replacement_text
+
+# offsets must be monotonically increasing! <- check me
+table = strings_en[0][:0x8]
+for off in offsets:
+    table += struct.pack("<L", off)
+
+assert len(table) == len(strings_en[0])
 
 # 2 - pack the text back to locals.bin
+data = b''
+for text in strings_en[1:]:
+    # todo: make sure that all the text is byte-terminated
+    data += text
 
-# 3 - adjust the offset table
+rev = table + data
+revised_locals = Locals.from_bytes(rev)
+
+strings_new = []
+for prev, curr in zip(revised_locals.u5, revised_locals.u5[1:]):
+    # strings_new.append(rev[prev.str_offset:curr.str_offset].decode("latin1"))
+    strings_new.append(rev[prev.str_offset:curr.str_offset])
 
 # 4 - ???
+
+for idx, (en, revd) in enumerate(zip(strings_en, strings_new)):
+    if en != revd:
+        breakpoint()
+
+    if len(en) != len(revd):
+        breakpoint()
+
+breakpoint()
