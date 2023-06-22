@@ -203,5 +203,6 @@ class DDSImage:
                 raise NotImplementedError
 
     def save_as(self, image_format: OutputFormat, save_to: Path | str):
+        save_to.parent.mkdir(parents=True, exist_ok=True)
         with open(save_to, "wb") as f:
             f.write(self.write_as(image_format))

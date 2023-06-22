@@ -45,6 +45,8 @@ class UnitDRM(DRM):
 
         self._archive: Optional[Archive] = None
         self._split_objects: bool = False
+        self._split_by_occlusion: bool = False
+        self._round: Optional[int] = 2
 
         self._translation: Optional[List[float]] = kwargs.get("translation")
         self._rotation: Optional[List[float]] = kwargs.get("rotation")
@@ -106,6 +108,8 @@ class UnitDRM(DRM):
         for i in trange(self._imf_count, desc="Reading IMF data"):
             trs_mat = self._imf_ref.access_array("f", 16, i * 0x90)
             trs_mat = np.asarray(trs_mat).reshape((4, 4)).T
+            if self._round:
+                trs_mat = trs_mat.round(self._round)
 
             dtpid = self._imf_ref.access("I", i * 0x90 + 0x48)
             fname_ref = self._imf_ref.deref(0x4C + i * 0x90)
@@ -141,7 +145,6 @@ class UnitDRM(DRM):
         """
         Get the indices of the objects in the unit + the associated TRS matrix.
         The actual object names will be taken from the objlist.txt in the attached arcive.
-        TODO: some objects seem to be missing, e.g., the cars in det_city_sarif
         """
         if not self._obj_ref:
             return []
@@ -166,8 +169,12 @@ class UnitDRM(DRM):
             trs_mat[0:3, 0:3] = np.diag(scl)
             trs_mat[0:3, 0:3] = rot_as_matrix
             trs_mat[-1, :] = np.array(list(pos) + [1])
+            trs_mat = trs_mat.T
 
-            obj_indices.append((index, trs_mat.T))
+            if self._round:
+                trs_mat = trs_mat.round(self._round)
+
+            obj_indices.append((index, trs_mat))
 
         return obj_indices
     # endregion
@@ -181,7 +188,7 @@ class UnitDRM(DRM):
                 for cell, cell_name in self._cell_ref_list
             }
 
-        self.CellSectionData = [cell.section for cell, _ in self._cell_ref_list]
+            self.CellSectionData = [cell.section for cell, _ in self._cell_ref_list]
 
     def _process_occlusion(self) -> None:
         """ Process occlusion boxes. """
@@ -289,10 +296,14 @@ class UnitDRM(DRM):
                     self._occlusion_ref_list.append(cell_sub20)
 
     def deserialize(self, data: bytes, **kwargs):
-        super().deserialize(data=data, header_only=False)
+        des = super().deserialize(data=data, header_only=False)
+        if not des:
+            raise ValueError("Failed to deserialize DRM")
+
         self._get_references()
         self._archive: Archive = kwargs.get("archive")
         self._split_objects = kwargs.get("split_objects", False)
+        self._split_by_occlusion = kwargs.get("split_by_occlusion", False)
 
         if kwargs.get("imf", True):
             self._process_imf(
@@ -334,15 +345,17 @@ class UnitDRM(DRM):
     def _read_section_data(rm_section,
                            folder: str,
                            file_name: str,
-                           trs_mat: Optional[np.ndarray] = None,
-                           dest: Optional[Path | str] = None,
-                           blank_materials: bool = False,
-                           skip_materials: bool = False,
+                           **kwargs,
                            ):
         from pyDXHR.cdcEngine.Sections import RenderResource
         from pyDXHR.cdcEngine.Sections import RenderMesh
         import kaitaistruct
         import shutil
+        rm = None
+
+        trs_mat = kwargs.get("trs_mat", None)
+        dest = kwargs.get("dest", None)
+        skip_materials = kwargs.get("skip_materials", False)
 
         try:
             rm = RenderMesh.deserialize(rm_section)
@@ -352,7 +365,7 @@ class UnitDRM(DRM):
             pass
         else:
             if rm:
-                gltf_object = rm.to_gltf(as_bytes=False, blank_materials=blank_materials)
+                gltf_object = rm.to_gltf(**kwargs)
                 node = gltf_object.nodes[0]
 
                 if trs_mat is not None:
@@ -360,19 +373,20 @@ class UnitDRM(DRM):
 
                 if dest:
                     pydxhr_texlib = os.getenv('PYDXHR_TEXLIB')
-
                     if not pydxhr_texlib:
-                        raise Exception
-                    else:
+                        skip_materials = True
+
+                    if not skip_materials:
                         texture_dest = dest / "textures"
                         texture_dest.mkdir(exist_ok=True, parents=True)
 
                         for img in gltf_object.images:
-                            tex_id = img.extras['cdcTextureID']
-                            tex_from_lib = RenderResource.from_library(tex_id=tex_id, tex_lib_dir=pydxhr_texlib, as_path=True)
-                            shutil.copy(tex_from_lib, texture_dest)
-                            img.uri = "..\\" + str(Path("textures") / Path(tex_from_lib).name)
-                            img.name = "T_" + f"{tex_id:x}".rjust(8, '0')
+                            tex_id = img.extras.get('cdcTextureID')
+                            if tex_id:
+                                tex_from_lib = RenderResource.from_library(tex_id=tex_id, tex_lib_dir=pydxhr_texlib, as_path=True)
+                                shutil.copy(tex_from_lib, texture_dest)
+                                img.uri = "..\\" + str(Path("textures") / Path(tex_from_lib).name)
+                                img.name = "T_" + f"{tex_id:x}".rjust(8, '0')
 
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=UserWarning)
@@ -380,18 +394,20 @@ class UnitDRM(DRM):
                         gltf_object.save(dest / folder / file_name)
             else:
                 pass
+        return rm
 
     def to_gltf(self,
                 apply_universal_scale: bool = False,
                 save_to: Optional[Path | str] = None,
                 **kwargs
                 ):
-        # TODO would be nice to separate the unit DRM into smaller sections. Importing to UE5 takes forever...
         from utils.gltf import merge_single
 
         blank_materials = kwargs.get("blank_materials", False)
         action = kwargs.get("action", "overwrite")
         skip_materials = kwargs.get("skip_materials", False)
+        trimesh_post_processing = kwargs.get("trimesh_post_processing", False)
+
         if skip_materials:
             blank_materials = True
 
@@ -422,14 +438,17 @@ class UnitDRM(DRM):
                         file_name = f"{name}_" + f"{sec.Header.SecId:x}".rjust(8, '0')
                         for idx, trs_mat in enumerate(trs_mat_list):
                             if idx == 0:
-                                self._read_section_data(rm_section=sec,
-                                                        trs_mat=trs_mat,
-                                                        folder="stream",
-                                                        file_name=file_name + ".gltf",
-                                                        dest=dest,
-                                                        blank_materials=blank_materials,
-                                                        skip_materials=skip_materials,
-                                                        )
+                                rm = self._read_section_data(rm_section=sec,
+                                                             trs_mat=trs_mat,
+                                                             folder="stream",
+                                                             file_name=file_name + ".gltf",
+                                                             dest=dest,
+                                                             blank_materials=blank_materials,
+                                                             skip_materials=skip_materials,
+                                                             trimesh_post_processing=trimesh_post_processing,
+                                                             )
+                                if not rm:
+                                    break
                             write_to_dir(file_name, trs_mat)
 
             # external IMFs
@@ -455,6 +474,7 @@ class UnitDRM(DRM):
                                                         dest=dest,
                                                         blank_materials=blank_materials,
                                                         skip_materials=skip_materials,
+                                                        trimesh_post_processing=trimesh_post_processing,
                                                         )
                             write_to_dir(imf_name, trs_mat)
 
@@ -481,6 +501,7 @@ class UnitDRM(DRM):
                                                         dest=dest,
                                                         blank_materials=blank_materials,
                                                         skip_materials=skip_materials,
+                                                        trimesh_post_processing=trimesh_post_processing,
                                                         )
                             write_to_dir(obj_name, trs_mat)
 
@@ -500,6 +521,7 @@ class UnitDRM(DRM):
                                                 dest=dest,
                                                 blank_materials=blank_materials,
                                                 skip_materials=skip_materials,
+                                                trimesh_post_processing=trimesh_post_processing,
                                                 )
                     write_to_dir(file_name, trs_mat)
 
@@ -520,6 +542,7 @@ class UnitDRM(DRM):
                                                 dest=dest,
                                                 blank_materials=blank_materials,
                                                 skip_materials=skip_materials,
+                                                trimesh_post_processing=trimesh_post_processing,
                                                 )
                     write_to_dir(sanitized_cell_name, trs_mat)
 
@@ -539,8 +562,16 @@ class UnitDRM(DRM):
                                                 dest=dest,
                                                 blank_materials=blank_materials,
                                                 skip_materials=skip_materials,
+                                                trimesh_post_processing=trimesh_post_processing,
                                                 )
                     write_to_dir(file_name, trs_mat)
+
+        if self._split_by_occlusion:
+            if ObjectType.Occlusion not in self.ObjectData:
+                warnings.warn("Can't split_by_occlusion without occlusion boxes!")
+                self._split_by_occlusion = False
+
+        location_dir = {key: list({tuple(loc) for loc in locs}) for key, locs in location_dir.items()}
 
         merge_single(
             output_path=dest,
@@ -551,4 +582,12 @@ class UnitDRM(DRM):
             rotation=self._rotation,
             trs_matrix=self._trs_mat,
             verbose=self._verbose,
+            split_by_occlusion=self._split_by_occlusion,
         )
+
+        if len(self.CollisionMesh):
+            cm = self.CollisionMesh[0]
+            cm.to_gltf(dest / "collision.gltf",
+                       scale=self._scale,
+                       rotation=self._rotation,
+                       translation=self._translation,)

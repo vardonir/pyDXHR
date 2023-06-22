@@ -8,3 +8,8 @@
 /output/
 /.run/
 /.venv/
+/build/
+/dist/
+/bigfiles/
+/preprocessed/
+/.env

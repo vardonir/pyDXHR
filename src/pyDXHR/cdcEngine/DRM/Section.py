@@ -25,12 +25,19 @@ class SectionHeader:
         self.Language: int = 0
         self.Endian: Endian = Endian.Little
 
-        self.unk06 = None
+        self._unk06 = None
+        self._unk05 = None
+
+    def serialize(self):
+        return struct.pack(f"{self.Endian.value}LBBHLLL",
+                           self.DataSize, self.SectionType.value,
+                           self._unk05, self._unk06,
+                           self.Flags, self.SecId, self.Language)
 
     def deserialize(self, data, endian: Endian = Endian.Little):
         self.Endian = endian
         self.DataSize, section_type, \
-            _05, self.unk06, \
+            self._unk05, self._unk06, \
             self.Flags, self.SecId, self.Language = struct.unpack_from(f"{endian.value}LBBHLLL", data, offset=0)
 
         self.SectionType = SectionType(section_type)
@@ -59,14 +66,15 @@ class SectionHeader:
                f"Id: {hex(self.SecId)}"
 
     def __eq__(self, other):
-        # https://stackoverflow.com/a/4522896
-        import operator
-        if isinstance(other, self.__class__):
-            if self.__slots__ == other.__slots__:
-                attr_getters = [operator.attrgetter(attr) for attr in self.__slots__]
-                return all(getter(self) == getter(other) for getter in attr_getters)
-
-        return False
+        return self.SecId == other.SecId
+        # # https://stackoverflow.com/a/4522896
+        # import operator
+        # if isinstance(other, self.__class__):
+        #     if self.__slots__ == other.__slots__:
+        #         attr_getters = [operator.attrgetter(attr) for attr in self.__slots__]
+        #         return all(getter(self) == getter(other) for getter in attr_getters)
+        #
+        # return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -89,6 +97,14 @@ def deserialize_section_headers(drm_header: bytes,
         sec_header_list.append(sh)
 
     return sec_header_list
+
+
+def serialize_section_headers(sec_header_list: List[SectionHeader]):
+    data = b''
+    for sh in sec_header_list:
+        data += sh.serialize()
+
+    return data
 
 
 class Section:
@@ -252,7 +268,7 @@ def from_drm_blocks(
 
         sec_data = block_data[sec_start:sec_end]
         section_data.append(sec_data)
-        sec.FirstInt, = struct.unpack_from(f"{endian.value}L", sec_data)
+        # sec.FirstInt, = struct.unpack_from(f"{endian.value}L", sec_data)
         sections.append(sec)
 
     return sections, section_data

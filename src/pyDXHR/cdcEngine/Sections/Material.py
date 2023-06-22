@@ -96,6 +96,7 @@ from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 
 # ______________________NOTES______________________
 
+
 class Material(AbstractSection):
     def __init__(self, **kwargs):
         self._raw_texture_list = {k: [] for k in range(16)}
@@ -122,10 +123,9 @@ class Material(AbstractSection):
         if self.section is not None:
             self.MaterialSpec: int = self.section.Header.Language
 
-        self._parse_data()
-
-    def _parse_data(self):
-        pass
+    def to_wavefront_mtl(self):
+        from pyDXHR.utils.wavefront.mtl import cdcMaterial_to_WavefrontMaterial
+        return cdcMaterial_to_WavefrontMaterial(self)
 
     @staticmethod
     def _get_name_from_archive(archive, m_id):
@@ -134,11 +134,11 @@ class Material(AbstractSection):
         else:
             return "M_" + f"{m_id:x}".rjust(8, '0')
 
-    def to_gltf(self,
-                as_library: bool = False,
-                library_dir: Optional[Path | str] = None
-                ):
+    def to_gltf(self, **kwargs):
         raise NotImplementedError
+
+    def to_json(self):
+        return {k: [v[0] for v in vl] for k, vl in self.ImageDict.items() if isinstance(vl, list)}
 
     def _get_texture_ids(self):
 
@@ -187,6 +187,8 @@ class Material(AbstractSection):
 
     def _deserialize_from_section(self, section):
         super()._deserialize_from_section(section)
+        self._load_matlib()
+
         self._get_texture_ids()
         self._get_textures()
         # self._process_refs()
@@ -267,6 +269,19 @@ class Material(AbstractSection):
     # def debug_data(self):
     #     return [k for k, v in self._raw_texture_list.items() if len(v) > 0]
 
+    def _load_matlib(self):
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+
+        matlib = os.getenv('PYDXHR_MATLIB')
+        if matlib:
+            self._named_textures_path = os.path.join(matlib, "named_textures.csv")
+
+        texlib = os.getenv("PYDXHR_TEXLIB")
+        if texlib:
+            self._texture_library_path = texlib
+
     def _get_textures(self):
         # TODO: handwavy as fck, but idc anymore
         if len(self._raw_texture_list[1]):
@@ -335,7 +350,7 @@ class Material(AbstractSection):
                 case 0x40:
                     if self._debug:
                         self.debug_print()
-                case 0x2C:  # lightmap apparent???
+                case 0x2C:  # lightmap apparently???
                     if self._debug:
                         self.debug_print()
                 case 0x80:

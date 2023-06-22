@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import struct
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Optional
 
 from pyDXHR.cdcEngine.DRM.Section import Section
 from pyDXHR.cdcEngine.DRM.Resolver import UnknownResolver, LocalDataResolver, RemoteDataResolver, MissingResolver
+from pyDXHR.utils import Endian
 
 if TYPE_CHECKING:
     from pyDXHR.cdcEngine.DRM.DRMFile import DRM
@@ -32,7 +33,7 @@ class Reference:
         return cls(section_list=drm.Sections, section=drm.Sections[x], offset=offset)
 
     def __repr__(self):
-        return f"Reference {self.section.Header.SecId} : {hex(self.offset)}"
+        return f"Reference SecId {hex(self.section.Header.SecId)} : offset {hex(self.offset)}"
 
     def attach_unpacked_archive(self, unpacked_archive):
         pass
@@ -69,19 +70,25 @@ class Reference:
         else:
             return None
 
-    def access(self, unpack_format: str, offset=0, swap: bool = False):
+    def access(self, unpack_format: str, offset=0, swap: bool = False, override_endian: Optional[Endian] = None):
         from pyDXHR.utils import byte_swap
 
         if swap:
-            return struct.unpack_from(unpack_format, byte_swap(self.section.Data), self.offset + offset)[0]
+            if override_endian:
+                return struct.unpack_from(f"{override_endian.value}{unpack_format}", byte_swap(self.section.Data), self.offset + offset)[0]
+            else:
+                return struct.unpack_from(f"{self.section.Header.Endian.value}{unpack_format}", byte_swap(self.section.Data), self.offset + offset)[0]
         else:
-            return struct.unpack_from(unpack_format, self.section.Data, self.offset + offset)[0]
+            if override_endian:
+                return struct.unpack_from(f"{override_endian.value}{unpack_format}", self.section.Data, self.offset + offset)[0]
+            else:
+                return struct.unpack_from(f"{self.section.Header.Endian.value}{unpack_format}", self.section.Data, self.offset + offset)[0]
 
     def add_offset(self, offset=0):
         return Reference(self.section_list, self.section, self.offset + offset)
 
     def access_array(self, unpack_format: str, arr_len: int, offset=0):
-        return struct.Struct(f"<{arr_len}{unpack_format}").unpack_from(self.section.Data, self.offset + offset)
+        return struct.Struct(f"{self.section.Header.Endian.value}{arr_len}{unpack_format}").unpack_from(self.section.Data, self.offset + offset)
 
     def access_null_terminated(self, offset=0):
         # "access everything in the data starting from the offset up until it hits a zero"

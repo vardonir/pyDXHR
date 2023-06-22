@@ -43,6 +43,7 @@ class CollisionMesh:
     def to_gltf(self,
                 save_to: Optional[str | Path] = None,
                 as_bytes: bool = False,
+                **kwargs
                 ):
         import warnings
         import pygltflib as gltf
@@ -51,7 +52,9 @@ class CollisionMesh:
         root = gltf.GLTF2()
         node = gltf.Node(
             name=self.name,
-            # translation=list(self._translation),
+            translation=kwargs.get("translation"),
+            scale=kwargs.get("scale"),
+            rotation=kwargs.get("rotation"),
             # matrix=self.trs_mat.flatten().tolist(),
         )
 

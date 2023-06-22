@@ -66,6 +66,9 @@ class Archive:
     def deserialize_from_env(self):
         # for one-off tests
         import os
+        from dotenv import load_dotenv
+        load_dotenv()
+
         bigfile = os.getenv('PYDXHR_BIGFILE')
         if bigfile:
             self.deserialize_from_file(bigfile)
@@ -228,6 +231,8 @@ class Archive:
                 raw_list = self.get_from_hash(4128657984)  # 0xF6165240
             case ArchivePlatform.PS3_JAP.value:
                 raw_list = self.get_from_hash(4162441112)  # F819CF98
+            case ArchivePlatform.WII_W.value:
+                raw_list = self.get_from_hash(0xA92B3067)
             case _:
                 return {}
 
@@ -243,6 +248,8 @@ class Archive:
                 raw_list = self.get_from_hash(2974621525)  # 0xB14D1F55
             case ArchivePlatform.PS3_JAP.value:
                 raise NotImplementedError
+            case ArchivePlatform.WII_W.value:
+                raw_list = self.get_from_hash(0xCCF72EEF)
             case _:
                 return {}
 
@@ -275,6 +282,8 @@ class Archive:
                 raise NotImplementedError
             case ArchivePlatform.XENON_W.value:
                 raise  NotImplementedError
+            case ArchivePlatform.WII_W.value:
+                raw_list = self.get_from_hash(0xCC232E55)
             case _:
                 return {}
 

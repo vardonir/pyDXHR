@@ -2,7 +2,7 @@ from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 from pyDXHR.cdcEngine.Sections import RenderMesh
 
-file_dest = r"F\pyDXHR\output\gltf"
+file_dest = r"X:\pyDXHR\gltf"
 
 models = [
     # has transparency
@@ -35,4 +35,4 @@ rm_sec_set = list(RenderMesh.deserialize_drm(drm))
 
 rm_sec_set[0].to_gltf(save_to=file_dest)
 
-breakpoint()
+# breakpoint()

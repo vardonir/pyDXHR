@@ -2,7 +2,7 @@ from typing import *
 from pathlib import Path
 from tqdm import tqdm, trange
 
-from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM
+from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM, ObjectType
 from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.utils import *
 
@@ -17,11 +17,17 @@ class MasterunitDRM:
         self._archive: Archive = archive
         self._linked_drm_names: List[str] = []
         self._kwargs = kwargs | {"verbose": False}
+        self._limit_units: int = kwargs.get("limit_units")
 
         self.Name: str = masterunit_name
         self._read_masterunit()
 
-        for linked in self._linked_drm_names:
+        if self._limit_units:
+            scan = self._linked_drm_names[:self._limit_units]
+        else:
+            scan = self._linked_drm_names
+
+        for linked in scan:
             filename = linked + ".drm"
             drm_data = self._archive.get_from_filename(filename)
 
@@ -38,13 +44,23 @@ class MasterunitDRM:
         self._unit_list[self.Name] = unit
         self._linked_drm_names = unit.linked_drm()
 
+    def list_objects(self):
+        for name, unit in self._unit_list.items():
+            if ObjectType.OBJ in unit.ObjectData:
+                breakpoint()
+
     def to_gltf(self,
                 save_to: str,
-                action: str = "overwrite",
-                blank_materials: bool = False,
-                merge: bool = True
+                **kwargs
                 ):
         from pyDXHR.utils.gltf import merge_multiple
+
+        action = kwargs.get('action', "overwrite")
+        merge = kwargs.get("merge", True)
+        blank_materials = kwargs.get("blank_materials", False)
+        skip_materials = kwargs.get("skip_materials", False)
+        if skip_materials:
+            blank_materials = True
 
         if Path(save_to).suffix == ".drm":
             save_to = Path(save_to).parent / Path(save_to).stem
@@ -53,7 +69,11 @@ class MasterunitDRM:
         pbar = tqdm(self._unit_list.items())
         for name, unit in pbar:
             pbar.set_description(f"Generating GLTF for unit {name}")
-            unit.to_gltf(save_to=dest / name, blank_materials=blank_materials)
+            unit.to_gltf(
+                save_to=dest / name,
+                blank_materials=blank_materials,
+                skip_materials=skip_materials,
+            )
 
         if merge:
             merge_multiple(

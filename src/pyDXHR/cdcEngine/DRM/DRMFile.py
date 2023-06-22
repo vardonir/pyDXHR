@@ -11,16 +11,6 @@ from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
 
 
 class DRMHeader:
-    __slots__ = (
-        "Endian",
-        "Version",
-        "DRMDependencies",
-        "OBJDependencies",
-        "Flags",
-        "RootSection",
-        "SectionHeaders"
-    )
-
     def __init__(self):
         self.Endian = Endian.Little
         self.Version: int = 0
@@ -29,6 +19,33 @@ class DRMHeader:
         self.Flags: int = 0
         self.RootSection: int = 0
         self.SectionHeaders: List[SectionHeader] = []
+
+        self._len_drm_deps: int = 0
+        self._len_obj_deps: int = 0
+        self._unknown0c: int = 0
+        self._unknown10: int = 0
+
+    def serialize(self):
+        blob = b''
+
+        blob += struct.pack(f"{self.Endian.value}8L",
+                            self.Version,
+                            self._len_drm_deps,
+                            self._len_obj_deps,
+                            self._unknown0c,
+                            self._unknown10,
+                            self.Flags,
+                            len(self.SectionHeaders),
+                            self.RootSection
+                            )
+
+        # section headers
+        # TODO
+
+        # pad the end bits so that it's 16-aligned
+        # blob += b'\x00' * (16 - (len(blob) % 16))
+
+        return blob
 
     def deserialize(self, header_data: bytes):
         assert len(header_data) > 32
@@ -49,8 +66,8 @@ class DRMHeader:
             self.Version = be_version
 
         version, \
-            len_drm_dep, len_obj_dep, \
-            unknown0c, unknown10, \
+            self._len_drm_deps, self._len_obj_deps, \
+            self._unknown0c, self._unknown10, \
             self.Flags, \
             len_sections, self.RootSection = struct.unpack_from(f"{self.Endian.value}8L", header_data, offset=0)
 
@@ -61,20 +78,20 @@ class DRMHeader:
         )
 
         cursor = (4 * 8)+(20 * len_sections)
-        self.OBJDependencies = header_data[cursor:cursor+len_obj_dep].decode("ascii").strip("\x00")
+        self.OBJDependencies = header_data[cursor:cursor+self._len_obj_deps].decode("ascii").strip("\x00")
         if len(self.OBJDependencies):
             self.OBJDependencies = self.OBJDependencies.split("\x00")
         else:
             self.OBJDependencies = []
 
-        cursor += len_obj_dep
-        self.DRMDependencies = header_data[cursor:cursor+len_drm_dep].decode("ascii").strip("\x00")
+        cursor += self._len_obj_deps
+        self.DRMDependencies = header_data[cursor:cursor+self._len_drm_deps].decode("ascii").strip("\x00")
         if len(self.DRMDependencies):
             self.DRMDependencies = self.DRMDependencies.split("\x00")
         else:
             self.DRMDependencies = []
 
-        cursor += len_drm_dep
+        cursor += self._len_drm_deps
         return (cursor + 15) & ~15
         # return cursor
 
@@ -84,6 +101,10 @@ class DRM:
         self.Header = DRMHeader()
         self.Sections: list = []
         self.SectionData: List[bytes] = []
+
+    def lookup_section_subtype(self, section_subtype: SectionSubtype, section_id: Optional[int] = None):
+        if self.Sections:
+            return [sec for sec in self.Sections if sec.Header.SectionSubtype.value == section_subtype.value]
 
     def lookup_section(self, section_type: SectionType, section_id: int):
         # ugly af, but it's not like it's used often...
@@ -171,6 +192,14 @@ class DRM:
             return False
         else:
             return True
+
+    def serialize(self):
+        blob = struct.pack(f">L", CompressedDRM.Magic)
+        blob += self.Header.serialize()
+
+        # TODO
+
+        return blob
 
     def __getitem__(self, item: SectionSubtype | SectionSubtype):
         # TODO: generalize this. type checks aren't working??

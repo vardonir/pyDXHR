@@ -14,6 +14,10 @@ from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
 from pyDXHR.utils import byte_swap, Endian
 
 
+def _hex(number):
+    return hex(number).replace("0x", "").upper()
+
+
 class Resolver(ABC):
     def __init__(self):
         self.PointerOffset: int | None = None
@@ -36,7 +40,7 @@ class LocalDataResolver(Resolver):
         self.DataOffset = ((data & 0xFFFFFFFF00000000) >> 32)
 
     def __repr__(self):
-        return f'LDR {self.PointerOffset} {self.DataOffset}'
+        return f'LDR | ptr {_hex(self.PointerOffset)} | data {_hex(self.DataOffset)}'
 
 
 class RemoteDataResolver(Resolver):
@@ -49,7 +53,7 @@ class RemoteDataResolver(Resolver):
         self.DataOffset = (data & 0xFFFFFFC000000000) >> 38
 
     def __repr__(self):
-        return f"RDR {self.PointerOffset} {self.DataOffset} | {self.SectionIndex}"
+        return f"RDR | ptr {_hex(self.PointerOffset)} data {_hex(self.DataOffset)} | SecId {_hex(self.SectionIndex)}"
 
 
 class UnknownResolver(Resolver):
@@ -84,12 +88,12 @@ class UnknownResolver(Resolver):
             return mr
 
     def __repr__(self):
-        return f"UR {self.PointerOffset} | {self.SectionType} {self.SectionId}"
+        return f"UR | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)} | {SectionType(self.SectionType)}"
 
 
 class MissingResolver(Resolver):
     def __repr__(self):
-        return f"MissingResolver {self.PointerOffset} | {self.SectionId}"
+        return f"MissingResolver | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)}"
 
     def deserialize(self, data, endian: Endian = Endian.Little):
         pass
@@ -99,7 +103,8 @@ def deserialize_resolver_list(
         data: bytes,
         header_list,
         section_data: bytes,
-        endian: Endian = Endian.Little
+        endian: Endian = Endian.Little,
+        sort: bool = False
 ) -> List[Resolver]:
     resolvers = []
 
@@ -110,33 +115,49 @@ def deserialize_resolver_list(
 
         offset = 4*5
         local_resolver_data = struct.unpack_from(f"{endian.value}{local_resolver_count}Q", data, offset=offset)
+        lres_list = []
         for lr in local_resolver_data:
             l_res = LocalDataResolver()
             l_res.deserialize(lr, endian=endian)
-            resolvers.append(l_res)
+            lres_list.append(l_res)
+        if sort:
+            sorted(lres_list, key=lambda x: x.PointerOffset)
+        resolvers.extend(lres_list)
 
         offset += local_resolver_count * 8
         remote_resolver_data = struct.unpack_from(f"{endian.value}{remote_resolver_count}Q", data, offset=offset)
+        rres_list = []
         for rr in remote_resolver_data:
             r_res = RemoteDataResolver()
             r_res.deserialize(rr, endian=endian)
-            resolvers.append(r_res)
+            rres_list.append(r_res)
+        if sort:
+            sorted(rres_list, key=lambda x: x.PointerOffset)
+        resolvers.extend(rres_list)
 
         offset += remote_resolver_count * 8
         u2_resolver_data = struct.unpack_from(f"{endian.value}{u2_resolver_count}L", data, offset=offset)
+        u2res_list = []
         for u2r in u2_resolver_data:
             u2_res = UnknownResolver()
             u2_res.deserialize(data=u2r, section_headers=header_list, section_data=section_data, endian=endian)
-            resolvers.append(u2_res)
+            u2res_list.append(u2_res)
+        if sort:
+            sorted(u2res_list, key=lambda x: x.PointerOffset)
+        resolvers.extend(u2res_list)
 
         offset += u2_resolver_count * 4
         assert u3_resolver_count == 0
 
         u4_resolver_data = struct.unpack_from(f"{endian.value}{u4_resolver_count}L", data, offset=offset)
+        u4res_list = []
         for u4r in u4_resolver_data:
             u4_res = UnknownResolver()
             u4_res.deserialize(data=u4r, section_headers=header_list, section_data=section_data, endian=endian)
-            resolvers.append(u4_res)
+            u4res_list.append(u4_res)
+        if sort:
+            sorted(u4res_list, key=lambda x: x.PointerOffset)
+        resolvers.extend(u4res_list)
 
     return resolvers
 

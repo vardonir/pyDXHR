@@ -12,18 +12,19 @@ from pyDXHR.utils.MeshData import MeshData, VertexSemantic
 
 
 def build_gltf(mesh_data: MeshData,
-               save_to: Optional[str | Path] = None,
-               name: Optional[str] = None,
                **kwargs,
                ):
     """
     "share_textures": will create a folder called "textures"
     "blank materials": create the materials, but do not assign textures
     """
+    save_to = kwargs.get("save_to", None)
+    name = kwargs.get("name", None)
     blank_materials = kwargs.get("blank_materials", False)
     skip_materials = kwargs.get("skip_materials", False)
     share_textures = kwargs.get("share_textures", True)
     as_bytes = kwargs.get("as_bytes", False)
+    trimesh_post_processing = kwargs.get("trimesh_post_processing", False)
 
     # region setup
     asset_data = gltf.Asset()
@@ -32,6 +33,22 @@ def build_gltf(mesh_data: MeshData,
     asset_data.copyright = "2011 (c) Eidos Montreal"
 
     gltf_root = gltf.GLTF2()
+    from . import black_image_as_gltf_buffer
+
+    # create the empty image + texture and add it to the gltf
+    empty_image_buffer = black_image_as_gltf_buffer()
+
+    empty_image = gltf.Image(
+        name="dummyblack",
+        mimeType="image/png",
+    )
+
+    empty_image_index = _add_to_gltf(gltf_root, empty_image)
+    empty_texture = gltf.Texture(
+        source=empty_image_index,
+        name="dummyblack",
+    )
+    empty_texture_index = _add_to_gltf(gltf_root, empty_texture)
 
     binary_blob: bytes = b''
 
@@ -53,10 +70,14 @@ def build_gltf(mesh_data: MeshData,
     mat_index_dict: Dict[Material, int] = {}
     for mat_index, mat in enumerate(mesh_data.MaterialIDList):
         if mat not in mat_index_dict:
-            image_dict = _populate_material(gltf_root, mat.ID,
-                                            blank_materials=blank_materials,
-                                            skip_materials=skip_materials
-                                            )
+            image_dict = _populate_material(
+                gltf_root=gltf_root,
+                cdc_material_id=mat.ID,
+                empty_texture_index=empty_texture_index,
+                blank_materials=blank_materials,
+                skip_materials=skip_materials
+            )
+
             mat_index_dict[mat] = mat_index
             complete_image_dict |= image_dict
         else:
@@ -65,7 +86,6 @@ def build_gltf(mesh_data: MeshData,
     #   occlusion boxes should just be two-sided black mats, collision shouldn't have materials at all
     #   materials should have one structure so that UE5 just creates one Material and uses that for everything else
     # endregion
-
 
     # region vertex
     for idx, (_, vtx_sem_dict) in enumerate(mesh_data.VertexBuffers.items()):
@@ -113,7 +133,9 @@ def build_gltf(mesh_data: MeshData,
                 material=mat_index_dict[mat],
                 extras={
                     "MESH_NAME": name,
-                    "cdcMatID": mat.Name
+                    "MESH_IDX": idx,
+                    "PRIM_IDX": imp,
+                    "cdcMatID": mat.Name,
                 }
             )
 
@@ -121,7 +143,20 @@ def build_gltf(mesh_data: MeshData,
     # endregion
 
     # region closing
-    _create_buffer(gltf_root, binary_blob)
+    _create_buffer(gltf_root, binary_blob, name)
+
+    empty_image_buffer_view = gltf.BufferView(
+        name="dummyblack",
+        buffer=1,
+        byteLength=empty_image_buffer.byteLength
+    )
+    empty_image_buffer_view_index = _add_to_gltf(gltf_root, empty_image_buffer_view)
+    empty_image.bufferView = empty_image_buffer_view_index
+
+    gltf_root.buffers.append(empty_image_buffer)
+
+    if trimesh_post_processing:
+        gltf_root = _trimesh_post_process(gltf_root)
 
     if save_to:
         save_to = Path(save_to)
@@ -153,6 +188,25 @@ def build_gltf(mesh_data: MeshData,
     # endregion
 
 
+def _trimesh_post_process(gltf_root: gltf.GLTF2):
+    """ run some post-processing on the resulting GLTF file using trimesh """
+    import trimesh
+    from io import BytesIO
+
+    # convert the GLTF file to a trimesh object
+    gltf_binary = b"".join(gltf_root.save_to_bytes())
+    gltf_trimesh = trimesh.load(BytesIO(gltf_binary), file_type="glb", force="mesh")
+
+    # run the post-processing
+    gltf_trimesh = gltf_trimesh.process()
+
+    # convert the trimesh object back to a GLTF object instance
+    export_blob = gltf_trimesh.export(file_type="glb")
+
+    # load the GLTF object instance and return it back
+    return gltf.GLTF2.load_from_bytes(export_blob)
+
+
 def _copy_texture_images(
         image_dict: Dict[int, gltf.Image],
         relative_texture_destination: str,
@@ -174,12 +228,17 @@ def _copy_texture_images(
 
 def _populate_material(
         gltf_root: gltf.GLTF2,
+        empty_texture_index: int,
         cdc_material_id: int,
         blank_materials: bool = False,
         skip_materials: bool = False,
 ):
     import json
     mat_name = "M_" + f"{cdc_material_id:x}".rjust(8, '0')
+
+    pydxhr_matlib = os.getenv('PYDXHR_MATLIB')
+    if pydxhr_matlib is None:
+        skip_materials = True
 
     if skip_materials:
         gltf_mat = gltf.Material(
@@ -190,10 +249,6 @@ def _populate_material(
 
         _add_to_gltf(gltf_root, gltf_mat)
         return {}
-
-    pydxhr_matlib = os.getenv('PYDXHR_MATLIB')
-    if pydxhr_matlib is None:
-        raise Exception
 
     with open(Path(pydxhr_matlib) / "mtl_lib_v2.json", 'r') as f:
         mtl_lib = json.load(f)
@@ -244,10 +299,17 @@ def _populate_material(
     image_dict: Dict[int, gltf.Image] = {}
 
     gltf_mat = gltf.Material(
-        name=f"{mat_name}",
         extras={},
-        alphaCutoff=None
+        name=f"{mat_name}",
+        alphaCutoff=0.0,
+        alphaMode=gltf.OPAQUE,
+        doubleSided=False,
+        pbrMetallicRoughness=_empty_pbr(empty_texture_index),
+        normalTexture=_empty_normal(empty_texture_index),
+        occlusionTexture=_empty_occlusion(empty_texture_index),
     )
+
+    _modify_empty_emissive(gltf_mat, empty_texture_index)
 
     if mat_name in mtl_lib:
         mat_info = mtl_lib[mat_name]
@@ -274,9 +336,36 @@ def _populate_material(
                 mat_key: ",".join(["T_" + f"{t:x}".rjust(8, '0') if isinstance(t, int) else t for t in tx_id])
             }
             if mat_key == "colors":
-                continue
+                # why is this here as opposed to outside the if len(tx_id)?
+                # this will "automatically" exclude the "dummyblack" color,
+                # so this will only trigger if "flatX" is in the list
+                if len(mat_info.get("diffuse")):
+                    # this means that there's already something in pbr.basecolor
+                    # and we can just ignore what colors are attached
+                    continue
+                else:
+                    colors = [i.strip().replace("flat", "") for i in tx_id if "flat" in i]
+                    if len(colors) > 1:
+                        # haha idk
+                        pass
+                    elif len(colors) == 1:
+                        match colors[0]:
+                            case "black":
+                                gltf_mat.pbrMetallicRoughness.baseColorFactor = [0, 0, 0, 1]
+                            case "white":
+                                gltf_mat.pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 1]
+                            case "grey":
+                                gltf_mat.pbrMetallicRoughness.baseColorFactor = [0.5, 0.5, 0.5, 1]
+                            case "normal":
+                                pass
+                            case _:
+                                pass
+                                # breakpoint()
+                        continue
+
             for tx in tx_id:
-                _ = _add_image(int(tx), ignore_mat_key=True)
+                if isinstance(tx, int):
+                    _ = _add_image(int(tx), ignore_mat_key=True)
             continue
 
         if len(tx_id) == 1:
@@ -294,17 +383,16 @@ def _populate_material(
                 if gltf_tx_id is None:
                     continue
 
-                tf = gltf.TextureInfo(index=gltf_tx_id)
+                tf = gltf.TextureInfo(
+                    index=gltf_tx_id,
+                    texCoord=0
+                )
 
                 match mat_key:
                     case "diffuse":
-                        gltf_mat.pbrMetallicRoughness = gltf.PbrMetallicRoughness(
-                            baseColorTexture=tf,
-                            metallicFactor=0,
-                            roughnessFactor=0.5,
-                        )
+                        gltf_mat.pbrMetallicRoughness.baseColorTexture = tf
                     case "normal":
-                        gltf_mat.normalTexture = gltf.NormalMaterialTexture(index=gltf_tx_id)
+                        gltf_mat.normalTexture.index = gltf_tx_id
                     # case "blend":
                     #     pass
                     # case "specular":
@@ -467,7 +555,7 @@ def _populate_mesh_attributes(attribute_index_dict: dict) -> gltf.Attributes:
         # included in file for archival purposes
         _BINORMAL=attribute_index_dict[VertexSemantic.Binormal.value],
         _NORMAL2=attribute_index_dict[VertexSemantic.Normal2.value],  # so confused
-        _PACKED_NTB=attribute_index_dict[VertexSemantic.PackedNTB.value],
+        _PACKEDNTB=attribute_index_dict[VertexSemantic.PackedNTB.value],
     )
 
 
@@ -505,7 +593,7 @@ def _add_vertex_data(
         extras={
             "MESH_NAME": name,
             "MESH_IDX": mesh_num,
-            "VTX_SEM": vtx_sem.name,
+            "VTX_SEM": VertexSemantic.as_gltf_attr(vtx_sem),
         },
         name=f"Mesh_{mesh_num}_{vtx_sem.name}"
     )
@@ -519,7 +607,7 @@ def _add_vertex_data(
         extras={
             "MESH_NAME": name,
             "MESH_IDX": mesh_num,
-            "VTX_SEM": vtx_sem.name,
+            "VTX_SEM": VertexSemantic.as_gltf_attr(vtx_sem),
         },
     )
 
@@ -575,7 +663,11 @@ def _add_to_gltf(gltf_root: gltf.GLTF2, item: gltf.Property, **extras) -> int:
     return index
 
 
-def _create_buffer(gltf_root: gltf.GLTF2, binary_blob: bytes) -> None:
+def _create_buffer(
+        gltf_root: gltf.GLTF2,
+        binary_blob: bytes,
+        name: str
+) -> None:
     """
     Generates a buffer for binary blob and attaches it to the GLTF root
 
@@ -584,7 +676,11 @@ def _create_buffer(gltf_root: gltf.GLTF2, binary_blob: bytes) -> None:
     :return:
     """
 
-    buffer = gltf.Buffer()
+    buffer = gltf.Buffer(
+        extras={
+            "name": name
+        }
+    )
     buffer.byteLength = len(binary_blob)
     gltf_root.buffers.append(buffer)
 
@@ -601,3 +697,46 @@ def _add_tangent_handedness(v: np.ndarray, reverse: bool = False) -> np.ndarray:
     """
     handedness = 1 if not reverse else -1
     return np.hstack([v, handedness*np.ones((1, v.shape[0])).T])
+
+
+def _empty_pbr(empty_tex_index: int):
+    tf = gltf.TextureInfo(
+        index=empty_tex_index,
+        texCoord=0
+    )
+
+    return gltf.PbrMetallicRoughness(
+        metallicFactor=0.0,
+        roughnessFactor=1.0,
+        baseColorFactor=[0.0, 0.0, 0.0, 1.0],
+        baseColorTexture=tf,
+        # metallicRoughnessTexture=tf
+    )
+
+
+def _empty_normal(empty_tex_index: int):
+    return gltf.NormalMaterialTexture(
+        index=empty_tex_index,
+        texCoord=0,
+        scale=1.0
+    )
+
+
+def _empty_occlusion(empty_tex_index: int):
+    return gltf.OcclusionTextureInfo(
+        index=empty_tex_index,
+        texCoord=0,
+        strength=1.0
+    )
+
+
+def _modify_empty_emissive(
+        mat: gltf.Material,
+        empty_tex_index: Optional[int] = None
+):
+    mat.emissiveTexture = gltf.TextureInfo(
+        index=empty_tex_index,
+        texCoord=0
+    )
+
+    mat.emissiveFactor = [0.0, 0.0, 0.0]

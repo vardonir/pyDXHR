@@ -8,7 +8,21 @@ from pyDXHR.utils import Endian
 Magic = 0x4344524D
 
 
-def decompress(data: bytes, header_only: bool = False) -> List[bytes]:
+def compress(data: List[bytes]) -> bytes:
+    blob = struct.pack(">L", Magic)
+    blob += struct.pack(">L", 2)  # Version
+    blob += struct.pack(">L", len(data))  # Count
+
+    # TODO
+
+    return blob
+
+
+def decompress(
+        data: bytes,
+        header_only: bool = False,
+        return_as_bytes: bool = False
+) -> List[bytes] | bytes:
     magic, = struct.unpack_from(">L", data, 0)
     if magic != Magic:
         raise Exception
@@ -41,6 +55,8 @@ def decompress(data: bytes, header_only: bool = False) -> List[bytes]:
                                 offset=16).reshape((count, 2))
 
     blocks = []
+    drm_blob = b""
+
     cursor = start_of_data
     for idx, i in enumerate(block_sizes):
         if header_only and idx == 1:
@@ -58,15 +74,32 @@ def decompress(data: bytes, header_only: bool = False) -> List[bytes]:
         if compression_type == 1:
             if unpacked_size != packed_size:
                 raise Exception("Uncompressed data size mismatch")
-            blocks.append(block_data)
+
+            if return_as_bytes:
+                drm_blob += block_data
+            else:
+                blocks.append(block_data)
+
         elif compression_type == 2:
             decompressed_data = zlib.decompress(block_data)
-            blocks.append(decompressed_data)
             assert len(decompressed_data) == unpacked_size
+
+            if return_as_bytes:
+                drm_blob += decompressed_data
+            else:
+                blocks.append(decompressed_data)
+
         else:
             raise Exception("Unknown compression type")
 
-    return blocks
+        # pad drm_blob to 16 bytes
+        if return_as_bytes and idx != count - 1:
+            drm_blob += b"\0" * ((16 - len(drm_blob)) & 0xF)
+
+    if return_as_bytes:
+        return drm_blob
+    else:
+        return blocks
 
 
 def rebuild_aligned(byte_list: List[bytes]) -> bytes:

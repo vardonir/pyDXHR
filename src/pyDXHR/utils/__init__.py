@@ -82,3 +82,8 @@ def create_directory(save_to, action: str = "overwrite") -> Path:
     dest.mkdir(parents=True, exist_ok=True)
 
     return dest
+
+
+def get_file_size(file_path):
+    import os
+    return os.stat(file_path).st_size

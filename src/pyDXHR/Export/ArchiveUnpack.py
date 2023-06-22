@@ -27,6 +27,8 @@ def unpack_archive(
         file_dest = dest / f"{entry.Locale:x}".rjust(8, '0').upper()
 
         if entry.NameHash in files:
+            if only_unknown:
+                continue
             file_dest = file_dest / Path(files[entry.NameHash]).parent
             file_dest.mkdir(parents=True, exist_ok=True)
 
@@ -35,6 +37,19 @@ def unpack_archive(
                 f.write(entry_data)
 
         else:
+            if skip_unknown:
+                continue
+
+            if entry_data[0:4] == b"CDRM":
+                file_dest = file_dest / "UNKNOWN" / "DRM"
+            elif entry_data[0:4] == b'\x00\x00\xacD':
+                # TODO
+                file_dest = file_dest / "UNKNOWN" / "X1"
+            elif entry_data[0:4] == b'CRID':
+                file_dest = file_dest / "UNKNOWN" / "CRID"
+            else:
+                file_dest = file_dest / "UNKNOWN" / "X2"
+
             file_dest = file_dest / "UNKNOWN"
             file_dest.mkdir(parents=True, exist_ok=True)
 

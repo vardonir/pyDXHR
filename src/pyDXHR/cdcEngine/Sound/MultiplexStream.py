@@ -1,3 +1,9 @@
+"""
+Class for reading the MUL files used in the dialogue audio.
+I only wrote this so that I can port the Japanese audio from the PS3 version to HRDC,
+I'm not really interested in developing this further. Sorry!
+"""
+
 import struct
 from typing import List
 from enum import IntEnum
@@ -7,6 +13,7 @@ from pyDXHR.utils import Endian
 
 
 class MultiplexStreamHeader:
+    # TODO revise me! see https://github.com/rrika/cdcEngineDXHR/blob/main/cdcSound/MultiplexStream.h#L8
     _VALID_SAMPLE_RATES = (5512, 11025, 22050, 44100, 48000)
 
     def __init__(self):
@@ -263,7 +270,7 @@ if __name__ == "__main__":
     never_asked_for_this = r"audio\streams\vo\eng\det1\adam_jensen\sq02\det1_sq02_dia_adam_006b.mul"
     problematic = r"audio\streams\vo\eng\det_sam\npcs\unique\det_david_sarif\cp01\sam_cp01_dia_sari_037_alt.mul"
 
-    pc_dc = r"C:\Program Files (x86)\GOG Galaxy\Games\Deus Ex HRDC\BIGFILE.000"
+    pc_dc = r"F:\Games\Deus Ex HRDC\BIGFILE.000"
     ps3_bigfile = ""
 
     pc_arc = Archive()
@@ -295,4 +302,4 @@ if __name__ == "__main__":
     ps3_ja.deserialize(ps3_ja_data)
     ps3_ja_swapped_data = ps3_ja.swap()
 
-    # breakpoint()
+    breakpoint()

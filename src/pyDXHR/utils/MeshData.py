@@ -52,6 +52,18 @@ class VertexSemantic(Enum):
     InstanceID = 0xE7623ECF
 
     @staticmethod
+    def as_gltf_attr(vtx_sem) -> str:
+        if vtx_sem.value in {VertexSemantic.Position.value, VertexSemantic.Normal.value, VertexSemantic.Tangent.value}:
+            return vtx_sem.name.upper()
+        elif vtx_sem.value in VertexSemantic.tex_coords():
+            return ("".join([i for i in vtx_sem.name][:-1])).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
+        elif vtx_sem.value in VertexSemantic.colors():
+            return ("".join([i for i in vtx_sem.name][:-1])).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
+        else:
+            # GLTF spec says that unused attributes should have a leading underscore
+            return "_" + vtx_sem.name.upper()
+
+    @staticmethod
     def tex_coords() -> set:
         return {VertexSemantic.TexCoord1.value, VertexSemantic.TexCoord2.value,
                 VertexSemantic.TexCoord3.value, VertexSemantic.TexCoord4.value}
@@ -280,22 +292,13 @@ class MeshData:
 
             self.VertexBuffers[mesh_num] = vtx_sem_dict
 
-    def as_gltf(self,
-                name: Optional[str],
-                save_to: Optional[str | Path] = None,
-                as_bytes: bool = False,
-                blank_materials: bool = False,
-                skip_materials: bool = False,
-                ):
+    def as_gltf(self, **kwargs):
         from pyDXHR.utils.gltf import build
-        return build(
-            mesh_data=self,
-            as_bytes=as_bytes,
-            name=name,
-            save_to=save_to,
-            blank_materials=blank_materials,
-            skip_materials=skip_materials,
-        )
+        return build(mesh_data=self, **kwargs)
+
+    def as_obj(self, **kwargs):
+        from pyDXHR.utils.wavefront.obj import build
+        return build(mesh_data=self, **kwargs)
 
 
 def read_vertex_buffer(vertex_data: bytes,
