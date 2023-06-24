@@ -83,7 +83,7 @@ def merge_single_node_gltf(
     # the URI attached to the image needs to be updated before it gets attached
     for im in compiled_images.values():
         if im.uri:
-            im.uri = str(Path(*Path(im.uri).parts[1:]))
+            im.uri = "/".join((Path(*Path(im.uri).parts[1:])).parts)
         merged_file.images.append(im)
 
     im_id_list = list(compiled_images.keys())
@@ -170,7 +170,7 @@ def merge_single_node_gltf(
 
         merged_file.meshes.append(mesh)
         buffer: gl.Buffer = copy(f.buffers[0])
-        buffer.uri = str(path.relative_to(output_path).parent / f"{path.relative_to(output_path).stem}.bin")
+        buffer.uri = "/".join((path.relative_to(output_path).parent / f"{path.relative_to(output_path).stem}.bin").parts)
 
         acc_cursor = len(merged_file.accessors)
         for o_acc, o_bv in zip(f.accessors, f.bufferViews):
@@ -286,6 +286,8 @@ def merge_single_node_gltf(
         pbar = tqdm(merged_file.materials) if kwargs.get("verbose", True) else merged_file.materials
         for mat in pbar:
             for k, v in mat.extras.items():
+                if isinstance(v, list):
+                    break
                 if len(v.split(",")) > 1:
                     for_checking.add(mat.name)
                     break
@@ -433,7 +435,7 @@ def merge_multinode_gltf(
                 shutil.copy(buffer_file, dest)
                 merged_file.buffers.append(buf)
                 buffers[key] = buf_idx
-                buf.uri = str(dest.relative_to(output_path))
+                buf.uri = "/".join((dest.relative_to(output_path)).parts)
                 assert get_file_size(dest) == buf.byteLength
             else:
                 existing_buffer = merged_file.buffers[buffers[key]]

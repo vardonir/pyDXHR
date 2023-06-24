@@ -73,6 +73,9 @@ class EmailDatabase(DRM):
         super().__init__()
         self.Emails: Dict[int, EMail] = {}
 
+    def __getitem__(self, item):
+        return self.Emails.get(item)
+
     def deserialize(self, data: bytes, **kwargs):
         import numpy as np
 
@@ -99,7 +102,13 @@ class EmailDatabase(DRM):
         ]
 
         # DTPData in start with 8 bytes - 4 uint32s for username and password pairs, refer to locals bin for values
-        #
+        # {
+        #     i.Header.SecId:
+        #         [locals_bin.get_string(k)
+        #          for k in struct.unpack("HH", i.Data[4:8])]
+        #     for i in drm.Sections[55:55 + 79]
+        # }
+
         # looks like something that can be obtained from locals.bin, but idk what it is
         # Reference.from_drm_section(self, self.Sections[191]).deref(0x4).get_string()
         #
@@ -112,6 +121,8 @@ class EmailDatabase(DRM):
                 breakpoint()
 
             self.Emails[ref.section.Header.SecId] = EMail.from_dtp(ref.section, locals_bin)
+
+        breakpoint()
 
     def modify_locals_bin(self, locals_bin: Locals):
         from copy import deepcopy
@@ -146,6 +157,8 @@ if __name__ == "__main__":
     db = arc.get_from_filename("email_database.drm")
     drm = EmailDatabase()
     drm.deserialize(db, arc=arc, localization=0xFFFFFD61)
+
+    breakpoint()
 
     # sample code for replacing an email
     email_id_to_replace = 63313  # the "skull gun" email in sarif's computer

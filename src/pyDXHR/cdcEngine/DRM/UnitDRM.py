@@ -13,7 +13,7 @@ import struct
 from tqdm import tqdm, trange
 from scipy.spatial.transform import Rotation
 import numpy as np
-from typing import *
+from typing import List, Dict, Any, Optional, Tuple
 from enum import Enum
 
 from pyDXHR.cdcEngine.Archive import Archive
@@ -161,8 +161,16 @@ class UnitDRM(DRM):
             index,  = struct.unpack_from("<H", self._obj_ref.section.Data,
                                          0x30 + self._obj_ref.offset + i * 0x70)
 
+            # if index == 136:  # ebook (base)
+            # if index == 139:  # ebook (dc)
+            #     breakpoint()
+
+            # if index == 144:  # computer (base)
+            # if index == 147:    # computer (dc)
+            #     breakpoint()
+
             # see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-            # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_euler.html
+            #      https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_euler.html
             rot_as_matrix = Rotation.from_euler("XYZ", rot, degrees=False).as_matrix().T
 
             trs_mat = np.zeros((4, 4))
@@ -234,6 +242,17 @@ class UnitDRM(DRM):
         if self._collision_ref:
             self._coll_count = sub0_ref.access("I", 0x14)
 
+        sub20_ref = unit_ref.deref(0x20)
+        sub28_ref = unit_ref.deref(0x28)
+
+        sub2c_ref = unit_ref.deref(0x2C)
+        if sub2c_ref:
+            unit_name = sub2c_ref.deref(0).get_string()
+            # unk_str = sub2c_ref.deref(0x27c).deref(0).get_string()
+            print(unit_name)
+
+        # breakpoint()
+
         sub30_ref = unit_ref.deref(0x30)
         if sub30_ref:
             self._obj_ref = sub30_ref.deref(0x18)
@@ -275,7 +294,10 @@ class UnitDRM(DRM):
                 cell_count = sub50_0.access("L")
                 self._cell_count = cell_count
 
+                # sub50_18.deref(0x20).get_string()  # a bunch of strings ???
+
             if sub50_14:
+                cell_names = []
                 self._cell_ref_list = []
                 self._occlusion_ref_list = []
                 for i in range(self._cell_count):
@@ -289,6 +311,7 @@ class UnitDRM(DRM):
 
                     cell_sub20 = cell.deref(0x20)
                     cell_name = cell_sub0.deref(0x0).get_string()
+                    cell_names.append(cell_name)
 
                     if cell_sub4_0:
                         self._cell_ref_list.append((cell_sub4_0, cell_name))
@@ -385,7 +408,7 @@ class UnitDRM(DRM):
                             if tex_id:
                                 tex_from_lib = RenderResource.from_library(tex_id=tex_id, tex_lib_dir=pydxhr_texlib, as_path=True)
                                 shutil.copy(tex_from_lib, texture_dest)
-                                img.uri = "..\\" + str(Path("textures") / Path(tex_from_lib).name)
+                                img.uri = "../" + str(Path("textures") / Path(tex_from_lib).name)
                                 img.name = "T_" + f"{tex_id:x}".rjust(8, '0')
 
                     with warnings.catch_warnings():
@@ -591,3 +614,19 @@ class UnitDRM(DRM):
                        scale=self._scale,
                        rotation=self._rotation,
                        translation=self._translation,)
+
+
+if __name__ == "__main__":
+    from pyDXHR.cdcEngine.Archive import Archive
+
+    arc = Archive()
+    arc.deserialize_from_env()
+
+    # db = arc.get_from_filename("det_city_sarif.drm")
+    # db = arc.get_from_filename("det_city_tunnel1.drm")
+    # db = arc.get_from_filename("det_adam_apt_a.drm")
+    db = arc.get_from_filename("det_sarif_industries.drm")
+    drm = UnitDRM()
+    drm.deserialize(db, archive=arc)
+
+    breakpoint()

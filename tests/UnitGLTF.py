@@ -14,7 +14,7 @@ arc.deserialize_from_env()
 # just_a_dipshit_from_detroit = "det_adam_apt_c.drm"  # a lot of everything, but is kinda big
 # im_a_fucking_corpo_shill = "det_sarif_industries.drm"  # the one that really matters, but you keep stalling it
 
-file = "det_city_tunnel1.drm"
+file = "det_sarif_industries.drm"
 pc_data = arc.get_from_filename(file)
 
 
@@ -37,12 +37,12 @@ pc_drm.deserialize(
     # collision=True,
 )
 
-pc_drm.to_gltf(
-    save_to=fr"F:\Projects\pyDXHR\output\unit_gltf\{file}",
-)
-
 # pc_drm.to_gltf(
-#     save_to=fr"X:\pyDXHR\{file}",
+    # save_to=fr"F:\Projects\pyDXHR\output\unit_gltf\{file}",
 # )
 
-breakpoint()
+pc_drm.to_gltf(
+    save_to=fr"C:\Users\vardo\Nextcloud\pyDXHR\{file}",
+)
+
+# breakpoint()

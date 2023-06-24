@@ -4,6 +4,7 @@ from pyDXHR.cdcEngine.DRM.MasterunitDRM import MasterunitDRM
 pc_arc = Archive()
 pc_arc.deserialize_from_env()
 
+# file = "det_city"
 file = "det_sarifhq"
 # det_sarifhq__masterunit
 
@@ -32,7 +33,7 @@ pc_drm = MasterunitDRM(
 # )
 
 pc_drm.to_gltf(
-    save_to=fr"X:\pyDXHR\{file}",
+    save_to=fr"C:\Users\vardo\Nextcloud\pyDXHR\{file}",
     # skip_materials=True,
     merge=False
 )

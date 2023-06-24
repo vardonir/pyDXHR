@@ -60,7 +60,9 @@ def build_gltf(mesh_data: MeshData,
     scene_index = _add_to_gltf(gltf_root, scene_node)
     gltf_root.scene = scene_index
 
-    mesh = gltf.Mesh(name=name)
+    mesh = gltf.Mesh(
+        name=name
+    )
     mesh_index = _add_to_gltf(gltf_root, mesh)
     parent_node.mesh = mesh_index
     # endregion
@@ -221,7 +223,7 @@ def _copy_texture_images(
             tex_id = gltf_image.extras["cdcTextureID"]
             img_as_path = RenderResource.from_library(tex_id, pydxhr_texlib, as_path=True)
             shutil.copy(img_as_path, absolute_destination.parent / relative_texture_destination)
-            gltf_image.uri = str(Path(relative_texture_destination) / img_as_path.name)
+            gltf_image.uri = "/".join((Path(relative_texture_destination) / img_as_path.name).parts)
             gltf_image.name = "T_" + f"{tex_id:x}".rjust(8, '0')
             gltf_image.mimeType = "image/png"
 
@@ -300,16 +302,17 @@ def _populate_material(
 
     gltf_mat = gltf.Material(
         extras={},
+        extensions={},
         name=f"{mat_name}",
         alphaCutoff=0.0,
         alphaMode=gltf.OPAQUE,
         doubleSided=False,
         pbrMetallicRoughness=_empty_pbr(empty_texture_index),
         normalTexture=_empty_normal(empty_texture_index),
-        occlusionTexture=_empty_occlusion(empty_texture_index),
+        # occlusionTexture=_empty_occlusion(empty_texture_index),
     )
 
-    _modify_empty_emissive(gltf_mat, empty_texture_index)
+    _modify_emissive(gltf_mat, empty_texture_index)
 
     if mat_name in mtl_lib:
         mat_info = mtl_lib[mat_name]
@@ -326,7 +329,7 @@ def _populate_material(
                 gltf_mat.alphaCutoff = 0.5
             continue
         if mat_key == "light" and len(tx_id):
-            continue
+            gltf_mat.emissiveFactor = [1, 1, 1]
 
         if len(tx_id) == 0:
             continue
@@ -377,6 +380,8 @@ def _populate_material(
                 tx = int(tx_id[0])
             except ValueError:
                 pass  # TODO
+            except TypeError:
+                tx = tx_id[0][0]
             else:
                 gltf_tx_id = _add_image(int(tx), ignore_mat_key=True)
 
@@ -385,7 +390,15 @@ def _populate_material(
 
                 tf = gltf.TextureInfo(
                     index=gltf_tx_id,
-                    texCoord=0
+                    texCoord=0,
+                    extensions={
+                        "KHR_texture_transform": {
+                            "offset": [0, 0],
+                            "rotation": 0,
+                            "scale": [1, 1],
+                            "texCoord": 0
+                        }
+                    }
                 )
 
                 match mat_key:
@@ -395,14 +408,17 @@ def _populate_material(
                         gltf_mat.normalTexture.index = gltf_tx_id
                     # case "blend":
                     #     pass
-                    # case "specular":
-                    #     pass
+                    case "specular":
+                        gltf_mat.extensions["KHR_materials_specular"] = {
+                            "specularColorTexture": tf,
+                            "specularColorFactor": [1, 1, 1]
+                        }
                     # case "mask":
                     #     pass
                     # case "colors":
                     #     pass
-                    # case "light":
-                        # gltf_mat.emissiveTexture = gltf.(index=gltf_tx_id)
+                    case "light":
+                        gltf_mat.emissiveTexture = tf
                     case _:
                         pass
 
@@ -702,13 +718,21 @@ def _add_tangent_handedness(v: np.ndarray, reverse: bool = False) -> np.ndarray:
 def _empty_pbr(empty_tex_index: int):
     tf = gltf.TextureInfo(
         index=empty_tex_index,
-        texCoord=0
+        texCoord=0,
+        extensions={
+            "KHR_texture_transform": {
+                "offset": [0, 0],
+                "rotation": 0,
+                "scale": [1, 1],
+                "texCoord": 0
+            }
+        }
     )
 
     return gltf.PbrMetallicRoughness(
         metallicFactor=0.0,
         roughnessFactor=1.0,
-        baseColorFactor=[0.0, 0.0, 0.0, 1.0],
+        # baseColorFactor=[0.0, 0.0, 0.0, 1.0],
         baseColorTexture=tf,
         # metallicRoughnessTexture=tf
     )
@@ -730,13 +754,22 @@ def _empty_occlusion(empty_tex_index: int):
     )
 
 
-def _modify_empty_emissive(
+def _modify_emissive(
         mat: gltf.Material,
-        empty_tex_index: Optional[int] = None
+        empty_tex_index: Optional[int] = None,
+        emissive_factor: Tuple = (0.0, 0.0, 0.0)
 ):
     mat.emissiveTexture = gltf.TextureInfo(
         index=empty_tex_index,
-        texCoord=0
+        texCoord=0,
+        extensions={
+            "KHR_texture_transform": {
+                "offset": [0, 0],
+                "rotation": 0,
+                "scale": [1, 1],
+                "texCoord": 0
+            }
+        }
     )
 
-    mat.emissiveFactor = [0.0, 0.0, 0.0]
+    mat.emissiveFactor = list(emissive_factor)

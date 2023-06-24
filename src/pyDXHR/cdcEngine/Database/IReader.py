@@ -131,6 +131,9 @@ class IReaderDatabase(DRM):
 
         return modified_locals
 
+    def __getitem__(self, item):
+        return self.Ebooks.get(item)
+
 
 if __name__ == "__main__":
     # use utf8 decode
@@ -144,6 +147,8 @@ if __name__ == "__main__":
     db = arc.get_from_filename("ireader_database.drm")
     drm = IReaderDatabase()
     drm.deserialize(db, arc=arc, localization=0xFFFFFD61)
+
+    breakpoint()
 
     # sample code for replacing an ebook
     ebook_id_sample = 32051  # the patient X ebook in megan's office
