@@ -17,7 +17,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from enum import Enum
 
 from pyDXHR.cdcEngine.Archive import Archive
-from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
+from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType, SectionSubtype
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM, Section
 from pyDXHR.cdcEngine.DRM.Reference import Reference
 from pyDXHR.cdcEngine.Sections.CollisionMesh import CollisionMesh
@@ -149,16 +149,18 @@ class UnitDRM(DRM):
         if not self._obj_ref:
             return []
 
+        endian = self._obj_ref.section.Header.Endian
         obj_indices = []
         for i in trange(self._obj_count, desc="Reading OBJ data"):
-            rot = struct.unpack_from("<fff", self._obj_ref.section.Data,
+            # TODO: fix meeeee
+            rot = struct.unpack_from(f"{endian.value}fff", self._obj_ref.section.Data,
                                      self._obj_ref.offset + i * 0x70)
-            pos = struct.unpack_from("<fff", self._obj_ref.section.Data,
+            pos = struct.unpack_from(f"{endian.value}fff", self._obj_ref.section.Data,
                                      0x10 + self._obj_ref.offset + i * 0x70)
-            scl = struct.unpack_from("<fff", self._obj_ref.section.Data,
+            scl = struct.unpack_from(f"{endian.value}fff", self._obj_ref.section.Data,
                                      0x20 + self._obj_ref.offset + i * 0x70)
 
-            index,  = struct.unpack_from("<H", self._obj_ref.section.Data,
+            index,  = struct.unpack_from(f"{endian.value}H", self._obj_ref.section.Data,
                                          0x30 + self._obj_ref.offset + i * 0x70)
 
             # if index == 136:  # ebook (base)
@@ -246,10 +248,10 @@ class UnitDRM(DRM):
         sub28_ref = unit_ref.deref(0x28)
 
         sub2c_ref = unit_ref.deref(0x2C)
-        if sub2c_ref:
-            unit_name = sub2c_ref.deref(0).get_string()
-            # unk_str = sub2c_ref.deref(0x27c).deref(0).get_string()
-            print(unit_name)
+        # if sub2c_ref:
+        #     unit_name = sub2c_ref.deref(0).get_string()
+        #     # unk_str = sub2c_ref.deref(0x27c).deref(0).get_string()
+        #     print(unit_name)
 
         # breakpoint()
 
@@ -286,45 +288,46 @@ class UnitDRM(DRM):
             sub50_18 = sub50_ref.deref(0x18)  # CellStreamData (void terrain)
             sub50_1c = sub50_ref.deref(0x1c)  # CellStreamData (exterior terrain)
 
-            if sub50_0 and self._streamgroup_ref:
-                self._streamgroup_count = sub50_0.access("I", 0xC)
+            if sub50_0:
+                if self._streamgroup_ref:
+                    self._streamgroup_count = sub50_0.access("I", 0xC)
 
-            if sub50_18:
-                sub50_18_4 = sub50_18.deref(4)  # ???
-                cell_count = sub50_0.access("L")
-                self._cell_count = cell_count
+                if  sub50_18:
+                    sub50_18_4 = sub50_18.deref(4)  # ???
+                    cell_count = sub50_0.access("L")
+                    self._cell_count = cell_count
 
-                # sub50_18.deref(0x20).get_string()  # a bunch of strings ???
+                    # sub50_18.deref(0x20).get_string()  # a bunch of strings ???
 
-            if sub50_14:
-                cell_names = []
-                self._cell_ref_list = []
-                self._occlusion_ref_list = []
-                for i in range(self._cell_count):
-                    cell = sub50_14.deref(4 * i)
-                    cell_sub0 = cell.deref(0)
-                    try:
-                        cell_sub4 = cell.deref(0x4)
-                        cell_sub4_0 = cell_sub4.deref(0x0)
-                    except AttributeError:
-                        cell_sub4_0 = None
+                if sub50_14:
+                    cell_names = []
+                    self._cell_ref_list = []
+                    self._occlusion_ref_list = []
+                    for i in range(self._cell_count):
+                        cell = sub50_14.deref(4 * i)
+                        cell_sub0 = cell.deref(0)
+                        try:
+                            cell_sub4 = cell.deref(0x4)
+                            cell_sub4_0 = cell_sub4.deref(0x0)
+                        except AttributeError:
+                            cell_sub4_0 = None
 
-                    cell_sub20 = cell.deref(0x20)
-                    cell_name = cell_sub0.deref(0x0).get_string()
-                    cell_names.append(cell_name)
+                        cell_sub20 = cell.deref(0x20)
+                        cell_name = cell_sub0.deref(0x0).get_string()
+                        cell_names.append(cell_name)
 
-                    if cell_sub4_0:
-                        self._cell_ref_list.append((cell_sub4_0, cell_name))
+                        if cell_sub4_0:
+                            self._cell_ref_list.append((cell_sub4_0, cell_name))
 
-                    self._occlusion_ref_list.append(cell_sub20)
+                        self._occlusion_ref_list.append(cell_sub20)
 
     def deserialize(self, data: bytes, **kwargs):
-        des = super().deserialize(data=data, header_only=False)
+        self._archive: Archive = kwargs.get("archive")
+        des = super().deserialize(data=data, header_only=False, archive=self._archive)
         if not des:
             raise ValueError("Failed to deserialize DRM")
 
         self._get_references()
-        self._archive: Archive = kwargs.get("archive")
         self._split_objects = kwargs.get("split_objects", False)
         self._split_by_occlusion = kwargs.get("split_by_occlusion", False)
 
@@ -419,6 +422,61 @@ class UnitDRM(DRM):
                 pass
         return rm
 
+    def to_csv(self, **kwargs):
+        # basically to_gltf but without the gltf
+        # creates a json file with the name of the rendermesh and the 4x4 TRS matrix for each mesh
+        import json
+        location_dir: Dict[str, List[List[float]]] = {}
+        save_to = kwargs.get("save_to", None)
+
+        def write_to_dir(row_name: str, trs: np.ndarray):
+            if row_name not in location_dir:
+                location_dir[row_name] = []
+            location_dir[row_name].append(trs.T.flatten().tolist())
+
+        if self._archive:
+            if ObjectType.Stream in self.ObjectData:
+                for (name, path), trs_mat_list in self.ObjectData[ObjectType.Stream].items():
+                    for idx, trs_mat in enumerate(trs_mat_list):
+                        write_to_dir(f"{path}_{name}", trs_mat)
+
+            if ObjectType.EXT_IMF in self.ObjectData:
+                for imf_path, trs_mat_list in self.ObjectData[ObjectType.EXT_IMF].items():
+                    imf_name = Path(imf_path).stem
+
+                    for idx, trs_mat in enumerate(trs_mat_list):
+                        write_to_dir(imf_name, trs_mat)
+
+            if ObjectType.OBJ in self.ObjectData:
+                for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
+                    for idx, trs_mat in enumerate(trs_mat_list):
+                        write_to_dir(obj_name, trs_mat)
+
+        if ObjectType.IMF in self.ObjectData:
+            for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
+                for idx, trs_mat in enumerate(trs_mat_list):
+                    file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
+
+                    write_to_dir(file_name, trs_mat)
+
+        if ObjectType.Cell in self.ObjectData:
+            # TODO: check in the case of DRMs with many cells - possible collisions?
+            for (cell_name, sec_id), trs_mat_list in self.ObjectData[ObjectType.Cell].items():
+                sanitized_cell_name = cell_name.replace('|', '_')
+                if sanitized_cell_name in location_dir:
+                    breakpoint()
+                for idx, trs_mat in enumerate(trs_mat_list):
+                    write_to_dir(sanitized_cell_name, trs_mat)
+
+        if save_to:
+            count = 0
+            with open(save_to, 'w') as f:
+                for key, value in location_dir.items():
+                    for it in value:
+                        f.write(f"{count}, {key}, {', '.join(str(i) for i in it)} \n")
+                        count += 1
+                # json.dump(location_dir, f, indent=2)
+
     def to_gltf(self,
                 apply_universal_scale: bool = False,
                 save_to: Optional[Path | str] = None,
@@ -430,6 +488,7 @@ class UnitDRM(DRM):
         action = kwargs.get("action", "overwrite")
         skip_materials = kwargs.get("skip_materials", False)
         trimesh_post_processing = kwargs.get("trimesh_post_processing", False)
+        unit_has_rmb = SectionSubtype.RenderModelBuffer in set(sec.Header.SectionSubtype for sec in self.Sections)
 
         if skip_materials:
             blank_materials = True
@@ -487,7 +546,11 @@ class UnitDRM(DRM):
                     drm_data = self._archive.get_from_filename(imf_path)
                     drm = DRM()
                     drm.deserialize(drm_data)
+
+                    has_rmb = SectionSubtype.RenderModelBuffer in set(sec.Header.SectionSubtype for sec in drm.Sections)
                     for sec in drm.Sections:
+                        if has_rmb and sec.Header.SectionSubtype == SectionSubtype.RenderModel:
+                            continue
 
                         for idx, trs_mat in enumerate(trs_mat_list):
                             if idx == 0:
@@ -514,7 +577,11 @@ class UnitDRM(DRM):
                     drm = DRM()
                     drm.deserialize(drm_data)
 
+                    has_rmb = SectionSubtype.RenderModelBuffer in set(sec.Header.SectionSubtype for sec in drm.Sections)
                     for sec in drm.Sections:
+                        if has_rmb and sec.Header.SectionSubtype == SectionSubtype.RenderModel:
+                            continue
+
                         for idx, trs_mat in enumerate(trs_mat_list):
                             if idx == 0:
                                 self._read_section_data(rm_section=sec,
@@ -606,6 +673,7 @@ class UnitDRM(DRM):
             trs_matrix=self._trs_mat,
             verbose=self._verbose,
             split_by_occlusion=self._split_by_occlusion,
+            **kwargs
         )
 
         if len(self.CollisionMesh):

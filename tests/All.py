@@ -1,47 +1,33 @@
 from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
-from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM, ObjectType
-from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
-from pyDXHR.cdcEngine.Sections import RenderMesh
 from pathlib import Path
 from tqdm import tqdm
 
 arc = Archive()
-arc.deserialize_from_env()
-
-units = set([Path(unit).parts[-1] + ".drm" for unit in arc.unit_list if "game" in unit])
+arc.deserialize_from_env("PS3_DC")
 
 file_list = r"..\external\filelist_generic.txt"
 file_list = Path(file_list).read_text().split("\n")
 
-existing_units = units.intersection(file_list)
+destination = r"F:\Projects\pyDXHR\output\ps3"
 
-imfs = set()
-for unit in tqdm(existing_units):
-    pc_data = arc.get_from_filename(unit)
-    unit_drm = UnitDRM()
-    unit_drm.deserialize(
-        pc_data,
-        archive=arc,
-        # imf=False,
-        # skip_ext_imf=True,
-        stream=False,
-        obj=False,
-        occlusion=False,
-        cell=False,
-        collision=False,
-    )
+pair_list = set()
+for file in tqdm(file_list):
+    data = arc.get_from_filename(file)
+    if data:
+        drm = DRM()
+        des = drm.deserialize(data, archive=arc)
 
-    ext_imf = set(unit_drm.ObjectData.get(ObjectType.EXT_IMF, dict()).keys())
-    if len(ext_imf.difference(file_list)) != 0:
-        print(unit)
-        print(ext_imf.difference(file_list))
+        if des:
+            for head, dat in zip(drm.Header.SectionHeaders, drm.SectionData):
+                if head.Name is not None:
+                    asset_path = Path(head.Name.replace(":", "/"))
+                    path = Path(destination) / asset_path
 
-    imfs = imfs.union(ext_imf)
+                    with open(path, "wb") as f:
+                        f.write(dat)
 
-imfs_in_filelist = set([f for f in file_list if len(Path(f).parts) > 1 and Path(f).parts[0] == "imf"])
-
-imfs_not_in_units = [i for i in imfs_in_filelist.difference(imfs)]
+                pairs = set((h.SectionType.value, h.SectionSubtype.value) for h in drm.Header.SectionHeaders)
+                pair_list.add(pairs)
 
 breakpoint()
-

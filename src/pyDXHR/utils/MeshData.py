@@ -7,7 +7,7 @@ import numpy as np
 from typing import Dict, Tuple, Optional, List
 from pyDXHR.KaitaiGenerated.RenderModel import RenderModel
 from pyDXHR.KaitaiGenerated.RenderTerrainHeader import RenderTerrainHeader
-from pyDXHR.KaitaiGenerated.RenderTerrainGroup import RenderTerrainGroup
+from pyDXHR.KaitaiGenerated.RenderTerrainGroup import RenderterrainGroup as RenderTerrainGroup
 from pyDXHR.KaitaiGenerated.Vertices import VertexInfo
 from pyDXHR.cdcEngine.DRM.SectionTypes import SectionSubtype
 from pyDXHR.utils import Endian
@@ -315,9 +315,10 @@ def read_vertex_buffer(vertex_data: bytes,
         0x05           (same as 0x06?)                                    also normal apparently??
         0x06                4x  uint8       divide by 255      (or 3x?)   blendweights
         0x07                4x  uint8                          (or 3x?)   blendindices
+        0x08                    ???                                       packedNTB for rendermodel? found in ps3 version
         0x13                 2x sint16      divide by 2048.0              texcoords
         0xA                     ???                                       packedNTB - shows up in RenderTerrain
-        0x11                    ???                                       wii-u version. related to Normal/Binormal/Tangent
+        0x11                    ???                                       wii-u version. related to Normal/Binormal/Tangent?
 
     :param vertex_data: mesh data starting from the vtx buffer offset
     :param semantic_type: see table above
@@ -334,8 +335,8 @@ def read_vertex_buffer(vertex_data: bytes,
         case 0x02:
             vtx = [struct.unpack_from(f"{endian.value}fff", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             return np.array(vtx, dtype=np.float32)
-        case 0x04 | 0x05 | 0x06 | 0xA | 0x11:
-            # not sure if 0xA belongs here, but it works?
+        case 0x04 | 0x05 | 0x06 | 0x8 | 0xA | 0x11:
+            # not sure if 0x8 or 0xA belongs here, but it works?
             # 0x11 seems to work but the output looks weird
             vtx = [struct.unpack_from(f"{endian.value}BBB", vertex_data, (i * stride) + semantic_offset) for i in range(count)]
             out_array = np.array(vtx, dtype=np.float32)

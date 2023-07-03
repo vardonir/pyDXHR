@@ -4,7 +4,7 @@ Originally a fork of [rrika/dxhr](https://github.com/rrika/dxhr) because I wante
 
 And _then_ it went out of control.
 
-[See the docs for more information.](pydxhr.vardonir.com)
+[I will try to write more information in the docs,](pydxhr.vardonir.com) but I make no promises about the maintenance of the code or any future work - pyDXHR is side project to Project SI-X. The main intention was to create a simplified mesh exporter/pipeline of DXHR assets to UE5. Anything else (i.e., the mod tools) is a side side project, it's just a little experiment. And SI-X, by itself, is a side project to something else. So there.
 
 ## Disclaimer
 

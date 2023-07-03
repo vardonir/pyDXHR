@@ -18,6 +18,8 @@ class SectionHeader:
         return self.Language
 
     def __init__(self):
+        self.Name = None
+
         self.DataSize: int = 0
         self.SectionType: SectionType = SectionType.UnknownSectionType
         self.Flags: int = 0

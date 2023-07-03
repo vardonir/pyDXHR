@@ -55,6 +55,8 @@ def deserialize(section: Section):
 
     out = None
     match section.Header.SectionSubtype:
+        case SectionSubtype.RenderModelBuffer:
+            out = RenderModel(section=section)
         case SectionSubtype.RenderModel:
             out = RenderModel(section=section)
         case SectionSubtype.RenderTerrain:
@@ -66,4 +68,8 @@ def deserialize(section: Section):
 
 
 def deserialize_drm(drm: DRM):
-    return {deserialize(sec) for sec in drm.Sections if deserialize(sec)}
+    return {
+        deserialize(sec)
+        for sec in drm.Sections
+        if deserialize(sec)
+    }

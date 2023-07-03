@@ -2,6 +2,8 @@ import struct
 from typing import List, Tuple, Optional
 
 from pyDXHR.cdcEngine.DRM.Section import SectionHeader
+from pyDXHR.cdcEngine.DRM.Section import Section as Sec
+from pyDXHR.cdcEngine.DRM.Resolver import deserialize_resolver_list
 from pyDXHR.cdcEngine.DRM import CompressedDRM
 from pyDXHR.cdcEngine.DRM import Section
 from pyDXHR.cdcEngine.DRM.Reference import Reference
@@ -126,12 +128,84 @@ class DRM:
     def to_gltf(self):
         raise NotImplementedError
 
-    def deserialize(self, data: bytes, header_only: bool = False, merge_generic_sections: bool = False):
+    def deserialize(self,
+                    data: bytes,
+                    header_only: bool = False,
+                    merge_generic_sections: bool = False,
+                    archive: Optional = None):
+        from pyDXHR.cdcEngine.Archive import Archive, ArchivePlatform
+
         magic, = struct.unpack(">L", data[0:4])
+
+        from pyDXHR.KaitaiGenerated.DRM import DxhrDrm as KaitaiDRM
+        block_data = CompressedDRM.decompress(data, header_only=header_only, return_as_bytes=True)
+        kaitai_drm = KaitaiDRM.from_bytes(block_data)
+
+        arc = None
+        if archive is not None:
+            if archive.platform.value in ArchivePlatform.has_complete_file_lists():
+                arc: Optional[Archive] = archive
+
+        if kaitai_drm.version == 0x15:
+            self.Header.Endian = Endian.Little
+        else:
+            self.Header.Endian = Endian.Big
+        self.Header.Version = 0x15
+
+        self.Header.DRMDependencies = kaitai_drm.drm_data.drm_dependencies.split("\x00")
+        self.Header.OBJDependencies = kaitai_drm.drm_data.obj_dependencies.split("\x00")
+        self.Header.RootSection = kaitai_drm.drm_data.root_section
+        self.Header.Flags = kaitai_drm.drm_data.flags
+
+        self.Header.SectionHeaders = []
+        for head in kaitai_drm.drm_data.section_headers:
+            header = SectionHeader()
+            header.DataSize = head.len_data
+            header.SectionType = SectionType(head.type.value)
+            header.Flags = head.flags
+            header.SecId = head.sec_id
+            header.Language = head.spec
+            header.Endian = self.Header.Endian
+            header._unk05 = head.unk05
+            header._unk06 = head.unk06
+            self.Header.SectionHeaders.append(header)
+
+            if header.SecId != 0:
+                if header.SectionType == SectionType.RenderResource:
+                    header.Name = arc.texture_list.get(header.SecId)
+                elif header.SectionType == SectionType.Animation:
+                    header.Name = arc.animation_list.get(header.SecId)
+                elif header.SectionType == SectionType.FMODSoundBank:
+                    header.Name = arc.sound_effects_list.get(header.SecId)
+                elif header.SectionType == SectionType.Object:
+                    pass
+                    # header.Name = arc.objects.get(header.SecId)
+                else:
+                    header.Name = arc.section_list.get(header.SecId)
+
+        for idx, sec in enumerate(kaitai_drm.drm_data.sections):
+            section = Sec()
+            section.Resolvers = deserialize_resolver_list(
+                data=sec.relocs,
+                header_list=self.Header.SectionHeaders,
+                section_data=sec.payload,
+                endian=self.Header.Endian
+            )
+
+            section.Header = self.Header.SectionHeaders[idx]
+            section.Data = sec.payload
+            self.Sections.append(section)
+            self.SectionData.append(section.Header.serialize() + sec.relocs + sec.payload)
+
+        return True
+
+
         if magic == CompressedDRM.Magic:
             block_data = CompressedDRM.decompress(data, header_only=header_only)
         else:
             return False
+
+        breakpoint()
 
         if merge_generic_sections:
             # the notes in the xnalara script mention that a generic section type just means that it's supposed

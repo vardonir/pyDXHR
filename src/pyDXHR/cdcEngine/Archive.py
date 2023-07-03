@@ -63,13 +63,17 @@ class Archive:
         #     entry_data=data[0x48 + (4 * self.number_of_files):0x48 + (4 * self.number_of_files) + (4 * 4 * self.number_of_files)]
         # )\
 
-    def deserialize_from_env(self):
+    def deserialize_from_env(self, game: str = "default"):
         # for one-off tests
         import os
         from dotenv import load_dotenv
         load_dotenv()
 
-        bigfile = os.getenv('PYDXHR_BIGFILE')
+        if game == "default":
+            bigfile = os.getenv('PYDXHR_BIGFILE')
+        else:
+            bigfile = os.getenv(f'PYDXHR_BIGFILE_{game.upper()}')
+
         if bigfile:
             self.deserialize_from_file(bigfile)
         else:
@@ -284,6 +288,25 @@ class Archive:
                 raise  NotImplementedError
             case ArchivePlatform.WII_W.value:
                 raw_list = self.get_from_hash(0xCC232E55)
+            case _:
+                return {}
+
+        if raw_list is None:
+            return {}
+
+        return _decode_text(raw_list, encoding="latin1")
+
+    @property
+    def objects(self):
+        match self.platform.value:
+            case ArchivePlatform.PS3_W.value:
+                raw_list = self.get_from_hash(0x02912E40)
+            case ArchivePlatform.PS3_JAP.value:
+                raise NotImplementedError
+            case ArchivePlatform.XENON_W.value:
+                raise NotImplementedError
+            case ArchivePlatform.WII_W.value:
+                raise NotImplementedError
             case _:
                 return {}
 

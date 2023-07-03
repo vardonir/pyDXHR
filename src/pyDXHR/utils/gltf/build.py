@@ -70,23 +70,24 @@ def build_gltf(mesh_data: MeshData,
     # region create materials
     complete_image_dict = {}
     mat_index_dict: Dict[Material, int] = {}
-    for mat_index, mat in enumerate(mesh_data.MaterialIDList):
-        if mat not in mat_index_dict:
-            image_dict = _populate_material(
-                gltf_root=gltf_root,
-                cdc_material_id=mat.ID,
-                empty_texture_index=empty_texture_index,
-                blank_materials=blank_materials,
-                skip_materials=skip_materials
-            )
+    if mesh_data.MaterialIDList:
+        for mat_index, mat in enumerate(mesh_data.MaterialIDList):
+            if mat not in mat_index_dict:
+                image_dict = _populate_material(
+                    gltf_root=gltf_root,
+                    cdc_material_id=mat.ID,
+                    empty_texture_index=empty_texture_index,
+                    blank_materials=blank_materials,
+                    skip_materials=skip_materials
+                )
 
-            mat_index_dict[mat] = mat_index
-            complete_image_dict |= image_dict
-        else:
-            continue
+                mat_index_dict[mat] = mat_index
+                complete_image_dict |= image_dict
+            else:
+                continue
     # TODO:
-    #   occlusion boxes should just be two-sided black mats, collision shouldn't have materials at all
-    #   materials should have one structure so that UE5 just creates one Material and uses that for everything else
+    #      console version - materials are in a separate section
+
     # endregion
 
     # region vertex
@@ -132,7 +133,7 @@ def build_gltf(mesh_data: MeshData,
             mesh_prim = gltf.Primitive(
                 attributes=mesh_attributes,
                 indices=accessor_index,
-                material=mat_index_dict[mat],
+                material=mat_index_dict.get(mat),
                 extras={
                     "MESH_NAME": name,
                     "MESH_IDX": idx,

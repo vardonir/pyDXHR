@@ -45,8 +45,8 @@ class LocalDataResolver(Resolver):
 
 class RemoteDataResolver(Resolver):
     def deserialize(self, data, endian: Endian = Endian.Little):
-        if endian == Endian.Big:
-            data, = struct.unpack_from(">Q", byte_swap(data.to_bytes(8, "little")))
+        # if endian == Endian.Big:
+        #     data, = struct.unpack_from(">Q", byte_swap(data.to_bytes(8, "little")))
 
         self.SectionIndex = (data & 0x0000000000003FFF) >> 00
         self.PointerOffset = (data & 0x0000003FFFFFC000) >> 12
@@ -62,8 +62,8 @@ class UnknownResolver(Resolver):
                     section_headers: Optional = None,
                     section_data: bytes = b"",
                     endian: Endian = Endian.Little):
-        if endian == Endian.Big:
-            data, = struct.unpack_from(">L", byte_swap(data.to_bytes(4, "little")))
+        # if endian == Endian.Big:
+        #     data, = struct.unpack_from(">L", byte_swap(data.to_bytes(4, "little")))
 
         self.PointerOffset = ((data & 0x01FFFFFF) >> 0) * 4
         self.SectionType = SectionType(((data & 0xFE000000) >> 25))

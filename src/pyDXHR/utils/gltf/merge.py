@@ -200,7 +200,8 @@ def merge_single_node_gltf(
             prim.indices += acc_cursor
 
             cdc_mat_id = prim.extras["cdcMatID"]
-            prim.material = mat_id_list.index(cdc_mat_id)
+            if not kwargs.get("skip_materials", False):
+                prim.material = mat_id_list.index(cdc_mat_id)
 
             # look for the materials used by meshes that are tagged "occlusion"
             if split_by_occlusion and category_name == "occlusion":
@@ -628,7 +629,3 @@ def merge_multinode_gltf(
         tex.source = [i.name for i in merged_file.images].index(tex.name)
 
     merged_file.save(outfile)
-
-
-if __name__ == "__main__":
-    merge_multinode_gltf(r"F:\Projects\pyDXHR\output\masterunit_gltf\det_city")

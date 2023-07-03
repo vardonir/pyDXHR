@@ -26,19 +26,20 @@ class CollisionMesh:
         # self._translation = bbs[0:4]
 
         cd1 = coll_mesh_ref.deref(0x74)
-        vtx_ref = cd1.deref(0x20)
-        idx_ref = cd1.deref(0x24)
+        if cd1:
+            vtx_ref = cd1.deref(0x20)
+            idx_ref = cd1.deref(0x24)
 
-        vertexdata = vtx_ref.section.Data
-        indices = idx_ref.section.Data
-        indices += b"\0" * ((-len(indices)) % 12)  # pad with zeros so that it's divisible by 12
+            vertexdata = vtx_ref.section.Data
+            indices = idx_ref.section.Data
+            indices += b"\0" * ((-len(indices)) % 12)  # pad with zeros so that it's divisible by 12
 
-        self._vertices = np.frombuffer(vertexdata,
-                                       dtype=np.dtype(np.float32).newbyteorder(endian.value)).reshape((-1, 3))
+            self._vertices = np.frombuffer(vertexdata,
+                                           dtype=np.dtype(np.float32).newbyteorder(endian.value)).reshape((-1, 3))
 
-        ic = np.frombuffer(indices,
-                           dtype=np.dtype(np.uint16).newbyteorder(endian.value)).reshape((-1, 6))
-        self._indices = ic[:, 0:3].astype(np.uint32)  # so what's the other BBHHH?
+            ic = np.frombuffer(indices,
+                               dtype=np.dtype(np.uint16).newbyteorder(endian.value)).reshape((-1, 6))
+            self._indices = ic[:, 0:3].astype(np.uint32)  # so what's the other BBHHH?
 
     def to_gltf(self,
                 save_to: Optional[str | Path] = None,

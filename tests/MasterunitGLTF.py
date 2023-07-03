@@ -4,8 +4,8 @@ from pyDXHR.cdcEngine.DRM.MasterunitDRM import MasterunitDRM
 pc_arc = Archive()
 pc_arc.deserialize_from_env()
 
-# file = "det_city"
-file = "det_sarifhq"
+file = "det_city"
+# file = "det_sarifhq"
 # det_sarifhq__masterunit
 
 pc_drm = MasterunitDRM(
@@ -26,16 +26,8 @@ pc_drm = MasterunitDRM(
     # collision=True,
 )
 
-# pc_drm.to_gltf(
-#     save_to=fr"F:\Projects\pyDXHR\output\masterunit_gltf\{file}",
-#     # skip_materials=True,
-#     merge=False
-# )
-
 pc_drm.to_gltf(
-    save_to=fr"C:\Users\vardo\Nextcloud\pyDXHR\{file}",
+    save_to=fr"F:\Projects\pyDXHR\output\masterunit_gltf\{file}",
     # skip_materials=True,
     merge=False
 )
-
-# breakpoint()
