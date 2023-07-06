@@ -23,7 +23,8 @@ def decompress(
         header_only: bool = False,
         return_as_bytes: bool = False
 ) -> List[bytes] | bytes:
-    magic, = struct.unpack_from(">L", data, 0)
+    magic, = struct.unpack_from(">L", data)
+
     if magic != Magic:
         raise Exception
 
@@ -55,7 +56,8 @@ def decompress(
                                 offset=16).reshape((count, 2))
 
     blocks = []
-    drm_blob = b""
+    blob_blocks = []
+    blob_size = 0
 
     cursor = start_of_data
     for idx, i in enumerate(block_sizes):
@@ -74,30 +76,31 @@ def decompress(
         if compression_type == 1:
             if unpacked_size != packed_size:
                 raise Exception("Uncompressed data size mismatch")
+            assert len(block_data) == unpacked_size
 
-            if return_as_bytes:
-                drm_blob += block_data
-            else:
-                blocks.append(block_data)
+            blocks.append(block_data)
+            blob_blocks.append(block_data)
+            blob_size += len(block_data)
 
         elif compression_type == 2:
             decompressed_data = zlib.decompress(block_data)
             assert len(decompressed_data) == unpacked_size
-
-            if return_as_bytes:
-                drm_blob += decompressed_data
-            else:
-                blocks.append(decompressed_data)
+            blob_blocks.append(decompressed_data)
+            blocks.append(decompressed_data)
+            blob_size += len(decompressed_data)
 
         else:
             raise Exception("Unknown compression type")
 
-        # pad drm_blob to 16 bytes
-        if return_as_bytes and idx != count - 1:
-            drm_blob += b"\0" * ((16 - len(drm_blob)) & 0xF)
+        padding = b"\0" * ((16 - blob_size) & 0xF)
+        blob_blocks.append(b"\0" * ((16 - blob_size) & 0xF))
+        blob_size += len(padding)
+
+    # for each of the compressed blocks, decompress it using zlib.decompress
+    # and then check if the decompressed size matches the expected size
 
     if return_as_bytes:
-        return drm_blob
+        return b"".join(blob_blocks)
     else:
         return blocks
 

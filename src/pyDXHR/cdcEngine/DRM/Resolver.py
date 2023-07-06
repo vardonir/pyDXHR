@@ -91,6 +91,16 @@ class UnknownResolver(Resolver):
         return f"UR | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)} | {SectionType(self.SectionType)}"
 
 
+class UnknownResolver2(UnknownResolver):
+    def __repr__(self):
+        return f"U2R | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)} | {SectionType(self.SectionType)}"
+
+
+class UnknownResolver4(UnknownResolver):
+    def __repr__(self):
+        return f"U4R | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)} | {SectionType(self.SectionType)}"
+
+
 class MissingResolver(Resolver):
     def __repr__(self):
         return f"MissingResolver | ptr {_hex(self.PointerOffset)} SecId {_hex(self.SectionId)}"
@@ -139,7 +149,7 @@ def deserialize_resolver_list(
         u2_resolver_data = struct.unpack_from(f"{endian.value}{u2_resolver_count}L", data, offset=offset)
         u2res_list = []
         for u2r in u2_resolver_data:
-            u2_res = UnknownResolver()
+            u2_res = UnknownResolver2()
             u2_res.deserialize(data=u2r, section_headers=header_list, section_data=section_data, endian=endian)
             u2res_list.append(u2_res)
         if sort:
@@ -152,7 +162,7 @@ def deserialize_resolver_list(
         u4_resolver_data = struct.unpack_from(f"{endian.value}{u4_resolver_count}L", data, offset=offset)
         u4res_list = []
         for u4r in u4_resolver_data:
-            u4_res = UnknownResolver()
+            u4_res = UnknownResolver4()
             u4_res.deserialize(data=u4r, section_headers=header_list, section_data=section_data, endian=endian)
             u4res_list.append(u4_res)
         if sort:

@@ -196,7 +196,7 @@ def streamobjects(limit=-1):
                     rm.to_gltf(save_to=stream_dir / Path(stream).stem)
 
 
-# generate internal IMFs + cells + location maps
+# generate internal IMFs + cells
 def internal_meshes(unit=None):
     from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM
 
@@ -232,6 +232,7 @@ def internal_meshes(unit=None):
         )
         drm.to_gltf(
             save_to=out_dir / Path(unit).stem,
+            flat_folders=True,
         )
 
 
@@ -267,5 +268,5 @@ def location_table(unit=None):
 
 
 if __name__ == "__main__":
-    location_table()
-    breakpoint()
+    location_table("det_city_sarif.drm")
+    # breakpoint()

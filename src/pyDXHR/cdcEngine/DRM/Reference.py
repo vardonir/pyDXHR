@@ -4,7 +4,7 @@ import struct
 from typing import List, TYPE_CHECKING, Optional
 
 from pyDXHR.cdcEngine.DRM.Section import Section
-from pyDXHR.cdcEngine.DRM.Resolver import UnknownResolver, LocalDataResolver, RemoteDataResolver, MissingResolver
+from pyDXHR.cdcEngine.DRM.Resolver import UnknownResolver2, UnknownResolver4, LocalDataResolver, RemoteDataResolver, MissingResolver
 from pyDXHR.utils import Endian
 
 if TYPE_CHECKING:
@@ -47,7 +47,19 @@ class Reference:
             self.resolver = resolver
 
             match type(resolver).__qualname__:
-                case UnknownResolver.__qualname__:
+                case UnknownResolver4.__qualname__:
+                    if type(resolver.SectionId).__qualname__ == MissingResolver.__qualname__:
+                        return resolver.SectionId.SectionId
+                    elif resolver.SectionId:
+                        return Reference(self.section_list, self.section_list[resolver.SectionId], 0)
+                    else:
+                        # there has to be a much less brute force method for this...
+                        return None
+                        # external_reference = find_external_reference(reference.SectionType, reference.ExtId)
+                        # print(f"MISSING REFERENCE U2R")
+                        # print(reference.SectionType)
+                        # return external_reference
+                case UnknownResolver2.__qualname__:
                     if type(resolver.SectionId).__qualname__ == MissingResolver.__qualname__:
                         return resolver.SectionId.SectionId
                     elif resolver.SectionId:

@@ -137,6 +137,9 @@ class DRM:
 
         magic, = struct.unpack(">L", data[0:4])
 
+        if magic != CompressedDRM.Magic:
+            return False
+
         from pyDXHR.KaitaiGenerated.DRM import DxhrDrm as KaitaiDRM
         block_data = CompressedDRM.decompress(data, header_only=header_only, return_as_bytes=True)
         kaitai_drm = KaitaiDRM.from_bytes(block_data)
@@ -170,18 +173,19 @@ class DRM:
             header._unk06 = head.unk06
             self.Header.SectionHeaders.append(header)
 
-            if header.SecId != 0:
-                if header.SectionType == SectionType.RenderResource:
-                    header.Name = arc.texture_list.get(header.SecId)
-                elif header.SectionType == SectionType.Animation:
-                    header.Name = arc.animation_list.get(header.SecId)
-                elif header.SectionType == SectionType.FMODSoundBank:
-                    header.Name = arc.sound_effects_list.get(header.SecId)
-                elif header.SectionType == SectionType.Object:
-                    pass
-                    # header.Name = arc.objects.get(header.SecId)
-                else:
-                    header.Name = arc.section_list.get(header.SecId)
+            if arc:
+                if header.SecId != 0:
+                    if header.SectionType == SectionType.RenderResource:
+                        header.Name = arc.texture_list.get(header.SecId)
+                    elif header.SectionType == SectionType.Animation:
+                        header.Name = arc.animation_list.get(header.SecId)
+                    elif header.SectionType == SectionType.FMODSoundBank:
+                        header.Name = arc.sound_effects_list.get(header.SecId)
+                    elif header.SectionType == SectionType.Object:
+                        pass
+                        # header.Name = arc.objects.get(header.SecId)
+                    else:
+                        header.Name = arc.section_list.get(header.SecId)
 
         for idx, sec in enumerate(kaitai_drm.drm_data.sections):
             section = Sec()

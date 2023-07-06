@@ -1,6 +1,8 @@
 from cdcEngine.Sections.ShaderLib import ShaderLib, from_drm
 from cdcEngine.Sections import RenderMesh, RenderResource
 from cdcEngine.Sections.Material import Material
+from cdcEngine.DRM.Reference import *
+from cdcEngine.DRM.Resolver import *
 from cdcEngine.DRM.SectionTypes import SectionType
 from pyDXHR.cdcEngine.Archive import Archive
 from pyDXHR.cdcEngine.DRM.DRMFile import DRM
@@ -8,7 +10,7 @@ from pathlib import Path
 
 # comparison with other versions
 arc = Archive()
-arc.deserialize_from_env("PS3_DC")
+arc.deserialize_from_env()
 
 # arc = Archive()
 # arc.deserialize_from_file(r"F:\DXHRDCWII\bigfile-wiiu.000")
@@ -20,16 +22,47 @@ arc.deserialize_from_env("PS3_DC")
 # renderterrain
 # data = arc.get_from_filename("streamgroups/det_city_tunnel1_tunel.drm")
 
-# unit
-data = arc.get_from_filename("alc_vodka_bottle_a.drm")
+# simple object
+# data = arc.get_from_filename("alc_vodka_bottle_a.drm")
 
 # imf - has transparency
 # data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_fire_a\sarif_office_fire_a.drm")
 
 # imf - has emission
 # data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_globe\sarif_office_globe.drm")
+
+# some interesting drms...
+# data = arc.get_from_filename(r"con_009_sari.drm")
+# data = arc.get_from_filename(r"occupation_bedsleep.drm")
+data = arc.get_from_filename(r"alarm_dispatcher.drm")
+
 drm = DRM()
 drm.deserialize(data, archive=arc)
+root_ref = Reference.from_drm_root(drm)
+
+
+# # notes for "con_xxx_xxxx.drm"
+# root_ref = Reference.from_drm_root(drm)
+#
+# # seems like an ID of some kind
+# unk1 = root_ref.deref(8).access("L")
+# # con_009_sari - 54907
+#
+# # references to mostly scripts
+# unk2 = root_ref.deref(0)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # rm = RenderMesh.deserialize_drm(drm)
 # rm0 = list(rm)[0]

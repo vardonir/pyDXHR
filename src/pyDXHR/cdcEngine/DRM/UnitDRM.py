@@ -416,15 +416,17 @@ class UnitDRM(DRM):
 
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=UserWarning)
-                        (dest / folder).mkdir(parents=True, exist_ok=True)
-                        gltf_object.save(dest / folder / file_name)
+                        # (dest / folder).mkdir(parents=True, exist_ok=True)
+                        # gltf_object.save(dest / folder / file_name)
+                        dest.mkdir(parents=True, exist_ok=True)
+                        gltf_object.save(dest / file_name)
             else:
                 pass
         return rm
 
     def to_csv(self, **kwargs):
         # basically to_gltf but without the gltf
-        # creates a json file with the name of the rendermesh and the 4x4 TRS matrix for each mesh
+        # creates a csv file with the name of the rendermesh and the 4x4 TRS matrix for each mesh
         import json
         location_dir: Dict[str, List[List[float]]] = {}
         save_to = kwargs.get("save_to", None)
@@ -440,24 +442,23 @@ class UnitDRM(DRM):
                     for idx, trs_mat in enumerate(trs_mat_list):
                         write_to_dir(f"{path}_{name}", trs_mat)
 
-            if ObjectType.EXT_IMF in self.ObjectData:
-                for imf_path, trs_mat_list in self.ObjectData[ObjectType.EXT_IMF].items():
-                    imf_name = Path(imf_path).stem
+            # if ObjectType.EXT_IMF in self.ObjectData:
+            #     for imf_path, trs_mat_list in self.ObjectData[ObjectType.EXT_IMF].items():
+            #         imf_name = Path(imf_path).stem
+            #         for idx, trs_mat in enumerate(trs_mat_list):
+            #             write_to_dir(imf_name, trs_mat)
 
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        write_to_dir(imf_name, trs_mat)
+            # if ObjectType.OBJ in self.ObjectData:
+            #     for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
+            #         for idx, trs_mat in enumerate(trs_mat_list):
+            #             write_to_dir(obj_name, trs_mat)
 
-            if ObjectType.OBJ in self.ObjectData:
-                for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        write_to_dir(obj_name, trs_mat)
-
-        if ObjectType.IMF in self.ObjectData:
-            for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
-                for idx, trs_mat in enumerate(trs_mat_list):
-                    file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
-
-                    write_to_dir(file_name, trs_mat)
+        # if ObjectType.IMF in self.ObjectData:
+        #     for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
+        #         for idx, trs_mat in enumerate(trs_mat_list):
+        #             file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
+        #
+        #             write_to_dir(file_name, trs_mat)
 
         if ObjectType.Cell in self.ObjectData:
             # TODO: check in the case of DRMs with many cells - possible collisions?
@@ -469,11 +470,15 @@ class UnitDRM(DRM):
                     write_to_dir(sanitized_cell_name, trs_mat)
 
         if save_to:
-            count = 0
-            with open(save_to, 'w') as f:
+            count = 1
+
+            # generate the list of RTs
+            rt_save_to = Path(save_to).parent / f"{Path(save_to).stem}_rt_{Path(save_to).suffix}"
+            with open(rt_save_to, 'w') as f:
+                f.write("index,name\n")
                 for key, value in location_dir.items():
                     for it in value:
-                        f.write(f"{count}, {key}, {', '.join(str(i) for i in it)} \n")
+                        f.write(f"{count},{key}\n")
                         count += 1
                 # json.dump(location_dir, f, indent=2)
 
@@ -488,6 +493,7 @@ class UnitDRM(DRM):
         action = kwargs.get("action", "overwrite")
         skip_materials = kwargs.get("skip_materials", False)
         trimesh_post_processing = kwargs.get("trimesh_post_processing", False)
+        flat_folders = kwargs.get("flat_folders", False)
         unit_has_rmb = SectionSubtype.RenderModelBuffer in set(sec.Header.SectionSubtype for sec in self.Sections)
 
         if skip_materials:
