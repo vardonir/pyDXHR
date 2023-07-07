@@ -268,5 +268,5 @@ def location_table(unit=None):
 
 
 if __name__ == "__main__":
-    location_table("det_city_sarif.drm")
+    location_table()
     # breakpoint()

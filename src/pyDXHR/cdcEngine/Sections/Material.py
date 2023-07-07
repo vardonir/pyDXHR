@@ -249,6 +249,14 @@ class Material(AbstractSection):
         breakpoint()
 
     def debug_print(self):
+        # second value - bf80 = mask?
+        #                3f80 = second texcoord?
+        # seems like a nonzero value in the 2nd number might mean that it;s using the 2nd texcoord
+
+        # fifth value  - 5 = ???
+        #                4 = mask?
+
+
         print("Material table for ", self.Name)
         print("Material table for ", "M_" + f"{self.section.Header.SecId:x}".rjust(8, '0'))
         # print(f"unk6: {self.section.Header.unk06}")
@@ -414,8 +422,9 @@ def deserialize_drm(
         use_only_dx11: bool = True,
         texture_library: Optional[Path | str] = None
 ) -> Set[Material]:
+    from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
     if use_only_dx11:
         mat_list = drm.filter_out_dx9_materials(materials_only=True)
-        return {Material(section=mat, texture_library=texture_library) for mat in mat_list}
     else:
-        raise NotImplementedError
+        mat_list = drm.filter_by_type([SectionType.Material])
+    return {Material(section=mat, texture_library=texture_library) for mat in mat_list}

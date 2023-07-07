@@ -21,7 +21,10 @@ class Reference:
 
     @classmethod
     def from_drm_root(cls, drm: DRM, offset: int = 0):
-        return cls(section_list=drm.Sections, section=drm.Sections[drm.Header.RootSection], offset=offset)
+        if drm.Header.RootSection != 0xFFFFFFFF:
+            return cls(section_list=drm.Sections, section=drm.Sections[drm.Header.RootSection], offset=offset)
+        else:
+            return cls(section_list=drm.Sections, section=drm.Sections[0], offset=offset)
 
     @classmethod
     def from_drm_section(cls, drm: DRM, section: Section, offset: int = 0):

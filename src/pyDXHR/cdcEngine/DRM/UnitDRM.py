@@ -436,11 +436,11 @@ class UnitDRM(DRM):
                 location_dir[row_name] = []
             location_dir[row_name].append(trs.T.flatten().tolist())
 
-        if self._archive:
-            if ObjectType.Stream in self.ObjectData:
-                for (name, path), trs_mat_list in self.ObjectData[ObjectType.Stream].items():
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        write_to_dir(f"{path}_{name}", trs_mat)
+        # if self._archive:
+            # if ObjectType.Stream in self.ObjectData:
+            #     for (name, path), trs_mat_list in self.ObjectData[ObjectType.Stream].items():
+            #         for idx, trs_mat in enumerate(trs_mat_list):
+            #             write_to_dir(f"{path}_{name}", trs_mat)
 
             # if ObjectType.EXT_IMF in self.ObjectData:
             #     for imf_path, trs_mat_list in self.ObjectData[ObjectType.EXT_IMF].items():
@@ -448,10 +448,10 @@ class UnitDRM(DRM):
             #         for idx, trs_mat in enumerate(trs_mat_list):
             #             write_to_dir(imf_name, trs_mat)
 
-            # if ObjectType.OBJ in self.ObjectData:
-            #     for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
-            #         for idx, trs_mat in enumerate(trs_mat_list):
-            #             write_to_dir(obj_name, trs_mat)
+            if ObjectType.OBJ in self.ObjectData:
+                for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
+                    for idx, trs_mat in enumerate(trs_mat_list):
+                        write_to_dir(obj_name, trs_mat)
 
         # if ObjectType.IMF in self.ObjectData:
         #     for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
@@ -460,25 +460,25 @@ class UnitDRM(DRM):
         #
         #             write_to_dir(file_name, trs_mat)
 
-        if ObjectType.Cell in self.ObjectData:
-            # TODO: check in the case of DRMs with many cells - possible collisions?
-            for (cell_name, sec_id), trs_mat_list in self.ObjectData[ObjectType.Cell].items():
-                sanitized_cell_name = cell_name.replace('|', '_')
-                if sanitized_cell_name in location_dir:
-                    breakpoint()
-                for idx, trs_mat in enumerate(trs_mat_list):
-                    write_to_dir(sanitized_cell_name, trs_mat)
+        # if ObjectType.Cell in self.ObjectData:
+        #     # TODO: check in the case of DRMs with many cells - possible collisions?
+        #     for (cell_name, sec_id), trs_mat_list in self.ObjectData[ObjectType.Cell].items():
+        #         sanitized_cell_name = cell_name.replace('|', '_')
+        #         if sanitized_cell_name in location_dir:
+        #             breakpoint()
+        #         for idx, trs_mat in enumerate(trs_mat_list):
+        #             write_to_dir(sanitized_cell_name, trs_mat)
 
         if save_to:
             count = 1
 
             # generate the list of RTs
-            rt_save_to = Path(save_to).parent / f"{Path(save_to).stem}_rt_{Path(save_to).suffix}"
+            rt_save_to = Path(save_to).parent / f"{Path(save_to).stem}_{Path(save_to).suffix}"
             with open(rt_save_to, 'w') as f:
                 f.write("index,name\n")
                 for key, value in location_dir.items():
                     for it in value:
-                        f.write(f"{count},{key}\n")
+                        f.write(f"{count},{key},{it}\n")
                         count += 1
                 # json.dump(location_dir, f, indent=2)
 

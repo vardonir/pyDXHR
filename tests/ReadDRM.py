@@ -10,13 +10,7 @@ from pathlib import Path
 
 # comparison with other versions
 arc = Archive()
-arc.deserialize_from_env()
-
-# arc = Archive()
-# arc.deserialize_from_file(r"F:\DXHRDCWII\bigfile-wiiu.000")
-
-# arc = Archive()
-# arc.deserialize_from_file(r"F:\DXHRPS3\CACHE.000")
+arc.deserialize_from_env("PS3_DC")
 
 # per-file comparison
 # renderterrain
@@ -31,14 +25,31 @@ arc.deserialize_from_env()
 # imf - has emission
 # data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\sarif_office_globe\sarif_office_globe.drm")
 
+# imf - adam's office - pretty complex, has that wall thing
+# data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_atrium\adam_office_a\adam_office_a.drm")
+
+# imf - athene's area - also complex, has that shiny effect on the back walls
+data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\room_sarif_office_a\room_sarif_office_a.drm")
+
 # some interesting drms...
 # data = arc.get_from_filename(r"con_009_sari.drm")
 # data = arc.get_from_filename(r"occupation_bedsleep.drm")
-data = arc.get_from_filename(r"alarm_dispatcher.drm")
+# data = arc.get_from_filename(r"alarm_dispatcher.drm")
+# data = arc.get_from_filename("sgl_det_city_sarif.drm")  # StreamGroupList
 
 drm = DRM()
 drm.deserialize(data, archive=arc)
 root_ref = Reference.from_drm_root(drm)
+
+# rendermesh
+from pyDXHR.cdcEngine.Sections import Material
+textures = RenderResource.deserialize_drm(drm)
+materials = Material.deserialize_drm(drm)
+
+tex_names = {hex(t.ID).replace("0x", ""): t.HeaderName for t in textures}
+for m in materials:
+    m.debug_print()
+
 
 
 # # notes for "con_xxx_xxxx.drm"

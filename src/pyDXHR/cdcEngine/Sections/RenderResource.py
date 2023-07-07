@@ -1,6 +1,6 @@
 from pathlib import Path
 import kaitaistruct
-from typing import Optional
+from typing import Optional, Set
 
 from pyDXHR.cdcEngine.Archive import ArchivePlatform
 from pyDXHR.cdcEngine.DRM.Section import Section
@@ -8,6 +8,7 @@ from pyDXHR.cdcEngine.Sections import AbstractSection
 from pyDXHR.KaitaiGenerated.PCD import Pcd as PCDImageFormat
 from pyDXHR.KaitaiGenerated.PS3T import Ps3t as PS3TImageFormat
 from pyDXHR.Export.DDSWriter import DDSImage, OutputFormat
+from pyDXHR.cdcEngine.DRM.DRMFile import DRM
 
 
 class RenderResource(AbstractSection):
@@ -69,6 +70,13 @@ class RenderResource(AbstractSection):
 
     def to_file(self, image_format: OutputFormat, save_to: Path | str):
         self.Image.save_as(image_format=image_format, save_to=save_to)
+
+
+def deserialize_drm(
+        drm: DRM
+) -> Set[RenderResource]:
+    from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
+    return {RenderResource(section=s) for s in drm.Sections if s.Header.SectionType == SectionType.RenderResource}
 
 
 def from_library(tex_id: int, tex_lib_dir: str | Path, as_path: bool = True):

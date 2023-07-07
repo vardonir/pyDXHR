@@ -7,6 +7,7 @@ from pyDXHR.utils import Endian
 
 class AbstractSection(ABC):
     def __init__(self, **kwargs):
+        self.HeaderName: Optional[str] = None
         self.ID: int = -1
         self.section: Optional[Section] = None
         self._endian: Endian = Endian.Little
@@ -21,6 +22,7 @@ class AbstractSection(ABC):
     def _deserialize_from_section(self, sec):
         self._endian: Endian = sec.Header.Endian
         self.ID = sec.Header.SecId
+        self.HeaderName = sec.Header.Name
         self.section = sec
 
     @staticmethod
@@ -46,6 +48,9 @@ class AbstractSection(ABC):
 
     def __hash__(self):
         return self.ID
+
+    def __repr__(self):
+        return self.Name
 
     @abstractmethod
     def to_gltf(self):
