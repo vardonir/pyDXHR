@@ -128,21 +128,13 @@ class DRM:
     def to_gltf(self):
         raise NotImplementedError
 
-    def deserialize(self,
-                    data: bytes,
-                    header_only: bool = False,
-                    merge_generic_sections: bool = False,
-                    archive: Optional = None):
+    def deserialize_from_decompressed(self,
+                                      data: bytes,
+                                      header_only: bool = False,
+                                      archive: Optional = None):
         from pyDXHR.cdcEngine.Archive import Archive, ArchivePlatform
-
-        magic, = struct.unpack(">L", data[0:4])
-
-        if magic != CompressedDRM.Magic:
-            return False
-
         from pyDXHR.KaitaiGenerated.DRM import DxhrDrm as KaitaiDRM
-        block_data = CompressedDRM.decompress(data, header_only=header_only, return_as_bytes=True)
-        kaitai_drm = KaitaiDRM.from_bytes(block_data)
+        kaitai_drm = KaitaiDRM.from_bytes(data)
 
         arc = None
         if archive is not None:
@@ -187,89 +179,102 @@ class DRM:
                     else:
                         header.Name = arc.section_list.get(header.SecId)
 
-        for idx, sec in enumerate(kaitai_drm.drm_data.sections):
-            section = Sec()
-            section.Resolvers = deserialize_resolver_list(
-                data=sec.relocs,
-                header_list=self.Header.SectionHeaders,
-                section_data=sec.payload,
-                endian=self.Header.Endian
-            )
+        if not header_only:
+            for idx, sec in enumerate(kaitai_drm.drm_data.sections):
+                section = Sec()
+                section.Resolvers = deserialize_resolver_list(
+                    data=sec.relocs,
+                    header_list=self.Header.SectionHeaders,
+                    section_data=sec.payload,
+                    endian=self.Header.Endian
+                )
 
-            section.Header = self.Header.SectionHeaders[idx]
-            section.Data = sec.payload
-            self.Sections.append(section)
-            self.SectionData.append(section.Header.serialize() + sec.relocs + sec.payload)
+                section.Header = self.Header.SectionHeaders[idx]
+                section.Data = sec.payload
+                self.Sections.append(section)
+                self.SectionData.append(section.Header.serialize() + sec.relocs + sec.payload)
 
         return True
 
+    def deserialize(self,
+                    data: bytes,
+                    header_only: bool = False,
+                    archive: Optional = None):
+        magic, = struct.unpack(">L", data[0:4])
 
-        if magic == CompressedDRM.Magic:
-            block_data = CompressedDRM.decompress(data, header_only=header_only)
-        else:
+        if magic != CompressedDRM.Magic:
             return False
 
-        breakpoint()
+        block_data = CompressedDRM.decompress(data, header_only=header_only, return_as_bytes=True)
+        des = self.deserialize_from_decompressed(block_data, header_only=header_only, archive=archive)
+        return des
 
-        if merge_generic_sections:
-            # the notes in the xnalara script mention that a generic section type just means that it's supposed
-            # to continue from the previous section. but i havent been able to recreate that. so...
-            data = CompressedDRM.rebuild_aligned(block_data)
-            header_cursor_end = self.Header.deserialize(data)
-
-            section_data = data[header_cursor_end:]
-
-            l = [(sec_header.SectionType == SectionType.Generic, sec_header)
-                 for sec_header in self.Header.SectionHeaders]
-
-            ll = []
-            for idx, (is_gen, sec_header) in enumerate(l):
-                if not is_gen:
-                    ll.append(idx)
-
-            lll = [self.Header.SectionHeaders[p:c] for p, c in zip(ll, ll[1:])]
-
-            llll = []
-            headers = []
-            for i in lll:
-                if len(i) > 1:
-                    data_size = sum([h.DataSize for h in i])
-                    header_size = sum([h.HeaderSize for h in i])
-                    llll.append((i[0], data_size, header_size))
-
-                else:
-                    llll.append((i[0], i[0].DataSize, i[0].HeaderSize))
-
-                headers.append(i[0])
-
-            if not header_only:
-                self.Sections, self.SectionData = Section.from_drm_sizes(
-                    block_data=section_data,
-                    size_data=llll,
-                    header_list=headers,
-                    drm_flag=self.Header.Flags,
-                    endian=self.Header.Endian
-                )
-
-        try:
-            # TODO: this should be revised to handle large unit DRMs, particularly det_city_sarif from the ps3 version
-            # * the first block is not necessarily the *entire* DRM header
-
-            self.Header.deserialize(block_data[0])
-
-            if not header_only:
-                self.Sections, self.SectionData = Section.from_drm_blocks(
-                    drm_block_list=block_data[1:],
-                    # drm_block_list=block_data,
-                    sec_header_list=self.Header.SectionHeaders,
-                    drm_flag=self.Header.Flags,
-                    endian=self.Header.Endian
-                )
-        except Exception as e:
-            print(e)
-            return False
-        else:
-            return True
+        # if magic == CompressedDRM.Magic:
+        #     block_data = CompressedDRM.decompress(data, header_only=header_only)
+        # else:
+        #     return False
+        #
+        # breakpoint()
+        #
+        # if merge_generic_sections:
+        #     # the notes in the xnalara script mention that a generic section type just means that it's supposed
+        #     # to continue from the previous section. but i havent been able to recreate that. so...
+        #     data = CompressedDRM.rebuild_aligned(block_data)
+        #     header_cursor_end = self.Header.deserialize(data)
+        #
+        #     section_data = data[header_cursor_end:]
+        #
+        #     l = [(sec_header.SectionType == SectionType.Generic, sec_header)
+        #          for sec_header in self.Header.SectionHeaders]
+        #
+        #     ll = []
+        #     for idx, (is_gen, sec_header) in enumerate(l):
+        #         if not is_gen:
+        #             ll.append(idx)
+        #
+        #     lll = [self.Header.SectionHeaders[p:c] for p, c in zip(ll, ll[1:])]
+        #
+        #     llll = []
+        #     headers = []
+        #     for i in lll:
+        #         if len(i) > 1:
+        #             data_size = sum([h.DataSize for h in i])
+        #             header_size = sum([h.HeaderSize for h in i])
+        #             llll.append((i[0], data_size, header_size))
+        #
+        #         else:
+        #             llll.append((i[0], i[0].DataSize, i[0].HeaderSize))
+        #
+        #         headers.append(i[0])
+        #
+        #     if not header_only:
+        #         self.Sections, self.SectionData = Section.from_drm_sizes(
+        #             block_data=section_data,
+        #             size_data=llll,
+        #             header_list=headers,
+        #             drm_flag=self.Header.Flags,
+        #             endian=self.Header.Endian
+        #         )
+        #
+        # try:
+        #     # TODO: this should be revised to handle large unit DRMs, particularly det_city_sarif from the ps3 version
+        #     # * the first block is not necessarily the *entire* DRM header
+        #
+        #     self.Header.deserialize(block_data[0])
+        #
+        #     if not header_only:
+        #         self.Sections, self.SectionData = Section.from_drm_blocks(
+        #             drm_block_list=block_data[1:],
+        #             # drm_block_list=block_data,
+        #             sec_header_list=self.Header.SectionHeaders,
+        #             drm_flag=self.Header.Flags,
+        #             endian=self.Header.Endian
+        #         )
+        # except Exception as e:
+        #     print(e)
+        #     return False
+        # else:
+        #     return True
 
     def serialize(self):
         blob = struct.pack(f">L", CompressedDRM.Magic)

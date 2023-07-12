@@ -28,6 +28,6 @@ pc_drm = MasterunitDRM(
 
 pc_drm.to_gltf(
     save_to=fr"F:\Projects\pyDXHR\output\masterunit_gltf\{file}",
-    # skip_materials=True,
-    merge=False
+    skip_materials=True,
+    merge=True
 )

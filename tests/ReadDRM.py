@@ -14,7 +14,7 @@ arc.deserialize_from_env("PS3_DC")
 
 # per-file comparison
 # renderterrain
-# data = arc.get_from_filename("streamgroups/det_city_tunnel1_tunel.drm")
+data = arc.get_from_filename("streamgroups/det_city_tunnel1_tunel.drm")
 
 # simple object
 # data = arc.get_from_filename("alc_vodka_bottle_a.drm")
@@ -29,7 +29,10 @@ arc.deserialize_from_env("PS3_DC")
 # data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_atrium\adam_office_a\adam_office_a.drm")
 
 # imf - athene's area - also complex, has that shiny effect on the back walls
-data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\room_sarif_office_a\room_sarif_office_a.drm")
+# data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_sarif_office\room_sarif_office_a\room_sarif_office_a.drm")
+
+# imf - the windows at the SI HQ atrium. uses transparency and the second texcoord
+# data = arc.get_from_filename(r"imf\imf_architecture\imf_interior\imf_detroit\imf_sarif_industries\imf_atrium\fake_floor30_a\fake_floor30_a.drm")
 
 # some interesting drms...
 # data = arc.get_from_filename(r"con_009_sari.drm")
@@ -41,14 +44,17 @@ drm = DRM()
 drm.deserialize(data, archive=arc)
 root_ref = Reference.from_drm_root(drm)
 
-# rendermesh
-from pyDXHR.cdcEngine.Sections import Material
-textures = RenderResource.deserialize_drm(drm)
-materials = Material.deserialize_drm(drm)
+# ps3 renderterrain
+rm = RenderMesh.deserialize_drm(drm)
 
-tex_names = {hex(t.ID).replace("0x", ""): t.HeaderName for t in textures}
-for m in materials:
-    m.debug_print()
+# material
+# from pyDXHR.cdcEngine.Sections import Material
+# textures = RenderResource.deserialize_drm(drm)
+# materials = Material.deserialize_drm(drm)
+#
+# tex_names = {hex(t.ID).replace("0x", ""): t.HeaderName for t in textures}
+# for m in materials:
+#     m.debug_print()
 
 
 

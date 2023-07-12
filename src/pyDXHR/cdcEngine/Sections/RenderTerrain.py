@@ -1,8 +1,9 @@
-from copy import copy
-from typing import Dict
+from typing import Dict, Tuple, List
 import numpy as np
 from pyDXHR.utils.MeshData import VertexSemantic, read_vertex_buffer
 from pyDXHR.utils import Endian
+import struct
+from io import BytesIO
 
 from pyDXHR.cdcEngine.Sections.RenderMesh import RenderMesh
 from pyDXHR.cdcEngine.DRM.Resolver import find_resolver
@@ -40,11 +41,19 @@ class KaitaiRenderTerrain(KRT):
         self.Endian: Endian = Endian.Little
 
     @classmethod
+    def from_bytes(cls, buf):
+        obj = super().from_bytes(buf)
+        obj.Endian = Endian.Little if obj.flags < 65535 else Endian.Big
+        obj.byte_data = buf
+        return obj
+
+    @classmethod
     def from_file(cls, filename):
         with open(filename, 'rb') as f:
             byte_data = f.read()
 
         obj = super().from_file(filename)
+        obj.Endian = Endian.Little if obj.flags < 65535 else Endian.Big
         obj.byte_data = byte_data
         return obj
 
@@ -54,37 +63,69 @@ class KaitaiRenderTerrain(KRT):
 
     @property
     def Indices(self) -> np.ndarray:
-        return np.array(self.data.indices, dtype=np.uint32).reshape((-1, 3))
+        out = np.array(self.data.indices, dtype=np.uint32).reshape((-1, 3))
+        assert not np.any(np.isnan(out))
+        return out
 
     @property
     def Vertices(self) -> Dict[int, Dict[VertexSemantic, np.ndarray]]:
         assert len(self.data.vtx_buffer) == len(self.data.vtx_sem_info)
 
-        for vb, vs in zip(self.data.vtx_buffer, self.data.vtx_sem_info):
-            vtx_data = self.byte_data[vb.off_vtx_buffer:]
+        vertex_buffers = {}
+        vb_data_buffer = BytesIO(self.byte_data[self.data.header.offset_vb:])
+        for idx, vb in enumerate(self.data.vtx_buffer):
+            off_vtx_buffer, unk1, len_vtx_buffer, i_fmt = struct.unpack_from(
+                f"{self.Endian.value}LLLL", vb_data_buffer.read(0x10))
 
-            for sem in vs.semantics:
+            vtx_sem_dict = {}
+            vtx_buffer_info = self.data.vtx_sem_info[i_fmt]
+            for sem in vtx_buffer_info.semantics:
                 out = read_vertex_buffer(
-                    vertex_data=vtx_data,
+                    vertex_data=self.byte_data[off_vtx_buffer:],
                     semantic_type=sem.type,
                     semantic_offset=sem.offset,
-                    count=vb.len_vtx_buffer,
-                    stride=vs.len_vtx,
+                    count=len_vtx_buffer,
+                    stride=vtx_buffer_info.len_vtx,
                     endian=self.Endian)
 
-            breakpoint()
+                assert not np.any(np.isnan(out))
+                vtx_sem_dict[VertexSemantic(sem.sem.value)] = out
 
-        return {}
+            vertex_buffers[idx] = vtx_sem_dict
+
+        return vertex_buffers
 
     @property
-    def Materials(self):
-        pass
+    def Materials(self) -> Dict[int, List[Tuple[int, np.ndarray]]]:
+        # TODO no seriously wtf, fix this plz
+        # seems like a mixup in the terminology/variable names...
+        mat_idx_dict = {}
+        for i in range(self.data.header.len_nodes):
+            off_list, = struct.unpack_from(f"{self.Endian.value}L", self.byte_data, self.data.header.offset_geom + i*4)
+            if off_list == 0 or off_list >= len(self.byte_data) - 2:
+                continue
+            n_ranges, = struct.unpack_from(f"{self.Endian.value}H", self.byte_data, off_list)
+
+            for j in range(n_ranges):  # range = prim?
+                off_range = off_list + 4 + 16*j
+                target, count, start_index = struct.unpack_from(f"{self.Endian.value}HHL", self.byte_data, off_range)
+
+                idx_mat, idx_buffer = struct.unpack_from(f"{self.Endian.value}LL", self.byte_data,
+                                                         self.data.header.offset_group + target * 0x20)
+                assert idx_buffer in range(self.data.header.len_vb)
+                assert idx_mat in range(self.data.header.len_group)
+
+                if idx_buffer not in mat_idx_dict:
+                    mat_idx_dict[idx_buffer] = []
+
+                mat_idx_dict[idx_buffer].append((idx_mat, self.Indices))
+
+        return mat_idx_dict
+
 
 if __name__ == "__main__":
     pc_sample_file = r"F:\Projects\pyDXHR\playground\rt_pc.bin"
     ps3_sammple_file = r"F:\Projects\pyDXHR\playground\rt_ps3.bin"
 
     krt_pc = KaitaiRenderTerrain.from_file(pc_sample_file)
-
-    krt_pc.Vertices
     breakpoint()
