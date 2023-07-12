@@ -27,7 +27,7 @@ pc_drm = MasterunitDRM(
 )
 
 pc_drm.to_gltf(
-    save_to=fr"F:\Projects\pyDXHR\output\masterunit_gltf\{file}",
+    save_to=fr"D:\UE5\ProjectSIX\Raw\{file}",
     # skip_materials=True,
     merge=False
 )

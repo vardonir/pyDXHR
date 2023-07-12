@@ -136,7 +136,6 @@ class DRM:
         from pyDXHR.cdcEngine.Archive import Archive, ArchivePlatform
 
         magic, = struct.unpack(">L", data[0:4])
-
         if magic != CompressedDRM.Magic:
             return False
 

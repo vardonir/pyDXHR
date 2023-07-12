@@ -181,8 +181,8 @@ class UnitDRM(DRM):
             trs_mat[-1, :] = np.array(list(pos) + [1])
             trs_mat = trs_mat.T
 
-            if self._round:
-                trs_mat = trs_mat.round(self._round)
+            # if self._round:
+            #     trs_mat = trs_mat.round(self._round)
 
             obj_indices.append((index, trs_mat))
 
@@ -426,15 +426,22 @@ class UnitDRM(DRM):
 
     def to_csv(self, **kwargs):
         # basically to_gltf but without the gltf
-        # creates a csv file with the name of the rendermesh and the 4x4 TRS matrix for each mesh
-        import json
+        # creates a csv file with the name of the rendermesh and the required transformation
         location_dir: Dict[str, List[List[float]]] = {}
         save_to = kwargs.get("save_to", None)
 
         def write_to_dir(row_name: str, trs: np.ndarray):
             if row_name not in location_dir:
                 location_dir[row_name] = []
-            location_dir[row_name].append(trs.T.flatten().tolist())
+
+            pos = trs.T[-1, 0:3].round(self._round)
+            scl = np.array([np.linalg.norm(trs.T[i, :]) for i in range(3)]).round(self._round)
+
+            # UE uses roll-pitch-yaw angles, which is XYZ
+            rot = [trs.T[i, 0:3] / scl[i] for i in range(3)]
+            rot = Rotation.from_matrix(rot).as_euler("XYZ", degrees=False).round(self._round)
+
+            location_dir[row_name].append(pos.tolist() + rot.tolist() + scl.tolist())
 
         # if self._archive:
             # if ObjectType.Stream in self.ObjectData:
@@ -448,17 +455,17 @@ class UnitDRM(DRM):
             #         for idx, trs_mat in enumerate(trs_mat_list):
             #             write_to_dir(imf_name, trs_mat)
 
-            if ObjectType.OBJ in self.ObjectData:
-                for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
-                    for idx, trs_mat in enumerate(trs_mat_list):
-                        write_to_dir(obj_name, trs_mat)
+            # if ObjectType.OBJ in self.ObjectData:
+            #     for obj_name, trs_mat_list in self.ObjectData[ObjectType.OBJ].items():
+            #         for idx, trs_mat in enumerate(trs_mat_list):
+            #             write_to_dir(obj_name, trs_mat)
 
-        # if ObjectType.IMF in self.ObjectData:
-        #     for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
-        #         for idx, trs_mat in enumerate(trs_mat_list):
-        #             file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
-        #
-        #             write_to_dir(file_name, trs_mat)
+        if ObjectType.IMF in self.ObjectData:
+            for rm_id, trs_mat_list in self.ObjectData[ObjectType.IMF].items():
+                for idx, trs_mat in enumerate(trs_mat_list):
+                    file_name = "RenderModel_" + f"{rm_id:x}".rjust(8, '0')
+
+                    write_to_dir(file_name, trs_mat)
 
         # if ObjectType.Cell in self.ObjectData:
         #     # TODO: check in the case of DRMs with many cells - possible collisions?
@@ -473,12 +480,12 @@ class UnitDRM(DRM):
             count = 1
 
             # generate the list of RTs
-            rt_save_to = Path(save_to).parent / f"{Path(save_to).stem}_{Path(save_to).suffix}"
+            rt_save_to = Path(save_to).parent / f"{Path(save_to).stem}{Path(save_to).suffix}"
             with open(rt_save_to, 'w') as f:
                 f.write("index,name\n")
                 for key, value in location_dir.items():
                     for it in value:
-                        f.write(f"{count},{key},{it}\n")
+                        f.write(f"{count},{key},{','.join([str(i) for i in it])}\n")
                         count += 1
                 # json.dump(location_dir, f, indent=2)
 

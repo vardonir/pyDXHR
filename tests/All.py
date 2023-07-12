@@ -6,10 +6,10 @@ from tqdm import tqdm
 arc = Archive()
 arc.deserialize_from_env("PS3_DC")
 
-file_list = r"..\external\filelist_generic.txt"
+file_list = r"C:\Users\vardo\Documents\pyDXHR\filelist_generic.txt"
 file_list = Path(file_list).read_text().split("\n")
 
-destination = r"F:\Projects\pyDXHR\output\ps3"
+destination = r"D:\Game_Rips\deus-ex-human-revolution\inflate"
 
 pair_list = set()
 for file in tqdm(file_list):
@@ -21,13 +21,17 @@ for file in tqdm(file_list):
         if des:
             for head, dat in zip(drm.Header.SectionHeaders, drm.SectionData):
                 if head.Name is not None:
-                    asset_path = Path(head.Name.replace(":", "/"))
+                    asset_path = Path(head.Name.replace(":", "/").replace("|", "_"))
                     path = Path(destination) / asset_path
+                    path.parent.mkdir(exist_ok=True,parents=True)
 
-                    with open(path, "wb") as f:
-                        f.write(dat)
+                    try:
+                        with open(path, "wb") as f:
+                            f.write(dat)
+                    except:
+                        print(path)
 
                 pairs = set((h.SectionType.value, h.SectionSubtype.value) for h in drm.Header.SectionHeaders)
-                pair_list.add(pairs)
+                pair_list.union(pairs)
 
-breakpoint()
+print(pair_list)
