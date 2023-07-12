@@ -3,7 +3,7 @@ from typing import List, Optional, Set, Tuple
 from pathlib import Path
 from PIL import Image
 
-from pyDXHR.cdcEngine.Archive import ArchivePlatform
+from pyDXHR.cdcEngine.Archive import ArchivePlatform, Archive
 from pyDXHR.cdcEngine.DRM.Section import Section
 from pyDXHR.cdcEngine.DRM.Resolver import find_resolver, MissingResolver
 from pyDXHR.cdcEngine.Sections import AbstractSection
@@ -103,6 +103,13 @@ class Material(AbstractSection):
         self._texture_library_path: Optional[str | Path] = kwargs.get("texture_library_path", None)
         self._named_textures_path: Optional[str | Path] = kwargs.get("named_textures_path", None)
         self._debug: bool = kwargs.get("debug", False)
+        self._use_libraries: bool = kwargs.get("use_libraries", True)
+
+        archive: Archive = kwargs.get("archive", None)
+        self._archive_texture_dir = archive.texture_list if archive else None
+
+        self._get_only_submat3: bool = kwargs.get("get_only_submat3", False)
+        self.submat3 = None
 
         self.ImageDict = {}
         self.Diffuse: List[RenderResource | Image] = []
@@ -177,7 +184,7 @@ class Material(AbstractSection):
                 tb3_data = []
                 for i in range(tex_count):
                     tx_off = texture_data_offset + (16 * i)
-                    tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LHHLBBH", self.section.Data, tx_off)
+                    tex_id, *tex_data = struct.unpack_from(f"{self._endian.value}LLLBBH", self.section.Data, tx_off)
                     tb3_data.append((tex_id, tex_data))
 
                     # see https://github.com/rrika/cdcEngineDXHR/blob/d3d9/rendering/MaterialData.h#L11
@@ -187,7 +194,9 @@ class Material(AbstractSection):
 
     def _deserialize_from_section(self, section):
         super()._deserialize_from_section(section)
-        self._load_matlib()
+
+        if self._use_libraries:
+            self._load_matlib()
 
         self._get_texture_ids()
         self._get_textures()
@@ -249,14 +258,6 @@ class Material(AbstractSection):
         breakpoint()
 
     def debug_print(self):
-        # second value - bf80 = mask?
-        #                3f80 = second texcoord?
-        # seems like a nonzero value in the 2nd number might mean that it;s using the 2nd texcoord
-
-        # fifth value  - 5 = ???
-        #                4 = mask?
-
-
         print("Material table for ", self.Name)
         print("Material table for ", "M_" + f"{self.section.Header.SecId:x}".rjust(8, '0'))
         # print(f"unk6: {self.section.Header.unk06}")
@@ -297,6 +298,11 @@ class Material(AbstractSection):
 
         seen = []
         submat_3 = self._raw_texture_list[3]
+
+        if self._get_only_submat3:
+            self.submat3 = submat_3
+            return
+
         for tex_data in submat_3:
             tex_id, tex_info = tex_data[0], tex_data[1:]
             # tex_info = lod, cat, fallback_index, slot_index, f
@@ -338,6 +344,25 @@ class Material(AbstractSection):
                             name = from_named_textures(tex_id, self._named_textures_path, get_name_only=True)
                             self.Unknown.append((tex, name))
                     continue
+
+            if self._archive_texture_dir:
+                tex_path = self._archive_texture_dir[tex_id]
+                if len(tex_path.split("|")) > 1:
+                    tex_type = tex_path.split("|")[1]
+                    match tex_type:
+                        case "diffuse":
+                            self.Diffuse.append(tex)
+                        case "normal":
+                            self.Normal.append(tex)
+                        case "mask":
+                            self.Mask.append(tex)
+                        case "specular":
+                            self.Specular.append(tex)
+                elif len(Path(tex_path).name.split("_")) > 1:
+                    tex_type = tex_path.split("|")[-1]
+                    breakpoint()
+
+                breakpoint()
 
             # if the texture is not in the named textures file...
             match tex_info[1]:
@@ -420,11 +445,14 @@ def get_material_ids(sec: Section, offset: int = 0) -> List[int]:
 def deserialize_drm(
         drm: DRM,
         use_only_dx11: bool = True,
-        texture_library: Optional[Path | str] = None
-) -> Set[Material]:
+        texture_library: Optional[Path | str] = None,
+        use_libraries: bool = True,
+        archive: Optional[Archive] = None,
+        only_submat3: bool = False
+) -> List[Material]:
     from pyDXHR.cdcEngine.DRM.SectionTypes import SectionType
     if use_only_dx11:
         mat_list = drm.filter_out_dx9_materials(materials_only=True)
     else:
         mat_list = drm.filter_by_type([SectionType.Material])
-    return {Material(section=mat, texture_library=texture_library) for mat in mat_list}
+    return [Material(get_only_submat3=only_submat3, section=mat, use_libraries=use_libraries, texture_library=texture_library, archive=archive) for mat in mat_list]

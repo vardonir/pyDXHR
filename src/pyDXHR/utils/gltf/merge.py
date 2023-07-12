@@ -41,6 +41,8 @@ def merge_single_node_gltf(
         split_objects_to_separate_node: bool = False,
         **kwargs,
 ):
+    skip_materials = kwargs.get("skip_materials", False)
+    split_file_by_occlusion = kwargs.get("split_file_by_occlusion", False)
     split_by_occlusion = kwargs.get("split_by_occlusion", False)
     if split_by_occlusion:
         split_objects_to_separate_node = False
@@ -315,29 +317,14 @@ def merge_multinode_gltf(
 
     top_level_gltf_files = [f
                             for f in Path(output_path).rglob("*.gltf")
-                            if len(f.relative_to(output_path).parts) == 2]
+                            if f.relative_to(output_path).parent.stem== f.relative_to(output_path).stem]
 
-    texture_folders = [f
-                       for f in Path(output_path).rglob("*/textures")
-                       if f.is_dir()]
-
-    # copy textures from each GLTF folder to top
-    merged_texture_dir = create_directory(
-        save_to=Path(output_path) / "textures",
-        action=kwargs.get("action", "overwrite")
-    )
     merged_buffers_dir = create_directory(
         save_to=Path(output_path) / "buffers",
         action=kwargs.get("action", "overwrite")
     )
 
     outfile = Path(output_path) / f"{Path(output_path).stem}.gltf"
-
-    image_paths = {}
-    for f in texture_folders:
-        for im in f.glob("*.png"):
-            image_paths[im.stem] = im
-            shutil.copy(im, merged_texture_dir)
 
     merged_file = gl.GLTF2()
     scene = gl.Scene(
@@ -354,18 +341,6 @@ def merge_multinode_gltf(
     scene.nodes.append(top_node_idx)
     merged_file.nodes.append(top_node)
 
-    # compile images
-    for hexTexId, im_path in image_paths.items():
-        im_node = gl.Image(
-            name=f"T_{hexTexId}",
-            uri=str(Path(*im_path.relative_to(output_path).parts[1:])),
-            extras={
-                "cdcTextureID": int(hexTexId, 16),
-            }
-        )
-        merged_file.images.append(im_node)
-
-    textures = {}
     materials = {}
     buffers = {}
 
@@ -386,14 +361,8 @@ def merge_multinode_gltf(
                 merged_file.materials.append(mat)
                 materials[mat.name] = mat_idx
 
-        for tex in gltf.textures:
-            tex_idx = len(merged_file.textures)
-            if tex.name not in textures:
-                merged_file.textures.append(tex)
-                textures[tex.name] = tex_idx
-
-        assert len(gltf.meshes) == len(gltf.buffers)
-        assert len(gltf.accessors) == len(gltf.bufferViews)
+        assert len(gltf.meshes) == len(gltf.buffers) - 1  # the +1 is for the dummy black
+        assert len(gltf.accessors) == len(gltf.bufferViews) - 1
 
         # transfer nodes
         for node in gltf.nodes:
@@ -423,6 +392,10 @@ def merge_multinode_gltf(
 
         # transfer buffers
         for buf in gltf.buffers:
+            if "octet-stream" in buf.uri:
+                # these are the dummy black buffers which the merged gltf does not use
+                continue
+
             buf_idx = len(merged_file.buffers)
             buffer_file = f.parent / buf.uri
             buffer_filename = Path(buf.uri).stem
@@ -448,14 +421,16 @@ def merge_multinode_gltf(
         for mesh in gltf.meshes:
             merged_gltf_mesh_idx = len(merged_file.meshes)
             if mesh.name in mesh_table:
-                if mesh.name == "RenderTerrain_00002f1f":
+                if mesh.name == "RenderTerrain_00002f1f":  # something is up with this one...
                     breakpoint()
 
                 continue
             merged_file.meshes.append(mesh)
             mesh_table[mesh.name] = merged_gltf_mesh_idx
 
-        for acc, bv in zip(gltf.accessors, gltf.bufferViews):
+        filtered_bv_list = [bv for bv in gltf.bufferViews if bv.name != "dummyblack"]
+        for acc, bv in zip(gltf.accessors, filtered_bv_list):
+
             acc_bv_idx = len(merged_file.bufferViews)
 
             mesh_name = bv.extras["MESH_NAME"]
@@ -586,46 +561,8 @@ def merge_multinode_gltf(
             else:
                 nodes_checked.add(c)
 
-    # check and fix textures/images/materials
-    im_name_set = set(i.name for i in merged_file.images)
-    tex_name_set = set(t.name for t in merged_file.textures)
-
-    # this just means that there are images in the textures folder that are not used as a texture
-    assert len(tex_name_set) < len(im_name_set)
-
-    mats_blank = set()
-    mats_with_unknown = {}
-    mats_for_fixing = set()
-    for mat in merged_file.materials:
-        if len(mat.extras) == 0:
-            mats_blank.add(mat.name)
-            continue
-
-        if "unknown" in mat.extras:
-            mats_with_unknown[mat.name] = mat.extras["unknown"]
-        if "specular" in mat.extras:
-            mats_for_fixing.add(mat.name)
-        if "blend" in mat.extras:
-            mats_for_fixing.add(mat.name)
-
-        diffuse_texture = mat.extras.get("diffuse")
-        normal_texture = mat.extras.get("normal")
-
-        if mat.pbrMetallicRoughness is not None:
-            if diffuse_texture is not None:
-                if len(diffuse_texture.split(",")) > 1:
-                    mats_for_fixing.add(mat.name)
-
-                mat.pbrMetallicRoughness.baseColorTexture.index = textures.get(diffuse_texture.split(",")[0])
-
-        if mat.normalTexture is not None:
-            if normal_texture is not None:
-                if len(normal_texture.split(",")) > 1:
-                    mats_for_fixing.add(mat.name)
-
-                mat.normalTexture.index = textures.get(normal_texture)
-
-    for tex in merged_file.textures:
-        tex.source = [i.name for i in merged_file.images].index(tex.name)
-
     merged_file.save(outfile)
+
+if __name__ == "__main__":
+    test_dir = r"F:\Projects\pyDXHR\output\masterunit_gltf\det_city"
+    merge_multinode_gltf(output_path=test_dir)

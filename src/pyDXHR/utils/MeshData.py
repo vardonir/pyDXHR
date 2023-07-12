@@ -167,6 +167,12 @@ class MeshData:
 
     # noinspection PyPep8Naming
     def _from_RenderTerrain(self, mesh_data):
+        # from pyDXHR.cdcEngine.Sections.RenderTerrain import KaitaiRenderTerrain
+        # krt = KaitaiRenderTerrain.from_bytes(mesh_data)
+        # self.VertexBuffers = krt.Vertices
+        # self._rt_index_dict = krt.Materials
+        # return
+
         # adapted from https://github.com/rrika/cdcEngineDXHR/blob/main/rendering/TerrainData.h
         # https://github.com/rrika/dxhr/blob/main/tools/cdcmesh.py
         # ...kinda

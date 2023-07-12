@@ -321,12 +321,23 @@ class UnitDRM(DRM):
 
                         self._occlusion_ref_list.append(cell_sub20)
 
+    def deserialize_from_decompressed(self, data: bytes, **kwargs):
+        self._archive: Archive = kwargs.get("archive")
+        des = super().deserialize_from_decompressed(data=data, header_only=False, archive=self._archive)
+        if not des:
+            raise ValueError("Failed to deserialize DRM")
+
+        self._process_unit(**kwargs)
+
     def deserialize(self, data: bytes, **kwargs):
         self._archive: Archive = kwargs.get("archive")
         des = super().deserialize(data=data, header_only=False, archive=self._archive)
         if not des:
             raise ValueError("Failed to deserialize DRM")
 
+        self._process_unit(**kwargs)
+
+    def _process_unit(self, **kwargs):
         self._get_references()
         self._split_objects = kwargs.get("split_objects", False)
         self._split_by_occlusion = kwargs.get("split_by_occlusion", False)
@@ -416,10 +427,10 @@ class UnitDRM(DRM):
 
                     with warnings.catch_warnings():
                         warnings.simplefilter("ignore", category=UserWarning)
-                        # (dest / folder).mkdir(parents=True, exist_ok=True)
-                        # gltf_object.save(dest / folder / file_name)
-                        dest.mkdir(parents=True, exist_ok=True)
-                        gltf_object.save(dest / file_name)
+                        (dest / folder).mkdir(parents=True, exist_ok=True)
+                        gltf_object.save(dest / folder / file_name)
+                        # dest.mkdir(parents=True, exist_ok=True)
+                        # gltf_object.save(dest / file_name)
             else:
                 pass
         return rm
@@ -502,6 +513,7 @@ class UnitDRM(DRM):
         trimesh_post_processing = kwargs.get("trimesh_post_processing", False)
         flat_folders = kwargs.get("flat_folders", False)
         unit_has_rmb = SectionSubtype.RenderModelBuffer in set(sec.Header.SectionSubtype for sec in self.Sections)
+        split_file_by_occlusion = kwargs.get("split_file_by_occlusion", False)
 
         if skip_materials:
             blank_materials = True
@@ -686,6 +698,7 @@ class UnitDRM(DRM):
             trs_matrix=self._trs_mat,
             verbose=self._verbose,
             split_by_occlusion=self._split_by_occlusion,
+            split_file_by_occlusion=split_file_by_occlusion,
             **kwargs
         )
 
