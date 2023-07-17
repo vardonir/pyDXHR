@@ -1,11 +1,8 @@
 # pyDXHR Documentation
 
+Python-based tools for data exploration and extraction of Deus Ex Human Revolution.
 
-Python-based tools for data exploration and extraction of Deus Ex Human Revolution, intended for use in another project of mine: [Project SI-X](https://six.vardonir.com/)
-
-Although I went a bit too far and somehow managed to make mod tools?
-
-Documentation be here, when I feel like writing it + some notes on stuff I've found while digging through the files.
+The project is not affiliated with Eidos Interactive Corporation, Embracer Group AB, or Square Enix Europe. 
 
 ## Dependencies
 
@@ -13,15 +10,20 @@ Documentation be here, when I feel like writing it + some notes on stuff I've fo
 * Numpy
 * fastcrc
 * [kaitaistruct](https://kaitai.io/) - The python-generated code is part of the repo, but the raw KSY files are also included.
-* scipy
+* scipy - mostly for handling rotations
 
 For the exporters:
 
 * Textures: Pillow
 * Models: [pygltflib](https://gitlab.com/dodgyville/pygltflib) 
-* Audio: [vgmstream](https://github.com/vgmstream/vgmstream) - used as a CLI tool
+* Audio: [vgmstream](https://github.com/vgmstream/vgmstream) - used as a CLI tool with subprocess
 * Cinematics: [WannaCRI](https://github.com/donmai-me/WannaCRI)
+
+Demos:
+
+* Jupyter/ipynb
+* Trimesh + pyglet for the 3D models
 
 ## Usage
 
-I'm planning to finalize this to an importable python package and/or something that can be run from the commandline, but not anytime soon. In the meantime, if you know what you're doing, I have the poetry file that I used to build the environment for the package.
+TODO: .exe files will be created for this project.

@@ -1,8 +1,6 @@
 # pyDXHR Documentation
 
-Python-based tools for data exploration and extraction of Deus Ex Human Revolution, intended for use in another project of mine: [Project SI-X](https://six.vardonir.com/)
-
-Although I went a bit too far; I'm literally just reading code made by people smarter than I am, and piecing them together. This website is an attempt to make the docs look and feel like a professionally-written document. The imperative here is "attempt." 
+Python-based tools for data exploration and extraction of Deus Ex Human Revolution.
 
 The project is not affiliated with Eidos Interactive Corporation, Embracer Group AB, or Square Enix Europe. 
 
@@ -28,12 +26,4 @@ Demos:
 
 ## Usage
 
-Install python using your preferred method of installing python. I initially used poetry, but migrating it to another computer turned out to be a real nightmare, so a requirements.txt file is also provided. 
-
-There's some sample scripts provided under the tests/ directory, but you may need to add src/pyDXHR to the path. I'm lazy and I use PyCharm to set the source root. You may need to use sys.path.append, I guess?
-
-There was a distributable/CLI planned, but there's some import crap going on and I didn't want to deal with it.
-
-Why GLTF? UE5 works well with it and I didn't want to deal with Blender's shenanigans with plugin development. Go use [erika's Blender importer](https://github.com/rrika/dxhr) for that one - this project is very heavily based on it. 
-
-The code should work on any platform, but you may need to change the subprocess commands so that vgmstream will work (right now, it's coded for Windows). 
+TODO: .exe files will be created for this project.

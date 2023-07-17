@@ -10,4 +10,4 @@
    Mods <mods/mods.rst>
    Demos <demos/sound.rst>
    References <references.md>
-   Documentation <docs/modules.rst>
+   About <about.md>

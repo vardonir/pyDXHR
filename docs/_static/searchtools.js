@@ -158,7 +158,7 @@ const Search = {
     const docContent = htmlElement.querySelector('[role="main"]');
     if (docContent !== undefined) return docContent.textContent;
     console.warn(
-      "Content block not found. Sphinx search tries to obtain it via '[role=main]'. Could you check your theme or templates."
+      "Content block not found. Sphinx search tries to obtain it via '[role=main]'. Could you check your theme or template."
     );
     return "";
   },
