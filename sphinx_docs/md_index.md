@@ -2,13 +2,9 @@
 
 Python-based tools for data exploration and extraction of Deus Ex Human Revolution, intended for use in another project of mine: [Project SI-X](https://six.vardonir.com/)
 
-Although I went a bit too far and somehow managed to make a basic mod tool? There's a bigfile repacker in there somewhere.
-
-There was an attempt to make the docs look and feel like a professionally-written document. An attempt. I didn't succeed. This entire thing is basically me talking to myself because I know I'm going to forget what the hecko is going on with the code in about two hours.
+Although I went a bit too far; I'm literally just reading code made by people smarter than I am, and piecing them together. This website is an attempt to make the docs look and feel like a professionally-written document. The imperative here is "attempt." 
 
 The project is not affiliated with Eidos Interactive Corporation, Embracer Group AB, or Square Enix Europe. 
-
-I'm literally just reading code made by people smarter than I am, and piecing them together. 
 
 ## Dependencies
 

@@ -3,10 +3,13 @@
 ## DXHR
 - [Erika's Blender tools](https://github.com/rrika/dxhr) and [decompilation](https://github.com/rrika/cdcEngineDXHR)  
 
-This entire project would not be possible without these two. The Blender tools gave me a starting point since I already knew Python, and the decompilation was a fantastic reference for understanding the DRM file structure.
+This entire project would not be possible without these projects. The Blender tools gave me a starting point since I already knew Python, and the decompilation was a fantastic reference for understanding the DRM and section file structure.
 
 - [Gibbed.CrystalDynamics tools](https://github.com/gibbed/Gibbed.CrystalDynamics)
 - [Steven's Gas Machine by semory @ XNALara](http://www.xnalara.org/viewtopic.php?f=17&t=1001)
+
+The source code for this one was great for understanding how reading bigfiles worked.
+
 - [ID codes for (most of the) items in the base game](http://www.best-pc-games.com/deusex-human-revolution-items-id-codes.html) from Grognougnou
 - [ID codes for the stock of the merchants](http://www.best-pc-games.com/deusex-human-revolution-modding-merchants-stocks.html) from Grognougnou 
 

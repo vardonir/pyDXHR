@@ -116,7 +116,7 @@ class Section:
         "Data",
         "Deserialized",
         "Filename",
-        "FirstInt"
+        "PayloadOffset"
     )
 
     def __init__(self):
@@ -126,8 +126,7 @@ class Section:
         self.Filename: Optional[str] = None
         self.Data: bytes = b''
 
-        # testing - it's just the number of local resolvers tho...
-        self.FirstInt: int = -1
+        self.PayloadOffset: int = -1
 
     def __repr__(self):
         if self.Filename:

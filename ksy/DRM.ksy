@@ -56,7 +56,7 @@ types:
           DRM dependencies  - needs to be split by null. These are paths and
           should end in .drm
       - id: sections
-        type: section(_index)
+        type: section(_index, _io.pos)
         repeat: expr
         repeat-expr: len_sections
 
@@ -67,6 +67,8 @@ types:
 
         params:
           - id: idx
+            type: u4
+          - id: start_offs
             type: u4
 
         seq:

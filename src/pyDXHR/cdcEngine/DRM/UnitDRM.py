@@ -163,6 +163,9 @@ class UnitDRM(DRM):
             index,  = struct.unpack_from(f"{endian.value}H", self._obj_ref.section.Data,
                                          0x30 + self._obj_ref.offset + i * 0x70)
 
+            if index == 0:
+                breakpoint()
+
             # if index == 136:  # ebook (base)
             # if index == 139:  # ebook (dc)
             #     breakpoint()
@@ -363,7 +366,10 @@ class UnitDRM(DRM):
             if self._archive is None:
                 warnings.warn("Cannot parse OBJ without attached archive")
             else:
-                for obj_index, trs_mat in self._get_obj_indices():
+                obj_index_list = self._get_obj_indices()
+                if 0 in [idx for idx, _ in obj_index_list]:
+                    breakpoint()
+                for obj_index, trs_mat in obj_index_list:
                     obj_name = self._archive.object_list[obj_index]
                     if obj_name not in object_dict:
                         object_dict[obj_name] = []

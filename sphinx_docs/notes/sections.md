@@ -62,16 +62,15 @@ The names come from the file lists found in the console version of the game.
 
 ### RenderTerrain 
 
-Typically found in streamobjects and unit DRMs
+Typically found in streamobjects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings.
 
 ### RenderModel and RenderModelBuffer
 
-Usually found in IMFs. 
+Usually found in IMFs and objects. 
 
-For the PC version, the RM section data is split between a header, which might contain information about bones/joints and material IDs, and the mesh data itself. On the console versions, the RM section is only the header, and RMB contains the mesh data separately.
+For the PC version, the RenderModel section data is split between a header, which contains information about bones/joints and material IDs, and the mesh data itself (indices and vertices). On the console versions, the RenderModel section is only the header, and RenderModelBuffer contains the mesh data separately.
 
-Note: `RenderModel.ksy` skips to the `Mesh` data portion of the section.
-
+Note: `RenderModel.ksy` assumes that it's reading data starting from the `Mesh` data portion of the section.
 
 ## RenderResource / Texture
 

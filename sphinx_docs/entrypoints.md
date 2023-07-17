@@ -1,0 +1,4 @@
+# Entrypoints
+
+These will be compiled as .exe files which (in theory) can be more user-friendly. A lot of this is just recreating what Gibbed already made, but these can be built and used in non-Windows platforms as well.
+

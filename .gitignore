@@ -1,5 +1,4 @@
-/external/
-!/external/**/NOTE.md
+/external/binaries
 
 .idea/**
 **/__pycache__/**

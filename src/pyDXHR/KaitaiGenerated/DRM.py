@@ -87,7 +87,7 @@ class DxhrDrm(KaitaiStruct):
             self.drm_dependencies = (self._io.read_bytes(self.len_drm_dependencies)).decode(u"ascii")
             self.sections = []
             for i in range(self.len_sections):
-                self.sections.append(DxhrDrm.Drm.Section(i, self._io, self, self._root, self._is_le))
+                self.sections.append(DxhrDrm.Drm.Section(i, self._io.pos(), self._io, self, self._root, self._is_le))
 
 
         def _read_be(self):
@@ -106,18 +106,19 @@ class DxhrDrm(KaitaiStruct):
             self.drm_dependencies = (self._io.read_bytes(self.len_drm_dependencies)).decode(u"ascii")
             self.sections = []
             for i in range(self.len_sections):
-                self.sections.append(DxhrDrm.Drm.Section(i, self._io, self, self._root, self._is_le))
+                self.sections.append(DxhrDrm.Drm.Section(i, self._io.pos(), self._io, self, self._root, self._is_le))
 
 
         class Section(KaitaiStruct):
             """Section (relocs + payload) data.
             """
-            def __init__(self, idx, _io, _parent=None, _root=None, _is_le=None):
+            def __init__(self, idx, start_offs, _io, _parent=None, _root=None, _is_le=None):
                 self._io = _io
                 self._parent = _parent
                 self._root = _root if _root else self
                 self._is_le = _is_le
                 self.idx = idx
+                self.start_offs = start_offs
                 self._read()
 
             def _read(self):

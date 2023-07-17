@@ -381,7 +381,7 @@ class Archive:
             if entry.UncompressedSize == 0:
                 raise Exception
             if entry.CompressedSize:
-                raise NotImplementedError
+                pass
 
             block_count = (len(entry.EntryData) + 0x800 - 1) // 0x800
             if block_count > max_blocks_per_file:
@@ -406,7 +406,7 @@ class Archive:
             out_data_list[current_bigfile_index] += b"\x00" * len_diff
             pos += block_count
 
-        print(f"Created {current_bigfile_index} BIGFILES")
+        print(f"Created {current_bigfile_index + 1} BIGFILES")
         return out_data_list
 
 

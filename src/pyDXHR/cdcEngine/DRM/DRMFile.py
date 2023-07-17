@@ -191,6 +191,7 @@ class DRM:
 
                 section.Header = self.Header.SectionHeaders[idx]
                 section.Data = sec.payload
+                section.PayloadOffset = sec.start_offs + len(sec.align) + len(sec.align2) + len(sec.relocs)
                 self.Sections.append(section)
                 self.SectionData.append(section.Header.serialize() + sec.relocs + sec.payload)
 
