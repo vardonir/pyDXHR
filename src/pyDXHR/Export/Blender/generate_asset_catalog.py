@@ -15,10 +15,10 @@ arc = Archive()
 arc.deserialize_from_env()
 # arc.deserialize_from_file(r"F:\Games\Deus Ex HRDC\BIGFILE.000")
 
-file_list = r"F:\Projects\pyDXHR\external\filelist_generic.txt"
+file_list = r"C:\Users\vardo\Documents\pyDXHR\filelist_generic.txt"
 file_list = set(Path(file_list).read_text().split("\n"))
 
-output_dir = r"F:\Projects\pyDXHR\output\blender"
+output_dir = r"D:\UE5\ProjectSIX\Raw\pyDXHRlib"
 texlib = os.getenv("PYDXHR_TEXLIB")
 
 detroit_only = True
@@ -120,27 +120,28 @@ def materials(limit=-1):
 
 # generate OBJs
 def objects(limit=-1):
-    obj_list = set(o + ".drm" for o in arc.object_list.values())
-    if obj_list != -1:
-        obj_list = list(obj_list)[:limit]
+    if not detroit_only:
+        obj_list = set(o + ".drm" for o in arc.object_list.values())
+        if obj_list != -1:
+            obj_list = list(obj_list)[:limit]
 
-    obj_dir = Path(output_dir) / "obj"
-    obj_dir.mkdir(parents=True, exist_ok=True)
-    for obj in tqdm(obj_list):
-        data = arc.get_from_filename(obj)
-        if data is None:
-            continue
-
-        drm = DRM()
-        des = drm.deserialize(data)
-        if des:
-            try:
-                rms = RenderMesh.deserialize_drm(drm)
-            except kaitaistruct.ValidationNotEqualError as e:
+        obj_dir = Path(output_dir) / "obj"
+        obj_dir.mkdir(parents=True, exist_ok=True)
+        for obj in tqdm(obj_list):
+            data = arc.get_from_filename(obj)
+            if data is None:
                 continue
-            else:
-                for rm in rms:
-                    rm.to_gltf(save_to=obj_dir / Path(obj).stem)
+
+            drm = DRM()
+            des = drm.deserialize(data)
+            if des:
+                try:
+                    rms = RenderMesh.deserialize_drm(drm)
+                except kaitaistruct.ValidationNotEqualError as e:
+                    continue
+                else:
+                    for rm in rms:
+                        rm.to_gltf(save_to=obj_dir / Path(obj).stem)
 
 
 # generate external IMFs
@@ -241,7 +242,7 @@ def location_table(unit=None):
     from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM
 
     unit_list = [Path(u).stem + ".drm" for u in arc.unit_list]
-    out_dir = Path(output_dir) / "loc"
+    out_dir = Path(output_dir) / "loc" / "internal_imf"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if unit is None:
@@ -256,14 +257,49 @@ def location_table(unit=None):
                 location_table(unit=unit)
     else:
         data = arc.get_from_filename(unit)
+        if data:
+            drm = UnitDRM()
+
+            drm.deserialize(
+                data,
+                archive=arc
+            )
+            drm.to_csv(
+                save_to=out_dir / (Path(unit).stem + ".csv"),
+            )
+
+
+def generate_detroit_assets_only(unit=None):
+    from pyDXHR.cdcEngine.DRM.UnitDRM import UnitDRM
+    unit_list = [Path(u).stem + ".drm" for u in arc.unit_list]
+    out_dir = Path(output_dir) / "detroit"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if unit is None:
+        for unit in unit_list:
+            if "fema" in unit:
+                continue
+
+            if "det" not in unit:
+                continue
+
+            data = arc.get_from_filename(unit)
+            if data is None:
+                continue
+            else:
+                # print(unit)
+                generate_detroit_assets_only(unit=unit)
+    else:
+        data = arc.get_from_filename(unit)
         drm = UnitDRM()
 
         drm.deserialize(
             data,
-            archive=arc
+            archive=arc,
         )
-        drm.to_csv(
-            save_to=out_dir / (Path(unit).stem + ".csv"),
+        drm.to_gltf(
+            save_to=out_dir / Path(unit).stem,
+            flat_folders=True,
         )
 
 
