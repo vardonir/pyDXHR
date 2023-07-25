@@ -18,7 +18,7 @@ arc.deserialize_from_env()
 # just_a_dipshit_from_detroit = "det_adam_apt_c.drm"  # a lot of everything, but is kinda big
 # im_a_fucking_corpo_shill = "det_sarif_industries.drm"  # the one that really matters, but you keep stalling it
 
-file = "det_sarif_industries.drm"
+file = "det_city_sarif.drm"
 pc_data = arc.get_from_filename(file)
 
 # read as unit
@@ -35,8 +35,8 @@ drm.deserialize(
     # # skip_ext_imf=True,
     # skip_int_imf=True,
     # stream=False,
-    # # obj=False,
-    # occlusion=False,
+    obj=False,
+    occlusion=False,
     # # cell=False,
     collision=True,
 )

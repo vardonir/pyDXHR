@@ -103,6 +103,7 @@ class DRM:
         self.Header = DRMHeader()
         self.Sections: list = []
         self.SectionData: List[bytes] = []
+        self.ByteData: bytes = b''
 
     def lookup_section_subtype(self, section_subtype: SectionSubtype, section_id: Optional[int] = None):
         if self.Sections:
@@ -201,6 +202,7 @@ class DRM:
                     data: bytes,
                     header_only: bool = False,
                     archive: Optional = None):
+        self.ByteData = data
         magic, = struct.unpack(">L", data[0:4])
 
         if magic != CompressedDRM.Magic:

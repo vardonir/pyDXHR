@@ -163,8 +163,8 @@ class UnitDRM(DRM):
             index,  = struct.unpack_from(f"{endian.value}H", self._obj_ref.section.Data,
                                          0x30 + self._obj_ref.offset + i * 0x70)
 
-            if index == 0:
-                breakpoint()
+            # if index == 0:
+            #     breakpoint()
 
             # if index == 136:  # ebook (base)
             # if index == 139:  # ebook (dc)
@@ -324,13 +324,13 @@ class UnitDRM(DRM):
 
                         self._occlusion_ref_list.append(cell_sub20)
 
-    def deserialize_from_decompressed(self, data: bytes, **kwargs):
-        self._archive: Archive = kwargs.get("archive")
-        des = super().deserialize_from_decompressed(data=data, header_only=False, archive=self._archive)
-        if not des:
-            raise ValueError("Failed to deserialize DRM")
-
-        self._process_unit(**kwargs)
+    # def deserialize_from_decompressed(self, data: bytes, **kwargs):
+    #     self._archive: Archive = kwargs.get("archive")
+    #     des = super().deserialize_from_decompressed(data=data, header_only=False, archive=self._archive)
+    #     if not des:
+    #         raise ValueError("Failed to deserialize DRM")
+    #
+    #     self._process_unit(**kwargs)
 
     def deserialize(self, data: bytes, **kwargs):
         self._archive: Archive = kwargs.get("archive")
@@ -370,7 +370,10 @@ class UnitDRM(DRM):
                 if 0 in [idx for idx, _ in obj_index_list]:
                     breakpoint()
                 for obj_index, trs_mat in obj_index_list:
-                    obj_name = self._archive.object_list[obj_index]
+                    obj_name = self._archive.object_list.get(obj_index)
+                    if obj_name is None:
+                        continue
+
                     if obj_name not in object_dict:
                         object_dict[obj_name] = []
 

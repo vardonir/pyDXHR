@@ -6,17 +6,16 @@ Decompress extracted DRM
 """
 
 from pathlib import Path
-import argparse
 from pyDXHR.cdcEngine.DRM.CompressedDRM import decompress
+import sys
 
-parser = argparse.ArgumentParser(description='pyDXHR: Decompress CDRM')
-parser.add_argument('-i', '--input', dest='path', help='Input file')
+if len(sys.argv) < 2:
+    print("Usage: drm_decompress.exe <input_file>")
+    sys.exit(1)
+else:
+    with open(sys.argv[1], 'rb') as f:
+        data = f.read()
 
-args = parser.parse_args()
-
-with open(args.path, 'rb') as f:
-    data = f.read()
-
-decompressed = decompress(data,return_as_bytes=True)
-with open(Path(args.path).parent / f"{Path(args.path).stem}_decompressed.drm", 'wb') as f:
-    f.write(decompressed)
+    decompressed = decompress(data, return_as_bytes=True)
+    with open(Path(sys.argv[1]).parent / f"{Path(sys.argv[1]).stem}_decompressed.drm", 'wb') as f:
+        f.write(decompressed)

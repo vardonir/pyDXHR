@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['src\\pyDXHR\\drm_decompress.py'],
+    ['src\\pyDXHR\\drm_extract.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -27,9 +27,8 @@ exe = EXE(
     a.binaries,
     a.zipfiles,
     a.datas,
-    name='drm_decompress',
+    name='drm_extract',
     debug=False,
-    strip=False,
     upx=True,
     console=True,
     icon='.\\pydxhr_logo.ico',
