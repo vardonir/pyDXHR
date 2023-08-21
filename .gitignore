@@ -1,0 +1,10 @@
+*.00*
+*.pyc
+/.env
+*.drm
+/dist/
+/build/
+/bigfiles/
+/docs/
+/playground/
+.idea/
