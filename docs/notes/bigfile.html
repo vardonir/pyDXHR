@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIGFILE &mdash; pyDXHR 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Definitions" href="definitions.html" />
+    <link rel="prev" title="AV data" href="av.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../entrypoints.html">Entrypoints (.exe)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="notes.html">Notes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="av.html"> Audio/Video</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"> Bigfiles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#filelist">Filelist?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pc-dev"><code class="docutils literal notranslate"><span class="pre">pc-dev</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="definitions.html"> Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drm.html"> DRM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sections.html"> Section data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="units.html"> Units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xbox.html"> The XBox version</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="notes.html">Notes</a></li>
+      <li class="breadcrumb-item active">BIGFILE</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bigfile">
+<h1>BIGFILE<a class="headerlink" href="#bigfile" title="Permalink to this heading"></a></h1>
+<p>Archive file format.</p>
+<p>There are some version differences:</p>
+<ul class="simple">
+<li><p>the PS3 version stores the AV data in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, the rest in <code class="docutils literal notranslate"><span class="pre">CACHE.00*</span></code>. The same is true for the PS3-DC and PS3-JAP</p></li>
+<li><p>the XBox version stores the AV data in <code class="docutils literal notranslate"><span class="pre">CACHE.00*</span></code> with everything else in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>. The same is true for XBox-DC <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
+<li><p>the Wii-U version stores the data in smaller <code class="docutils literal notranslate"><span class="pre">bigfile-wiiu.00*</span></code> files, along with <code class="docutils literal notranslate"><span class="pre">dlcpack-wiiu.00*</span></code> files.</p></li>
+<li><p>the PC version of the base game stores the game data in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, and with the localization data stored in <code class="docutils literal notranslate"><span class="pre">Bigfile_English.000</span></code>, <code class="docutils literal notranslate"><span class="pre">Bigfile_Russian.000</span></code>, etc. There are <code class="docutils literal notranslate"><span class="pre">patch*.000</span></code> files for the base game, as well, presumably for updates.</p></li>
+<li><p>PC Director’s Cut stores everything in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, including localization.</p></li>
+</ul>
+<p>The kaitai struct file for the header is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">meta</span><span class="p">:</span>
+  <span class="nb">id</span><span class="p">:</span> <span class="n">bigfile_header</span>
+
+<span class="n">seq</span><span class="p">:</span>
+  <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">alignment</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">u4le</span>
+  <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">bigfile_data</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">bigfile</span>
+
+<span class="n">types</span><span class="p">:</span>
+  <span class="n">bigfile</span><span class="p">:</span>
+    <span class="n">meta</span><span class="p">:</span>
+      <span class="n">endian</span><span class="p">:</span>
+        <span class="n">switch</span><span class="o">-</span><span class="n">on</span><span class="p">:</span> <span class="n">_root</span><span class="o">.</span><span class="n">alignment</span> <span class="o">&lt;</span> <span class="mi">65535</span>
+        <span class="n">cases</span><span class="p">:</span>
+          <span class="n">true</span><span class="p">:</span> <span class="n">be</span>
+          <span class="n">_</span><span class="p">:</span> <span class="n">le</span>
+    <span class="n">seq</span><span class="p">:</span>
+      <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">platform</span>
+        <span class="n">size</span><span class="p">:</span> <span class="mi">8</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="n">encoding</span><span class="p">:</span> <span class="n">ascii</span>
+      <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">zeroes</span>
+        <span class="n">size</span><span class="p">:</span> <span class="mh">0x38</span>
+      <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">len_files</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+      <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">hash_table</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+        <span class="n">repeat</span><span class="p">:</span> <span class="n">expr</span>
+        <span class="n">repeat</span><span class="o">-</span><span class="n">expr</span><span class="p">:</span> <span class="n">len_files</span>
+      <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">file_headers</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">file_header</span>
+        <span class="n">repeat</span><span class="p">:</span> <span class="n">expr</span>
+        <span class="n">repeat</span><span class="o">-</span><span class="n">expr</span><span class="p">:</span> <span class="n">len_files</span>
+
+    <span class="n">types</span><span class="p">:</span>
+      <span class="n">file_header</span><span class="p">:</span>
+        <span class="n">seq</span><span class="p">:</span>
+          <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">len_uncompressed</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+          <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">offset</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+          <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">locale</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+          <span class="o">-</span> <span class="nb">id</span><span class="p">:</span> <span class="n">len_compressed</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">u4</span>
+</pre></div>
+</div>
+<p>Only the header is read using the KSY file.</p>
+<p>Known file alignment values:</p>
+<ul class="simple">
+<li><p>0x7FF00000 - all PC versions, including TML</p></li>
+<li><p>0x0000F07F - all PS3 versions (base, Japan, DC)</p></li>
+<li><p>0x00003062 - XBox base</p></li>
+<li><p>0x00000065 - XBox beta</p></li>
+<li><p>0x0000D06A - XBox DC <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></li>
+<li><p>0x0000401F - WiiU</p></li>
+</ul>
+<section id="filelist">
+<h2>Filelist?<a class="headerlink" href="#filelist" title="Permalink to this heading"></a></h2>
+<p>Each file is stored as a hash instead of a typical filename. You can look up hashing algorithms for what that is and <a class="reference external" href="https://cdcengine.re/docs/files/bigfile">TheIndra55’s cdcResearch page on the Bigfile format</a> on what that means for the game, but basically there’s a list of files in there and, looking at the game as it is, there’s no way to telling what’s the difference between, for example, file 0x4314FB64 or 0x4314FB65.</p>
+<p>That’s where the file lists come in. I grabbed these from <a class="reference external" href="https://github.com/gibbed/Gibbed.CrystalDynamics/tree/master/bin_dx3/projects">Gibbed’s tools</a> (although <a class="reference external" href="https://github.com/rrika/dxhr/blob/main/data/Deus%20Ex%203%20-%20Director's%20Cut/files/more.filelist">Erika keeps a more up-to-date one</a>), and you can end up with a DRM from the game with a human-readable filename, if you run a specific function - in my case, I encode the string to utf-8 and use <code class="docutils literal notranslate"><span class="pre">bzip2</span></code> from the <code class="docutils literal notranslate"><span class="pre">fastcrc</span></code> library, which seems to work out well, but I’ve seen at least 3 different approaches for it.</p>
+<p>pyDXHR uses a “generic” filelist - it’s basically the same as the filelists provided in the links above, but it strips away the platform-specific prefix, and concatenates all the known DXHR filelists into one long list of files. This is because you can use a filelist for the PC version on PS3 files, for example, if you just replace <code class="docutils literal notranslate"><span class="pre">pc-w</span></code> with <code class="docutils literal notranslate"><span class="pre">ps3-w</span></code>. There’s no existing filelist for the Japanese version, but replacing <code class="docutils literal notranslate"><span class="pre">ps3-w</span></code> with <code class="docutils literal notranslate"><span class="pre">ps3-jap</span></code> worked out fine. There are base-specific and DC-specific files (for example, anything relating to TML won’t be in base), and console-specific files (<code class="docutils literal notranslate"><span class="pre">shaderlib/*_dx11.drm</span></code> would mean nothing in the console versions) - pyDXHR skips the files that are not present in the Bigfile archive.</p>
+</section>
+<section id="pc-dev">
+<h2><code class="docutils literal notranslate"><span class="pre">pc-dev</span></code><a class="headerlink" href="#pc-dev" title="Permalink to this heading"></a></h2>
+<p>One thing that the generic filelist skips are the <code class="docutils literal notranslate"><span class="pre">pc-dev</span></code> files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">animlist</span><span class="o">.</span><span class="n">ids</span>
+<span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">boneid</span><span class="o">.</span><span class="n">ids</span>
+<span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">dtpdata</span><span class="o">.</span><span class="n">ids</span>
+<span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">objectlist</span><span class="o">.</span><span class="n">ids</span>
+<span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">textures</span><span class="o">.</span><span class="n">ids</span>
+<span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">waves</span><span class="o">.</span><span class="n">ids</span>
+</pre></div>
+</div>
+<p>These are found only in the base DC version, providing a list of the sections and their human-readable filenames… although the lists are too short to correspond to the entire game. I’m guessing these were for TML and were left over.</p>
+<p>There are similar files for in the console versions (they show up under the unknown folder since the real filenames aren’t known) , with the complete filenames of (seemingly) all the section data in the game.</p>
+<p>–</p>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>I’m guessing that XBox-Japan version follows the same format. I’d be happy to check, just send me a copy of the game lmao</p>
+</aside>
+<aside class="footnote brackets" id="id4" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>I’m guessing that the difference is because the game is split to 2 discs, but don’t quote me on that</p>
+</aside>
+</aside>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x000002B788662770>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

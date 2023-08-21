@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRM sections &mdash; pyDXHR 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Unit DRM" href="units.html" />
+    <link rel="prev" title="Data Ram (.DRM)" href="drm.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/pydxhr_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../entrypoints.html">Entrypoints (.exe)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">Development</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="notes.html">Notes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="av.html"> Audio/Video</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bigfile.html"> Bigfiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="definitions.html"> Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drm.html"> DRM</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"> Section data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#section-types">Section Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rendermesh">RenderMesh</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#renderterrain">RenderTerrain</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rendermodel-and-rendermodelbuffer">RenderModel and RenderModelBuffer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#renderresource-texture">RenderResource / Texture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#collisionmesh">CollisionMesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#material">Material</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="units.html"> Units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xbox.html"> The XBox version</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyDXHR</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="notes.html">Notes</a></li>
+      <li class="breadcrumb-item active">DRM sections</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="drm-sections">
+<h1>DRM sections<a class="headerlink" href="#drm-sections" title="Permalink to this heading"></a></h1>
+<p>Each DRM file contains several sections - some contain texture/mesh data, animation, shader code, etc., basically everything except for audio and video.</p>
+<section id="section-types">
+<h2>Section Types<a class="headerlink" href="#section-types" title="Permalink to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generic</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">Empty</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Animation</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">Unknown03</span> <span class="o">=</span> <span class="mi">3</span>  
+    <span class="n">Unknown04</span> <span class="o">=</span> <span class="mi">4</span>  
+    <span class="n">RenderResource</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">FMODSoundBank</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># or Wave</span>
+    <span class="n">DTPData</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">Script</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">ShaderLib</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">Material</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">Object</span> <span class="o">=</span> <span class="mi">11</span>
+    <span class="n">RenderMesh</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">CollisionMesh</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">StreamGroupList</span> <span class="o">=</span> <span class="mi">14</span>
+    <span class="n">AnyType</span> <span class="o">=</span> <span class="mi">15</span>
+</pre></div>
+</div>
+<p>And each section sometimes comes with a section-specific subtype:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">Generic</span> <span class="o">=</span> <span class="mi">0</span> 
+    <span class="n">Texture</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">Sound</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">RenderTerrain</span> <span class="o">=</span> <span class="mi">24</span>
+    <span class="n">RenderModel</span> <span class="o">=</span> <span class="mi">26</span>
+    <span class="n">RenderModelBuffer</span> <span class="o">=</span> <span class="mi">27</span> 
+    <span class="n">SmartScript</span> <span class="o">=</span> <span class="mi">40</span>
+    <span class="n">Scaleform</span> <span class="o">=</span> <span class="mi">41</span>
+    <span class="n">Conversation</span> <span class="o">=</span> <span class="mi">42</span>
+    <span class="n">CameraShake</span> <span class="o">=</span> <span class="mi">50</span>
+</pre></div>
+</div>
+<p>There are subsections with unknown names (such as Unknown 18 showing up with material sections) - these are listed in the KSY files so that the parser won’t throw errors, but not listed above.</p>
+</section>
+<section id="rendermesh">
+<h2>RenderMesh<a class="headerlink" href="#rendermesh" title="Permalink to this heading"></a></h2>
+<p>RenderMesh sections can come in three subtypes: RenderTerrain, RenderModel, and RenderModelBuffer, with the last one specific to the console versions.</p>
+<p>The names come from the file lists found in the console version of the game.</p>
+<section id="renderterrain">
+<h3>RenderTerrain<a class="headerlink" href="#renderterrain" title="Permalink to this heading"></a></h3>
+<p>Typically found in stream objects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings.</p>
+</section>
+<section id="rendermodel-and-rendermodelbuffer">
+<h3>RenderModel and RenderModelBuffer<a class="headerlink" href="#rendermodel-and-rendermodelbuffer" title="Permalink to this heading"></a></h3>
+<p>Usually found in IMFs and objects.</p>
+<p>For the PC version, the RenderModel section data is split between a header, which contains information about bones/joints and material IDs, and the mesh data itself (indices and vertices). On the console versions, the RenderModel section is only the header, and RenderModelBuffer contains the mesh data separately.</p>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">RenderModel.ksy</span></code> assumes that it’s reading data starting from the <code class="docutils literal notranslate"><span class="pre">Mesh</span></code> data portion of the section.</p>
+</section>
+</section>
+<section id="renderresource-texture">
+<h2>RenderResource / Texture<a class="headerlink" href="#renderresource-texture" title="Permalink to this heading"></a></h2>
+<p>As the name implies.</p>
+<p>The PC version uses PCD9 files, the PS3 version uses a very similar format with a different header.</p>
+<p>TODO: check the Xbox and Wii-U versions</p>
+</section>
+<section id="collisionmesh">
+<h2>CollisionMesh<a class="headerlink" href="#collisionmesh" title="Permalink to this heading"></a></h2>
+<p>TODO</p>
+</section>
+<section id="material">
+<h2>Material<a class="headerlink" href="#material" title="Permalink to this heading"></a></h2>
+<p>TODO</p>
+<p>hoo boy</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x000002B78833C3D0>
+Not affiliated with Embracer Group AB or Eidos Montréal.
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3VLGR2WY44"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-3VLGR2WY44', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
