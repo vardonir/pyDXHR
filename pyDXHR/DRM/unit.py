@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Tuple
 from tqdm import trange
 from scipy.spatial.transform import Rotation
 import struct
-from pyDXHR.DRM import DRM
+from pyDXHR.DRM import DRM, Section
 from pyDXHR.DRM.Section.resolver import Reference
 from pyDXHR import SectionType
 import os
@@ -22,9 +22,11 @@ class UnitDRM(DRM):
         self.linked_drm_list: List[str] = []
         self.streamgroup_map: Dict[Tuple[str, str], List[np.ndarray]] = {}
         self.cell_map: Dict[Tuple[str, int], List[np.ndarray]] = {}
+        self.cell_section_data: Dict[Tuple[str, int], Section] = {}
         self.occlusion_map: Dict[int, List[np.ndarray]] = {}
         self.obj_map: Dict[int, List[np.ndarray]] = {}
         self.int_imf_map: Dict[int, List[np.ndarray]] = {}
+        self.int_imf_section_data: Dict[Tuple[str, int], Section] = {}
         self.ext_imf_map: Dict[str, List[np.ndarray]] = {}
 
         self._obj_ref: Optional[Reference] = None
@@ -89,14 +91,22 @@ class UnitDRM(DRM):
 
         ext_imf_dict: Dict[str, List[np.ndarray]] = {}
         int_imf_dict: Dict[int, List[np.ndarray]] = {}
+        endian = self._imf_ref.section.header.endian
 
         if bool(os.getenv("verbose", False)):
             pbar = trange(self._imf_count, desc="Reading IMF data")
         else:
             pbar = range(self._imf_count)
         for i in pbar:
-            trs_mat = self._imf_ref.access("16f", i * 0x90)
-            trs_mat = np.asarray(trs_mat).reshape((4, 4)).T
+            # trs_mat = self._imf_ref.access("16f", i * 0x90)
+            trs_mat_np = np.frombuffer(self._imf_ref.section.data,
+                                       dtype=np.dtype(np.float32).newbyteorder(endian),
+                                       count=16,
+                                       offset=self._imf_ref.offset + i * 0x90
+                                       )
+
+            # trs_mat = np.asarray(trs_mat).reshape((4, 4)).T
+            trs_mat = np.asarray(trs_mat_np).reshape((4, 4)).T
             # if self._round:
             #     trs_mat = trs_mat.round(self._round)
 
@@ -115,6 +125,7 @@ class UnitDRM(DRM):
                 if rm_sec.header.section_id not in int_imf_dict:
                     int_imf_dict[rm_sec.header.section_id] = []
                 int_imf_dict[rm_sec.header.section_id].append(trs_mat)
+                self.int_imf_section_data[rm_sec.header.section_id] = rm_sec
             elif not fname_ref:
                 pass
             else:  # IMFs elsewhere
@@ -209,13 +220,19 @@ class UnitDRM(DRM):
                         streamgroup_ref = ref_streamgroup.add(i * 0x14)
                         streamgroup_name = streamgroup_ref.deref(0x0)
                         streamgroup_path = streamgroup_ref.deref(0xC)
-                        try:
+
+                        if streamgroup_path:
                             streamgroup_name = streamgroup_name.access_string()
                             streamgroup_path = streamgroup_path.access_string()
                             key = (streamgroup_name.lower(), streamgroup_path.lower())
-                        except AttributeError:
-                            continue
-                        else:
+
+                        # try:
+                        #     streamgroup_name = streamgroup_name.access_string()
+                        #     streamgroup_path = streamgroup_path.access_string()
+                        #     key = (streamgroup_name.lower(), streamgroup_path.lower())
+                        # except AttributeError:
+                        #     continue
+                        # else:
                             if key not in self.streamgroup_map:
                                 self.streamgroup_map[key] = []
 
@@ -246,6 +263,9 @@ class UnitDRM(DRM):
 
                             if cell_sub4_0:
                                 ref_list_cell.append((cell_sub4_0, cell_name))
+                                self.cell_section_data |= {
+                                    (cell_name, cell.section.header.section_id): cell_sub4_0.section
+                                }
 
                             ref_list_occlusion.append(cell_sub20)
 

@@ -229,7 +229,7 @@ class Reference:
         self.endian: str = "<"
 
     @classmethod
-    def from_root(cls, drm: DRM):
+    def from_root(cls, drm: DRM, offset: int = 0):
         obj = cls()
         if drm.root_section_index == 0xFFFFFFFF:
             raise ReferenceSectionNotFound
@@ -238,10 +238,11 @@ class Reference:
         obj.section = drm.sections[drm.root_section_index]
         obj.endian = obj.section.header.endian
         obj.drm = drm
+        obj.offset = offset
         return obj
 
     @classmethod
-    def from_section(cls, drm_or_section_list: DRM | List, section):
+    def from_section(cls, drm_or_section_list: DRM | List, section, offset: int = 0):
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -249,10 +250,11 @@ class Reference:
             obj.section_list = drm_or_section_list
         obj.section = section
         obj.endian = section.header.endian
+        obj.offset = offset
         return obj
 
     @classmethod
-    def from_section_index(cls, drm_or_section_list: DRM | List, section_index: int):
+    def from_section_index(cls, drm_or_section_list: DRM | List, section_index: int, offset: int = 0):
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -265,10 +267,11 @@ class Reference:
             raise ReferenceSectionNotFound
 
         obj.endian = obj.section.header.endian
+        obj.offset = offset
         return obj
 
     @classmethod
-    def from_section_type(cls, drm_or_section_list: DRM | List, section_id: int, section_type: SectionType):
+    def from_section_type(cls, drm_or_section_list: DRM | List, section_id: int, section_type: SectionType, offset: int = 0):
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -281,12 +284,12 @@ class Reference:
                 break
 
         obj.endian = obj.section.header.endian
+        obj.offset = offset
         return obj
 
     def add(self, offset: int = 0):
         """ Add to the current offset """
-        self.offset += offset
-        return self
+        return Reference.from_section(self.section_list, self.section, self.offset + offset)
 
     def access(self, unpack_format: str, offset=0):
         """ Access numerical data from the section data at the current offset """
@@ -342,14 +345,12 @@ class Reference:
             if type(resolver).__qualname__ == LocalDataResolver.__qualname__:
                 reference_offset = resolver.data_offset
                 local_section_index = self.section_list.index(self.section)
-                obj = Reference.from_section_index(self.section_list, local_section_index)
-                obj.offset = reference_offset
+                obj = Reference.from_section_index(self.section_list, local_section_index, reference_offset)
                 return obj
             elif type(resolver).__qualname__ == RemoteDataResolver.__qualname__:
                 reference_offset = resolver.data_offset
                 remote_section_index = resolver.section_index
-                obj = Reference.from_section_index(self.section_list, remote_section_index)
-                obj.offset = reference_offset
+                obj = Reference.from_section_index(self.section_list, remote_section_index, reference_offset)
                 return obj
             elif type(resolver).__qualname__ == UnknownResolver2.__qualname__:
                 try:

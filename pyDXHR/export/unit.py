@@ -1,64 +1,125 @@
-from typing import List
+"""
 
+
+"""
+
+import shutil
+import json
+from typing import List, Dict, Optional
+from copy import copy
+
+import kaitaistruct
+import numpy as np
 import pygltflib as gl
 from pathlib import Path
 
 from Bigfile import Bigfile
 from pyDXHR.DRM import DRM
+from pyDXHR.DRM.Section import RenderMesh, Material
 from pyDXHR.DRM.unit import UnitDRM
 from pyDXHR.export import gltf
 import tempfile
+from scipy.spatial.transform import Rotation
 
 
-def from_drm(drm: UnitDRM, bigfile: Bigfile,
+def from_drm(drm: UnitDRM,
+             bigfile: Bigfile,
              save_to: Path | str,
-             scale: float = 1.0, z_up: bool = False, lumen: bool = False) -> None:
-    temp_dir = Path(tempfile.gettempdir()) / "pyDXHR"
-    temp_dir.mkdir(parents=True, exist_ok=True)
+             scale: float = 1.0,
+             z_up: bool = False,
+             **kwargs
+             ) -> None:
+    if len(Path(save_to).suffix) != 0:
+        save_to = Path(save_to).parent
+        save_to.mkdir(parents=True, exist_ok=True)
 
-    node_list: List[gl.Node] = []
+    # stream data
+    if kwargs.get("stream", True):
+        stream_gltf_list = []
+        stream_mat_list = []
+        if len(drm.streamgroup_map):
+            for (streamgroup_path, streamgroup_name), trs in drm.streamgroup_map.items():
+                stream_drm = DRM.from_bigfile(rf"streamgroups\{streamgroup_name}.drm", bigfile)
+                stream_drm.open()
 
-    if not len(drm.obj_map):
-        drm.read_objects()
+                mat_list = Material.from_drm(stream_drm)
+                for mat in mat_list:
+                    mat.read()
+                stream_mat_list.extend(mat_list)
 
-    object_list = [line.split(",") for line in bigfile.read("objectlist.txt").decode("utf-8").split("\r\n")]
-    object_list = {int(line[0]): line[1] for line in object_list if len(line) == 2}
-    parsed_object_map = {object_list[obj_id]: trs_list for obj_id, trs_list in drm.obj_map.items()}
+                for sec in stream_drm.sections:
+                    stream_gltf = gltf.to_temp(sec)
+                    if stream_gltf is not None:
+                        stream_gltf_list.append(stream_gltf)
 
-    objs_node = gl.Node(
-        name="objects",
-    )
-    objs_node.extras |= {
-        "node_type": "category"
-    }
-    node_list.append(objs_node)
+                gltf.merge(
+                    gltf_list=stream_gltf_list,
+                    save_to=Path(save_to) / (streamgroup_name + '.gltf'),
+                    scale=scale,
+                    z_up=z_up,
+                    mat_list=stream_mat_list,
+                    drm_name=stream_drm.name.replace('.drm', ''),
+                )
 
-    for obj_name, trs_list in parsed_object_map.items():
+    # internal data
+    mat_list = Material.from_drm(drm)
+    for mat in mat_list:
+        mat.read()
 
-        obj_node = gl.Node(
-            name=obj_name,
-        )
-        obj_node.extras |= {
-            "node_type": "object"
-        }
-        node_list.append(obj_node)
+    if kwargs.get("cell", True):
+        cell_gltf_list = []
+        if len(drm.cell_map):
 
-        drm = DRM.from_bigfile(obj_name, bigfile)
-        gltf.from_drm(drm=drm, save_to=temp_dir / (obj_name + ".gltf"), scale=scale, z_up=z_up, lumen=lumen)
-        obj_gltf = gl.GLTF2().load(temp_dir / (obj_name + ".gltf"))
+            for (cell_name, cell_sec_id), sec in drm.cell_section_data.items():
+                cell_gltf = gltf.to_temp(sec)
+                cell_gltf_list.append(cell_gltf)
 
+            gltf.merge(
+                gltf_list=cell_gltf_list,
+                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_cell.gltf"),
+                scale=scale,
+                z_up=z_up,
+                mat_list=mat_list,
+                drm_name=f"{drm.name.replace('.drm', '')}_cell",
+            )
 
-        print(trs_list)
+    if kwargs.get("int_imf", True) or kwargs.get("ext_imf", True):
+        if not len(drm.int_imf_map) or not len(drm.ext_imf_map):
+            drm.read_imfs()
 
-    breakpoint()
+        if kwargs.get("int_imf", True):
+            int_imf_gltf_dict: Dict[int, gl.GLTF2] = {}
+            for sec_id, trs_list in drm.int_imf_map.items():
+                imf_gltf = gltf.to_temp(drm.get_section_from_id(sec_id))
+                int_imf_gltf_dict[sec_id] = imf_gltf
 
-    if not len(drm.int_imf_map) or not len(drm.ext_imf_map):
-        drm.read_imfs()
+            gltf.merge_with_table(
+                gltf_dict=int_imf_gltf_dict,
+                loc_table=drm.int_imf_map,
+                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
+                scale=scale,
+                z_up=z_up,
+                mat_list=mat_list,
+                drm_name=f"{drm.name.replace('.drm', '')}_int_imf",
+            )
 
-    int_imf_node = gl.Node(
-        name="int_imf",
-    )
+            breakpoint()
 
-    ext_imf_node = gl.Node(
-        name="ext_imf",
-    )
+        if kwargs.get("ext_imf", True):
+            ext_imf_gltf_dict: Dict[str, gl.GLTF2] = {}
+            for imf_name, trs_list in drm.ext_imf_map.items():
+                data = bigfile.read(imf_name)
+                imf = DRM.from_bytes(data)
+                imf.open()
+
+                breakpoint()
+
+    if kwargs.get("obj", True):
+        if not len(drm.obj_map):
+            drm.read_objects()
+
+        object_list = [line.split(",") for line in bigfile.read("objectlist.txt").decode("utf-8").split("\r\n")]
+        object_list = {int(line[0]): line[1] for line in object_list if len(line) == 2}
+        parsed_object_map = {object_list[obj_id]: trs_list for obj_id, trs_list in drm.obj_map.items()}
+
+        breakpoint()

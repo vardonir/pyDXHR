@@ -16,5 +16,5 @@ rm_list = RenderMesh.from_drm(render_mesh_drm)
 # generate MeshData
 for rm in rm_list:
     md = rm.parse_mesh_data()
-    gltf = md.to_lumen_gltf(save_to=r"C:\Users\vardo\Documents\pyDXHR\playground\mesh\lumen.gltf")
+    gltf = md.to_gltf(save_to=r"C:\Users\vardo\Documents\pyDXHR\playground\mesh.gltf")
 breakpoint()

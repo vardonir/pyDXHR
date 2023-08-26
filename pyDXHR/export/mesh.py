@@ -54,7 +54,8 @@ class MeshData:
 
         empty_image_buffer = gl.Buffer(
             uri='data:application/octet-stream;base64,{}'.format(str(encoded).split("'")[1]),
-            byteLength=len(image)
+            byteLength=len(image),
+            extras={"name": "empty"}
         )
 
         empty_image_buffer_view = gl.BufferView(
@@ -174,25 +175,6 @@ class MeshData:
                 self._gltf_mesh_prim_list.append(mesh_prim)
 
         self._is_built = True
-
-    def to_lumen_gltf(self, save_to: Optional[str | Path] = None):
-        """ UE5/Lumen GLTF """
-        if not self._is_built:
-            self.build_gltf()
-
-        mtl_list = []
-        for idx, prim in enumerate(self._gltf_mesh_prim_list):
-            mesh = gl.Mesh(
-                name=f"SM_{self.name}_{idx}",
-            )
-            mesh.primitives = [prim]
-            node = gl.Node(
-                name=f"N_{self.name}_{idx}",
-                mesh=self._add_property(mesh),
-            )
-
-            self._parent_node.children.append(self._add_property(node))
-        return self._finalize(save_to=save_to)
 
     def to_gltf(self, save_to: Optional[str | Path] = None):
         """ As-is from the game GLTF """
@@ -451,7 +433,7 @@ def apply_global_node_transform(node: gl.Node):
     from scipy.spatial.transform import Rotation
 
     uniform_scale = float(os.getenv("model_scale", 1))
-    use_z_up = bool(os.getenv("model_z_up", False))
+    use_z_up = True if os.getenv("model_z_up", "False") == "True" else False
 
     return apply_node_transformations(
         node,

@@ -80,13 +80,22 @@ class DRM:
 
         self._is_open: bool = False
 
+    def get_section_from_id(self, section_id: int):
+        for sec in self.sections:
+            if sec.header.section_id == section_id:
+                return sec
+
     @classmethod
     def from_bigfile(cls,
                      drm_name_or_hash: str | int,
                      bigfile: Bigfile,
                      locale: int = 0xFFFFFFFF):
         """ Create DRM object from a Bigfile and a filename/hash """
-        data = bigfile.read(drm_name_or_hash, locale=locale)
+        try:
+            data = bigfile.read(drm_name_or_hash, locale=locale)
+        except KeyError:
+            data = bigfile.read(drm_name_or_hash + ".drm", locale=locale)
+
         obj = cls.from_bytes(data)
         if isinstance(drm_name_or_hash, int):
             obj.name = f"{drm_name_or_hash:08X}"
