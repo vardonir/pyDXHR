@@ -1,5 +1,7 @@
 """
-Bigfile class. Used to read bigfiles.
+Bigfile class
+- can read bigfiles specified from the env file, from a specific path.
+- can write a new bigfile from a list of BigfileEntry objects
 """
 
 from enum import Enum
@@ -11,6 +13,10 @@ import numpy as np
 from pyDXHR.Bigfile.filelist import read_filelist, crc32bzip2
 from pyDXHR.Bigfile.read_header import BigfileHeader
 from pyDXHR.Bigfile.read_entries import BigfileEntry
+from pyDXHR.Bigfile.pack import write_from_entries
+
+
+write_new_bigfile = write_from_entries
 
 
 class BigfileError(Exception):
@@ -51,6 +57,7 @@ class Bigfile:
         self._is_opened: bool = False
         self._platform_key: str = ""
         self._data_alignment: int = -1
+        self._endian: str = "<"
 
         self.named_entries: Dict[Tuple[int, int], BigfileEntry] = {}
         self.unknown_entries: Dict[Tuple[int, int], BigfileEntry] = {}
@@ -58,6 +65,14 @@ class Bigfile:
     @property
     def key(self):
         return self._platform_key
+
+    @property
+    def alignment(self):
+        return self._data_alignment
+
+    @property
+    def endian(self):
+        return self._endian
 
     def open(self):
         file_path = self._path if self._path else Path(self._get_path())
@@ -95,6 +110,11 @@ class Bigfile:
             # anyway, platform can be auto-detected, so...
             self.platform = Bigfile.Platform(bh.platform_key.split("-")[0].lower())
 
+        if self.platform == Bigfile.Platform.PC:
+            self._endian = "<"
+        else:
+            self._endian = ">"
+
         file_list_dict = read_filelist(bh.platform_key.lower())
         # read the entries
         for e, h in zip(bh.file_headers, bh.file_hashes):
@@ -117,6 +137,22 @@ class Bigfile:
                 self.named_entries[(h, e.locale)] = archive_entry
 
         self._is_opened = True
+
+    def get_entry_from_filename(self, filename: str, locale: int = 0xFFFFFFFF) -> BigfileEntry:
+        if not self._is_opened:
+            self.open()
+
+        if not filename.startswith(self._platform_key):
+            filename = self._platform_key + "\\" + filename
+
+        file_hash = crc32bzip2(filename)
+        if (file_hash, locale) in self.named_entries:
+            entry = self.named_entries[(file_hash, locale)]
+        elif (file_hash, locale) in self.unknown_entries:
+            entry = self.unknown_entries[(file_hash, locale)]
+        else:
+            raise KeyError
+        return entry
 
     def read_data(self, file_hash: int, locale: int = 0xFFFFFFFF):
         if not self._is_opened:
@@ -177,12 +213,25 @@ class Bigfile:
         else:
             return self._path
 
+    @staticmethod
+    def _match_unpack_from(platform):
+        match platform:
+            case Bigfile.Platform.XBOX360:
+                return "bigfile"
+            case Bigfile.Platform.WII_U:
+                return "bigfile-wiiu"
+            case Bigfile.Platform.PC:
+                return "bigfile"
+            case Bigfile.Platform.PS3:
+                return "cache"
+            case _:
+                raise BigfileError
+
     @classmethod
     def from_env(
         cls, version: Optional[Version] = None, platform: Optional[Platform] = None
     ):
         from dotenv import load_dotenv
-
         load_dotenv()
         obj = cls()
 
@@ -196,18 +245,7 @@ class Bigfile:
             obj.version = version
             obj.platform = platform
 
-        match obj.platform:
-            case Bigfile.Platform.XBOX360:
-                obj.unpack_from = "bigfile"
-            case Bigfile.Platform.WII_U:
-                obj.unpack_from = "bigfile-wiiu"
-            case Bigfile.Platform.PC:
-                obj.unpack_from = "bigfile"
-            case Bigfile.Platform.PS3:
-                obj.unpack_from = "cache"
-            case _:
-                raise BigfileError
-
+        obj.unpack_from = cls._match_unpack_from(obj.platform)
         return obj
 
     @classmethod
@@ -216,7 +254,6 @@ class Bigfile:
         obj._path = Path(path).parent
         obj.unpack_from = Path(path).stem
         obj.version = version
-        # platform can be auto-detected
         return obj
 
     @staticmethod

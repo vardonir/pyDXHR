@@ -7,8 +7,11 @@ from kaitaistruct import KaitaiStructError
 from pyDXHR.DRM.Section import *
 from pyDXHR.Bigfile import Bigfile
 from pyDXHR.generated.dxhr_drm import DxhrDrm
+from pyDXHR.DRM.Database import email, ireader
 
 drm_magic = 0x4344524D
+iReaderDatabase = ireader.IReaderDatabase
+emailDatabase = email.EMailDatabase
 
 
 class InvalidDRMError(Exception):

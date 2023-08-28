@@ -76,7 +76,7 @@ def from_drm(drm: UnitDRM,
 
             gltf.merge(
                 gltf_list=cell_gltf_list,
-                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_cell.gltf"),
+                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_cells.gltf"),
                 scale=scale,
                 z_up=z_up,
                 mat_list=mat_list,
