@@ -7,11 +7,12 @@ from kaitaistruct import KaitaiStructError
 from pyDXHR.DRM.Section import *
 from pyDXHR.Bigfile import Bigfile
 from pyDXHR.generated.dxhr_drm import DxhrDrm
-from pyDXHR.DRM.Database import email, ireader
+from pyDXHR.DRM.Database import email, ireader, scenario
 
 drm_magic = 0x4344524D
-iReaderDatabase = ireader.IReaderDatabase
-emailDatabase = email.EMailDatabase
+# iReaderDatabase = ireader.IReaderDatabase
+# EmailDatabase = email.EMailDatabase
+# ScenarioDatabase = scenario.ScenarioDatabase
 
 
 class InvalidDRMError(Exception):
@@ -78,6 +79,7 @@ class DRM:
         self.drm_deps: List[str] = []
         self.root_section_index: int = -1
         self.flags: int = -1
+        self.endian: str = "<"
 
         self.sections: List[Section] = []
 
@@ -143,7 +145,7 @@ class DRM:
         Anyway, it works.
         """
         from pyDXHR.DRM.Section import Section
-        from pyDXHR.DRM.Section.resolver import read_resolver_list
+        from DRM.resolver import read_resolver_list
 
         self._is_open = True
 
@@ -152,13 +154,13 @@ class DRM:
         except KaitaiStructError:
             raise InvalidDRMError
 
-        endian = "<" if kt_drm.is_le else ">"
+        self.endian = "<" if kt_drm.is_le else ">"
         self.obj_deps = kt_drm.obj_dependencies
         self.drm_deps = kt_drm.drm_dependencies
         self.root_section_index = kt_drm.root_section_index
         self.flags = kt_drm.flags
 
-        header_list: List[SectionHeader] = [SectionHeader.from_kaitai_struct(head, endian)
+        header_list: List[SectionHeader] = [SectionHeader.from_kaitai_struct(head, self.endian)
                                             for head, _ in kt_drm.sections]
 
         for header, (_, sec) in zip(header_list, kt_drm.sections):
@@ -174,7 +176,7 @@ class DRM:
                 resolver_data=sec.relocs,
                 header_list=header_list,
                 section_data=sec.payload,
-                endian=endian,
+                endian=self.endian,
             )
 
             self.sections.append(section)

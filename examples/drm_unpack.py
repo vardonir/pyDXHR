@@ -3,15 +3,15 @@ from pyDXHR.DRM import DRM
 from pyDXHR import SectionType
 
 # Assumes that you have the PC Director's Cut edition specified in env
-bf = Bigfile.from_env()
+bf = Bigfile.from_env(version=Bigfile.Version.DIRECTORS_CUT, platform=Bigfile.Platform.PC)
 # bf.unpack_from = "cache"
 bf.open()
 
 # drm = DRM.from_bigfile(0xAB0AD4A3, bf)
-drm = DRM.from_bigfile("alc_beer_bottle_a.drm", bf)
+drm = DRM.from_bigfile("s_scn_det01_sq02_cassandra_end_det_adam_apt_a.drm", bf)
 drm.open()
 
-out = r"F:\Projects\pyDXHR\playground\drm_unpack"
+out = r"C:\Users\vardo\Documents\pyDXHR\playground"
 
 
 def write(name, sec_id, sec_type, sec_subtype, extension, data):

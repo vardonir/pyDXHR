@@ -140,14 +140,17 @@ enums:
     0: generic
     5: texture
     13: sound
+    16: unknown_16
     18: unknown_18
     20: unknown_20
+    21: unknown_21
     24: render_terrain
     25: unknown_25
     26: render_model
     27: render_model_buffer
     28: unknown_28
     30: unknown_30
+    34: unknown_34
     36: unknown_36
     40: smart_script
     41: scaleform

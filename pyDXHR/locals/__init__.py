@@ -62,6 +62,9 @@ class Locals:
                 self.strings.append(item.body.decode(self.encoding))
             self._offsets.append(item.offset)
 
+    def offset_dict(self):
+        return {o: s for s, o in zip(self.strings, self._offsets)}
+
     def find_string_index(self, string: str | bytes) -> List[int]:
         """
         Find the index/indices of a string in the locals.bin file

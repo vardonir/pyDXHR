@@ -8,7 +8,6 @@ import struct
 from typing import List, Optional
 from abc import ABC, abstractmethod
 
-from pyDXHR.DRM import DRM
 from pyDXHR import SectionType
 from pyDXHR.DRM.Section import SectionHeader
 
@@ -114,7 +113,7 @@ class UnknownResolver2(UnknownResolver):
 class UnknownResolver4(UnknownResolver):
     """ Overloading the UR for the repr """
     def __repr__(self):
-        return f"U4R | ptr {self.pointer_offset:08X} SecId {self.section_id:08X} | {SectionType(self.section_type)}"
+        return f"U4R | ptr {self.pointer_offset:08X} | {SectionType(self.section_type)}"
 
 
 class MissingResolver(Resolver):
@@ -229,7 +228,7 @@ class Reference:
         self.endian: str = "<"
 
     @classmethod
-    def from_root(cls, drm: DRM, offset: int = 0):
+    def from_root(cls, drm, offset: int = 0):
         obj = cls()
         if drm.root_section_index == 0xFFFFFFFF:
             raise ReferenceSectionNotFound
@@ -242,7 +241,8 @@ class Reference:
         return obj
 
     @classmethod
-    def from_section(cls, drm_or_section_list: DRM | List, section, offset: int = 0):
+    def from_section(cls, drm_or_section_list, section, offset: int = 0):
+        from pyDXHR.DRM import DRM
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -254,7 +254,8 @@ class Reference:
         return obj
 
     @classmethod
-    def from_section_index(cls, drm_or_section_list: DRM | List, section_index: int, offset: int = 0):
+    def from_section_index(cls, drm_or_section_list, section_index: int, offset: int = 0):
+        from pyDXHR.DRM import DRM
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -271,7 +272,8 @@ class Reference:
         return obj
 
     @classmethod
-    def from_section_type(cls, drm_or_section_list: DRM | List, section_id: int, section_type: SectionType, offset: int = 0):
+    def from_section_type(cls, drm_or_section_list, section_id: int, section_type: SectionType, offset: int = 0):
+        from pyDXHR.DRM import DRM
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections

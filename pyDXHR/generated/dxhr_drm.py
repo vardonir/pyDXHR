@@ -36,14 +36,17 @@ class DxhrDrm(KaitaiStruct):
         generic = 0
         texture = 5
         sound = 13
+        unknown_16 = 16
         unknown_18 = 18
         unknown_20 = 20
+        unknown_21 = 21
         render_terrain = 24
         unknown_25 = 25
         render_model = 26
         render_model_buffer = 27
         unknown_28 = 28
         unknown_30 = 30
+        unknown_34 = 34
         unknown_36 = 36
         smart_script = 40
         scaleform = 41

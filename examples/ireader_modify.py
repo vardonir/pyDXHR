@@ -5,5 +5,6 @@ bf = Bigfile.from_env(version=Bigfile.Version.DIRECTORS_CUT, platform=Bigfile.Pl
 bf.open()
 
 ir_db = iReaderDatabase.from_bigfile(bf)
+ir_db.open()
 
 breakpoint()
