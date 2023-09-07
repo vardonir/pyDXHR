@@ -75,6 +75,19 @@ class MeshData:
                  name: Optional[str] = None,
                  bbox_sphere_radius: int = -1
                  ):
+        """
+
+        :param vertex_buffers:
+               Expects an input in the format of a dictionary where the keys
+               are the vertex attribute names and the items are the vertices
+               for that specific vtx attr
+        :param mesh_prim_indexed:
+
+        :param material_list: list of material IDs used by the mesh
+        :param name: name of the mesh. this is usually just the section ID
+        :param bbox_sphere_radius: bounding box radius, usually found in rendermodels.
+               this was originally used in the lumen-optimized implementation
+        """
 
         self._skip_textures = bool(os.getenv("skip_textures", True))
         self._is_built = False
@@ -106,8 +119,8 @@ class MeshData:
         self._gltf_mesh_prim_list = []
 
     def build_gltf(self):
-        # add the materials
 
+        # add the materials
         material_index_dict = {}
         if self._skip_textures:
             for mat in self.material_list:
