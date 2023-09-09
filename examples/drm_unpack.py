@@ -8,7 +8,7 @@ bf = Bigfile.from_env(version=Bigfile.Version.DIRECTORS_CUT, platform=Bigfile.Pl
 bf.open()
 
 # drm = DRM.from_bigfile(0xAB0AD4A3, bf)
-drm = DRM.from_bigfile("s_scn_det01_sq02_cassandra_end_det_adam_apt_a.drm", bf)
+drm = DRM.from_bigfile("shaderlibs\chr_cloth_f5d3d712114d34da_dx9.drm", bf)
 drm.open()
 
 out = r"C:\Users\vardo\Documents\pyDXHR\playground"
@@ -37,6 +37,14 @@ for sec in drm.sections:
             ext = "mtl_b"
         else:
             ext = "mtl"
+    if sec.header.section_type == SectionType.shaderlib:
+        if sec.header.specialization == 0xBFFFFFFF:
+            ext = "shdr_a"
+        elif sec.header.specialization == 0x7FFFFFFF:
+            ext = "shdr_b"
+        else:
+            ext = "shdr"
+
     else:
         ext = "bin"
 
