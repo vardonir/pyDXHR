@@ -77,6 +77,7 @@ class Section:
         "header",
         "resolvers",
         "data",
+        "reloc_data",
         "ofs_start"
     )
 
@@ -85,6 +86,7 @@ class Section:
         self.resolvers: List = []
         self.data: bytes = b''
         self.ofs_start: int = -1
+        self.reloc_data: bytes = b''
 
         # self.PayloadOffset: int = -1
 
@@ -101,5 +103,6 @@ class Section:
     def from_kaitai_struct(cls, kaitai: DxhrDrm.Drm.Section):
         obj = cls()
         obj.data = kaitai.payload
-        obj.ofs_start = kaitai.start_offs
+        obj.ofs_start = kaitai.start_offs + len(kaitai.align)
+        obj.reloc_data = kaitai.relocs
         return obj

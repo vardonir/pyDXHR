@@ -13,6 +13,9 @@ class RenderResource:
         self.section_id: int = -1
         self.resource_name: Optional[str] = None
 
+        self.unk14: int = -1
+        self.unk18: int = -1
+
     def read(self):
         return self.parse_resource_data()
 
@@ -27,6 +30,9 @@ class Texture(RenderResource):
             parsed = KaitaiPCD9.from_bytes(self.byte_data)
         except KaitaiStructError:
             pass
+        else:
+            self.unk14 = parsed.unk14
+            self.unk18 = parsed.unk18
 
         try:
             parsed = KaitaiPS3T.from_bytes(self.byte_data)

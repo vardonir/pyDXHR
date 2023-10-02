@@ -4,6 +4,7 @@ Class for reading DRM files, the sections/sec headers, and the resolvers
 from pathlib import Path
 from kaitaistruct import KaitaiStructError
 
+from pyDXHR.DRM.unpack import unpack_from_byte_data
 from pyDXHR.DRM.Section import *
 from pyDXHR.Bigfile import Bigfile
 from pyDXHR.generated.dxhr_drm import DxhrDrm
@@ -13,6 +14,7 @@ drm_magic = 0x4344524D
 # iReaderDatabase = ireader.IReaderDatabase
 # EmailDatabase = email.EMailDatabase
 # ScenarioDatabase = scenario.ScenarioDatabase
+drm_unpack_from_bytes = unpack_from_byte_data
 
 
 class InvalidDRMError(Exception):

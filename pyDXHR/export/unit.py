@@ -33,6 +33,13 @@ def from_drm(drm: UnitDRM,
         save_to = Path(save_to).parent
         save_to.mkdir(parents=True, exist_ok=True)
 
+    library_path = Path(save_to) / "library"
+    temp_dir = Path(tempfile.gettempdir()) / "pyDXHR"
+
+    if kwargs.get("generate_library", False):
+        library_path.mkdir(parents=True, exist_ok=True)
+        assert temp_dir.is_dir()
+
     # stream data
     if kwargs.get("stream", True):
         stream_gltf_list = []
@@ -93,26 +100,50 @@ def from_drm(drm: UnitDRM,
                 imf_gltf = gltf.to_temp(drm.get_section_from_id(sec_id))
                 int_imf_gltf_dict[sec_id] = imf_gltf
 
-            gltf.merge_with_table(
-                gltf_dict=int_imf_gltf_dict,
-                loc_table=drm.int_imf_map,
-                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
-                scale=scale,
-                z_up=z_up,
-                mat_list=mat_list,
-                drm_name=f"{drm.name.replace('.drm', '')}_int_imf",
-            )
+            if kwargs.get("generate_library", False):
+                for sec_id, gltf_inst in int_imf_gltf_dict.items():
+                    for buff in gltf_inst.buffers:
+                        if buff.extras.get("name", "empty") != "empty":
+                            buffer_file = temp_dir / buff.uri
+                            shutil.copy(buffer_file, library_path)
 
-            breakpoint()
+                    gltf_inst.save(library_path / f"{sec_id:08X}.gltf")
+            else:
+                gltf.merge_with_table(
+                    gltf_dict=int_imf_gltf_dict,
+                    loc_table=drm.int_imf_map,
+                    save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
+                    scale=scale,
+                    z_up=z_up,
+                    mat_list=mat_list,
+                    drm_name=f"{drm.name.replace('.drm', '')}_int_imf",
+                )
 
         if kwargs.get("ext_imf", True):
             ext_imf_gltf_dict: Dict[str, gl.GLTF2] = {}
             for imf_name, trs_list in drm.ext_imf_map.items():
                 data = bigfile.read(imf_name)
-                imf = DRM.from_bytes(data)
-                imf.open()
+                imf_drm = DRM.from_bytes(data)
+                imf_drm.open()
 
+                for sec in imf_drm.sections:
+                    imf_gltf = gltf.to_temp(sec)
+                    if imf_gltf is not None:
+                        imf_filename = Path(imf_name).stem
+                        ext_imf_gltf_dict[imf_filename] = imf_gltf
+
+            if kwargs.get("generate_library", False):
+                for imf_filename, gltf_inst in ext_imf_gltf_dict.items():
+                    for buff in gltf_inst.buffers:
+                        if buff.extras.get("name", "empty") != "empty":
+                            buffer_file = temp_dir / buff.uri
+                            shutil.copy(buffer_file, library_path)
+
+                    gltf_inst.save(library_path / f"{imf_filename}.gltf")
+            else:
                 breakpoint()
+
+            breakpoint()
 
     if kwargs.get("obj", True):
         if not len(drm.obj_map):
