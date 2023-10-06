@@ -7,7 +7,7 @@ from tqdm import trange
 from scipy.spatial.transform import Rotation
 import struct
 from pyDXHR.DRM import DRM, Section
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 from pyDXHR import SectionType
 import os
 from dotenv import load_dotenv

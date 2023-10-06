@@ -9,6 +9,7 @@ Drag-and-drop works
 
 from pyDXHR.Bigfile.unpack import unpack_to_location
 import argparse
+import sys
 
 parser = argparse.ArgumentParser(
     prog="pyDXHR Bigfile Unpacker", description="Unpack bigfiles from DXHR"
@@ -20,20 +21,34 @@ parser.add_argument(
     type=str,
 )
 
-parser.add_argument("-o", "--out", help="output directory", type=str, default=None)
-
 parser.add_argument(
-    "-u", "--skip-unknown", action="store_true", help="Skip unknown files"
+    "-o",
+    "--out",
+    help="output directory",
+    type=str,
+    default=None
 )
 
-parser.add_argument("-k", "--skip-known", action="store_true", help="Skip known files")
+parser.add_argument(
+    "-u",
+    "--skip-unknown",
+    action="store_true",
+    help="Skip unknown files"
+)
+
+parser.add_argument(
+    "-k",
+    "--skip-known",
+    action="store_true",
+    help="Skip known files"
+)
 
 args = parser.parse_args()
 
 if args.skip_unknown and args.skip_known:
     # what are you doing lol
     print("???")
-    exit(1)
+    sys.exit(1)
 else:
     unpack_to_location(args.source, args.out, args.skip_unknown, args.skip_known)
-    exit(0)
+    sys.exit(0)

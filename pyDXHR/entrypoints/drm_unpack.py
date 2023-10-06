@@ -26,3 +26,5 @@ if __name__ == "__main__":
         drm_name=Path(sys.argv[1]).stem,
         unpack_destination=out
     )
+
+    sys.exit(0)

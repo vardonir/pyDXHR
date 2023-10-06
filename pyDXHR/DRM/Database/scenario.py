@@ -1,4 +1,4 @@
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 from pyDXHR import SectionType
 
 

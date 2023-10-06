@@ -1,6 +1,6 @@
 from pyDXHR.Bigfile import Bigfile
 from pyDXHR.DRM import DRM
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 
 # Assumes that you have the PC Director's Cut edition specified in env
 bf = Bigfile.from_env()

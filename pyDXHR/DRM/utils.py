@@ -1,6 +1,6 @@
 from typing import List
 import numpy as np
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 from pyDXHR import SectionType
 
 

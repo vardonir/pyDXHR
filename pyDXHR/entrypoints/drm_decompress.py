@@ -23,3 +23,5 @@ else:
         Path(sys.argv[1]).parent / f"{Path(sys.argv[1]).stem}_decompressed.drm", "wb"
     ) as f:
         f.write(decompressed)
+
+    sys.exit(0)

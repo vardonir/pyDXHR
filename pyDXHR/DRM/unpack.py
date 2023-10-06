@@ -9,6 +9,8 @@ def unpack_from_byte_data(drm_byte_data,
     drm.open()
 
     for sec in drm.sections:
+        ext = "bin"
+
         if sec.header.section_type == SectionType.material:
             if sec.header.specialization == 0xBFFFFFFF:
                 ext = "mtl_a"
@@ -26,9 +28,6 @@ def unpack_from_byte_data(drm_byte_data,
 
         if sec.header.section_type == SectionType.render_resource:
             ext = 'pcd'
-
-        else:
-            ext = "bin"
 
         write(name=drm.name,
               sec_id=sec.header.section_id,

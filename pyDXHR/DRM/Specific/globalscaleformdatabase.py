@@ -1,7 +1,7 @@
 from pathlib import Path
 import struct
 
-from DRM.Section import RenderResource
+from pyDXHR.DRM.Section import RenderResource
 from pyDXHR.DRM.resolver import Reference, Resolver
 from pyDXHR import SectionType
 

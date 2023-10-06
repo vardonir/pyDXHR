@@ -1,5 +1,5 @@
 from pyDXHR.DRM import DRM
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 
 
 class ScenarioDRM(DRM):

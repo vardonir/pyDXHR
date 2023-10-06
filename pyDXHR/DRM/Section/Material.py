@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pyDXHR.DRM import DRM
-from DRM.resolver import Reference
+from pyDXHR.DRM.resolver import Reference
 from pyDXHR import SectionType, SectionSubtype
 
 import os

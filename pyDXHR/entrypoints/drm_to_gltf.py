@@ -23,6 +23,7 @@ def create_gltf(drm_byte_data, dest_path=None, scale=1.0, z_up=False):
 
 if __name__ == "__main__":
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser(
         prog="pyDXHR DRM to GLTF", description="Convert DRM models to GLTF"
@@ -55,3 +56,5 @@ if __name__ == "__main__":
             scale=args.scale,
             z_up=args.z_up
         )
+
+    sys.exit(0)

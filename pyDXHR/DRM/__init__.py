@@ -147,7 +147,7 @@ class DRM:
         Anyway, it works.
         """
         from pyDXHR.DRM.Section import Section
-        from DRM.resolver import read_resolver_list
+        from pyDXHR.DRM.resolver import read_resolver_list
 
         self._is_open = True
 
