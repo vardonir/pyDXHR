@@ -72,6 +72,4 @@ TODO
 
 ## Material
 
-TODO 
-
-hoo boy
+No.

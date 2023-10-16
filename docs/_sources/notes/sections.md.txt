@@ -48,11 +48,11 @@ The names come from the file lists found in the console version of the game.
 
 ### RenderTerrain 
 
-Typically found in stream objects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings.
+Typically found in stream objects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings. A good chunk of Adam's apartment is also a RT.
 
 ### RenderModel and RenderModelBuffer
 
-Usually found in IMFs and objects. 
+Usually found in IMFs and objects - IMF DRMs contain a single RenderModel, while object DRMs can contain multiple RenderModels. 
 
 For the PC version, the RenderModel section data is split between a header, which contains information about bones/joints and material IDs, and the mesh data itself (indices and vertices). On the console versions, the RenderModel section is only the header, and RenderModelBuffer contains the mesh data separately.
 
@@ -72,6 +72,4 @@ TODO
 
 ## Material
 
-TODO 
-
-hoo boy
+No.

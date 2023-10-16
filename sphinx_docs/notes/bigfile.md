@@ -5,7 +5,7 @@ Archive file format.
 There are some version differences:
 
 - the PS3 version stores the AV data in `BIGFILE.00*`, the rest in `CACHE.00*`. The same is true for the PS3-DC and PS3-JAP
-- the XBox version seems to have the data mixed in the `CACHE.00*` and `BIGFILE.00*`.
+- the XBox version seems to have the data mixed in the `CACHE.00*` and `BIGFILE.00*` files.
 - the Wii-U version stores the data in smaller `bigfile-wiiu.00*` files, along with `dlcpack-wiiu.00*` files.
 - the PC version of the base game stores the game data in `BIGFILE.00*`, and with the localization data stored in `Bigfile_English.000`, `Bigfile_Russian.000`, etc. There are `patch*.000` files for the base game, as well, which I presumably for updates.
 - PC Director's Cut stores everything in `BIGFILE.00*`, including localization data.
@@ -96,4 +96,4 @@ pc-dev\waves.ids
 
 These are found only in the PC DC version, providing a list of the sections and their human-readable filenames (although the lists are too short to correspond to the entire game. I'm guessing these were for TML and were left over).
 
-There are `xenon-w\*.ids` and `ps3-w\*.ids` files, however, except for the Xenon-DC version, and they seem to be complete.
+There are `xenon-w\*.ids` and `ps3-w\*.ids` files, however, except for the Xenon-DC version.

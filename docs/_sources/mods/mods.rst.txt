@@ -10,3 +10,4 @@ Unless specified, all of the mods here are intended for DXHRDC. Use `Gibbed's mo
    :caption: Mods made using pyDXHR:
 
     Japanese Dub <japanese_dub.md>
+    Texture Replacements<texture_replacement.md>

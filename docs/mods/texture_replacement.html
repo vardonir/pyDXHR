@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nobody asked for this: The Japanese Dub &mdash; pyDXHR 0.1.0 documentation</title>
+  <title>Replacing Textures &mdash; pyDXHR 0.1.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/colors.css" type="text/css" />
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Replacing Textures" href="texture_replacement.html" />
-    <link rel="prev" title="Mods" href="mods.html" /> 
+    <link rel="next" title="References" href="../references.html" />
+    <link rel="prev" title="Nobody asked for this: The Japanese Dub" href="japanese_dub.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -53,8 +53,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notes/notes.html">Notes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="mods.html">Mods</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#"> Japanese Dub</a></li>
-<li class="toctree-l2"><a class="reference internal" href="texture_replacement.html"> Texture Replacements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="japanese_dub.html"> Japanese Dub</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"> Texture Replacements</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
@@ -76,7 +76,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="mods.html">Mods</a></li>
-      <li class="breadcrumb-item active">Nobody asked for this: The Japanese Dub</li>
+      <li class="breadcrumb-item active">Replacing Textures</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -85,23 +85,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="nobody-asked-for-this-the-japanese-dub">
-<h1>Nobody asked for this: The Japanese Dub<a class="headerlink" href="#nobody-asked-for-this-the-japanese-dub" title="Permalink to this heading"></a></h1>
-<p><img alt="Banner" src="../_images/bnr_deusex.png" /></p>
-<p>Nobody asked for this, but here it is anyway. The Japanese dub, ported from the PS3 version.</p>
-<p>Cinematics are still in English, all TML audio will still be English (I’m not sure if it was released for the PS3 version?), sound effects are still in English (like the “access granted” part when you hack a terminal).</p>
-<p>I don’t think porting the cinematics is worth it since it just adds 2.5GB of files for a few minutes of cutscenes.</p>
-<p>ps: afaik, the PC version was never released in Japan, hence the existence for this mod</p>
-<p>Link to the mod: https://www.nexusmods.com/deusexhumanrevolution/mods/32</p>
-<p>Demo: https://youtu.be/rO370a0HYDk and https://youtu.be/-IJomMggVN4</p>
+  <section id="replacing-textures">
+<h1>Replacing Textures<a class="headerlink" href="#replacing-textures" title="Permalink to this heading"></a></h1>
+<p>TODO: Instructions are WIP</p>
 <ul class="simple">
-<li><p>TODO:</p>
-<ul>
-<li><p>explain how this was actually made</p></li>
-<li><p>make a video compilation of the cinematics</p></li>
-<li><p>provide an option for the cinematics anyway</p></li>
+<li><p>Extract the model and textures using the DRM to GLTF exporter</p></li>
+<li><p>Replace the textures with your own, make sure to keep the same file names</p></li>
 </ul>
-</li>
+<p>Replacement textures:</p>
+<ul class="simple">
+<li><p>Use the same compression as the original texture</p></li>
+<li><p>Dimensions don’t have to be the same</p></li>
+<li><p>In GIMP, make sure to use “Generate Mipmaps”</p></li>
+<li><p>Save as DDS</p></li>
+<li><p>Calculate the file hash of the DRM that you want to replace. You can use <a class="reference external" href="https://cdcengine.re/crc32/">this one from the cdcEngine Research page</a>, just enter the filename (with the <code class="docutils literal notranslate"><span class="pre">pc-w</span></code> prefix), make sure that the folders are backslashes</p></li>
+<li><p>Run the texture replacement script (TODO: finalize the script)</p></li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>you are not restricted to the original size and dimensions of the image</p></li>
+<li><p>not yet tested on non-DXT1 textures</p></li>
+<li></li>
 </ul>
 </section>
 
@@ -113,7 +117,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x0000019D7D42DF90>
+<jinja2.runtime.BlockReference object at 0x0000019D7D42D420>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>

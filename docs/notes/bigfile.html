@@ -19,7 +19,6 @@
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
-    <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Definitions" href="definitions.html" />
@@ -49,6 +48,8 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../entrypoints.html">Entrypoints (.exe)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package.html">Python Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="notes.html">Notes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="av.html"> Audio/Video</a></li>
@@ -66,7 +67,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ramble.html">Rambling</a></li>
 </ul>
 
         </div>
@@ -99,11 +100,12 @@
 <p>There are some version differences:</p>
 <ul class="simple">
 <li><p>the PS3 version stores the AV data in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, the rest in <code class="docutils literal notranslate"><span class="pre">CACHE.00*</span></code>. The same is true for the PS3-DC and PS3-JAP</p></li>
-<li><p>the XBox version stores the AV data in <code class="docutils literal notranslate"><span class="pre">CACHE.00*</span></code> with everything else in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>. The same is true for XBox-DC <a class="footnote-reference brackets" href="#id3" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></li>
+<li><p>the XBox version seems to have the data mixed in the <code class="docutils literal notranslate"><span class="pre">CACHE.00*</span></code> and <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code> files.</p></li>
 <li><p>the Wii-U version stores the data in smaller <code class="docutils literal notranslate"><span class="pre">bigfile-wiiu.00*</span></code> files, along with <code class="docutils literal notranslate"><span class="pre">dlcpack-wiiu.00*</span></code> files.</p></li>
-<li><p>the PC version of the base game stores the game data in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, and with the localization data stored in <code class="docutils literal notranslate"><span class="pre">Bigfile_English.000</span></code>, <code class="docutils literal notranslate"><span class="pre">Bigfile_Russian.000</span></code>, etc. There are <code class="docutils literal notranslate"><span class="pre">patch*.000</span></code> files for the base game, as well, presumably for updates.</p></li>
-<li><p>PC Director’s Cut stores everything in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, including localization.</p></li>
+<li><p>the PC version of the base game stores the game data in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, and with the localization data stored in <code class="docutils literal notranslate"><span class="pre">Bigfile_English.000</span></code>, <code class="docutils literal notranslate"><span class="pre">Bigfile_Russian.000</span></code>, etc. There are <code class="docutils literal notranslate"><span class="pre">patch*.000</span></code> files for the base game, as well, which I presumably for updates.</p></li>
+<li><p>PC Director’s Cut stores everything in <code class="docutils literal notranslate"><span class="pre">BIGFILE.00*</span></code>, including localization data.</p></li>
 </ul>
+<p>(Only on this page, “localization” refers to the non-English audio and texts. The same term is used elsewhere in this documentation to refer to something else.)</p>
 <p>The kaitai struct file for the header is as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">meta</span><span class="p">:</span>
   <span class="nb">id</span><span class="p">:</span> <span class="n">bigfile_header</span>
@@ -157,10 +159,11 @@
 <p>Known file alignment values:</p>
 <ul class="simple">
 <li><p>0x7FF00000 - all PC versions, including TML</p></li>
-<li><p>0x0000F07F - all PS3 versions (base, Japan, DC)</p></li>
-<li><p>0x00003062 - XBox base</p></li>
-<li><p>0x00000065 - XBox beta</p></li>
-<li><p>0x0000D06A - XBox DC <a class="footnote-reference brackets" href="#id4" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a></p></li>
+<li><p>0x0000F07F - all PS3 versions (base, Japan, DC) + Xbox cache</p></li>
+<li><p>0x00003062 - XBox base bigfile</p></li>
+<li><p>0x00000065 - XBox beta bigfile</p></li>
+<li><p>0x0000D06A - XBox DC bigfile, disc 1</p></li>
+<li><p>0x0000006B - XBox DC bigfile, disc 2</p></li>
 <li><p>0x0000401F - WiiU</p></li>
 </ul>
 <section id="filelist">
@@ -180,20 +183,8 @@
 <span class="n">pc</span><span class="o">-</span><span class="n">dev</span>\<span class="n">waves</span><span class="o">.</span><span class="n">ids</span>
 </pre></div>
 </div>
-<p>These are found only in the base DC version, providing a list of the sections and their human-readable filenames… although the lists are too short to correspond to the entire game. I’m guessing these were for TML and were left over.</p>
-<p>There are similar files for in the console versions (they show up under the unknown folder since the real filenames aren’t known) , with the complete filenames of (seemingly) all the section data in the game.</p>
-<p>–</p>
-<hr class="footnotes docutils" />
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id3" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>I’m guessing that XBox-Japan version follows the same format. I’d be happy to check, just send me a copy of the game lmao</p>
-</aside>
-<aside class="footnote brackets" id="id4" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
-<p>I’m guessing that the difference is because the game is split to 2 discs, but don’t quote me on that</p>
-</aside>
-</aside>
+<p>These are found only in the PC DC version, providing a list of the sections and their human-readable filenames (although the lists are too short to correspond to the entire game. I’m guessing these were for TML and were left over).</p>
+<p>There are <code class="docutils literal notranslate"><span class="pre">xenon-w\*.ids</span></code> and <code class="docutils literal notranslate"><span class="pre">ps3-w\*.ids</span></code> files, however, except for the Xenon-DC version.</p>
 </section>
 </section>
 
@@ -205,7 +196,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002B788662770>
+<jinja2.runtime.BlockReference object at 0x0000019D7D1ADDE0>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>

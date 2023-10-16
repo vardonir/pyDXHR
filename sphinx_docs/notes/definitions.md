@@ -4,9 +4,9 @@
 
 * Base game/Vanilla - non-director's cut version of the game. That oversaturated one with the gold filter.
 * DC - director's cut. The one that you can actually buy as of 2023.
-* TML - [The Missing Link](https://www.youtube.com/watch?v=ymtCllSsfcg), which was distributed as a separate .exe originally + later integrated into the DC version of the game.
+* TML - [The Missing Link](https://www.youtube.com/watch?v=ymtCllSsfcg), which was distributed as a separate .exe originally + later integrated into the DC version of the game. I believe it also comes as a separate PKG on PS3.
 
-* Xenon - refers to the Xbox version of the game. The documentation uses Xbox and Xenon interchangeably.
+* Xenon - refers to the Xbox version of the game. This documentation uses Xbox and Xenon interchangeably.
 
 ## Technical
 

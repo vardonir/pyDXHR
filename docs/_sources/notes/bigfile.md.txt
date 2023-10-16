@@ -5,10 +5,12 @@ Archive file format.
 There are some version differences:
 
 - the PS3 version stores the AV data in `BIGFILE.00*`, the rest in `CACHE.00*`. The same is true for the PS3-DC and PS3-JAP
-- the XBox version stores the AV data in `CACHE.00*` with everything else in `BIGFILE.00*`. The same is true for XBox-DC [^1]
+- the XBox version seems to have the data mixed in the `CACHE.00*` and `BIGFILE.00*` files.
 - the Wii-U version stores the data in smaller `bigfile-wiiu.00*` files, along with `dlcpack-wiiu.00*` files.
-- the PC version of the base game stores the game data in `BIGFILE.00*`, and with the localization data stored in `Bigfile_English.000`, `Bigfile_Russian.000`, etc. There are `patch*.000` files for the base game, as well, presumably for updates.
-- PC Director's Cut stores everything in `BIGFILE.00*`, including localization.
+- the PC version of the base game stores the game data in `BIGFILE.00*`, and with the localization data stored in `Bigfile_English.000`, `Bigfile_Russian.000`, etc. There are `patch*.000` files for the base game, as well, which I presumably for updates.
+- PC Director's Cut stores everything in `BIGFILE.00*`, including localization data.
+
+(Only on this page, "localization" refers to the non-English audio and texts. The same term is used elsewhere in this documentation to refer to something else.)
 
 The kaitai struct file for the header is as follows:
 ```
@@ -64,11 +66,13 @@ Only the header is read using the KSY file.
 Known file alignment values:
 
 - 0x7FF00000 - all PC versions, including TML
-- 0x0000F07F - all PS3 versions (base, Japan, DC)
-- 0x00003062 - XBox base
-- 0x00000065 - XBox beta 
-- 0x0000D06A - XBox DC [^2]
+- 0x0000F07F - all PS3 versions (base, Japan, DC) + Xbox cache
+- 0x00003062 - XBox base bigfile
+- 0x00000065 - XBox beta bigfile
+- 0x0000D06A - XBox DC bigfile, disc 1
+- 0x0000006B - XBox DC bigfile, disc 2
 - 0x0000401F - WiiU
+
 
 ## Filelist?
 
@@ -90,12 +94,6 @@ pc-dev\textures.ids
 pc-dev\waves.ids
 ```
 
-These are found only in the base DC version, providing a list of the sections and their human-readable filenames... although the lists are too short to correspond to the entire game. I'm guessing these were for TML and were left over.
+These are found only in the PC DC version, providing a list of the sections and their human-readable filenames (although the lists are too short to correspond to the entire game. I'm guessing these were for TML and were left over).
 
-There are similar files for in the console versions (they show up under the unknown folder since the real filenames aren't known) , with the complete filenames of (seemingly) all the section data in the game.
-
---
-
-[^1]: I'm guessing that XBox-Japan version follows the same format. I'd be happy to check, just send me a copy of the game lmao
-
-[^2]: I'm guessing that the difference is because the game is split to 2 discs, but don't quote me on that
+There are `xenon-w\*.ids` and `ps3-w\*.ids` files, however, except for the Xenon-DC version.

@@ -19,11 +19,10 @@
         <script src="_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
-    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Notes" href="notes/notes.html" />
-    <link rel="prev" title="Entrypoints" href="entrypoints.html" /> 
+    <link rel="prev" title="pyDXHR usage as a Python Package" href="package.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,6 +48,8 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="md_index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="entrypoints.html">Entrypoints (.exe)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package.html">Python Package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#python-dependencies">Python Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#shell-scripts">Shell scripts</a></li>
@@ -58,7 +59,7 @@
 <li class="toctree-l1"><a class="reference internal" href="notes/notes.html">Notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mods/mods.html">Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
-<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ramble.html">Rambling</a></li>
 </ul>
 
         </div>
@@ -92,8 +93,8 @@
 <li><p>Python 3.10</p></li>
 <li><p>Numpy</p></li>
 <li><p>fastcrc</p></li>
-<li><p><a class="reference external" href="https://kaitai.io/">kaitaistruct</a> - The python-generated code is part of the repo, but the raw KSY files are also included.</p></li>
-<li><p>scipy - mostly for handling rotations</p></li>
+<li><p><a class="reference external" href="https://kaitai.io/">kaitaistruct</a> - The python-generated code is part of the repo, and the raw KSY files are also included.</p></li>
+<li><p>scipy - for handling rotations</p></li>
 <li><p>black and pylint</p></li>
 </ul>
 <p>For the exporters:</p>
@@ -122,7 +123,7 @@
 <p>Getting the data for the PC version is straightforward, just go to whereever you installed the game. For the console versions:</p>
 <p>WiiU: Use <a class="reference external" href="https://github.com/VitaSmith/cdecrypt">cDecrypt</a></p>
 <p>Xbox 360: Follow the instructions for <a class="reference external" href="https://github.com/XboxDev/extract-xiso">extract-iso</a>. You can extract the two discs of the DC version separately.</p>
-<p>PS3: Convert your game to an ISO, transfer it to your PC, then open it using <a class="reference external" href="https://rpcs3.net/">RPCS3</a>. The bigfiles should be somewhere in /dev/hda.</p>
+<p>PS3: Unpack the ISO like a ZIP file.</p>
 </section>
 </section>
 
@@ -134,7 +135,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002B7885B2F20>
+<jinja2.runtime.BlockReference object at 0x0000019D7D2774C0>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>

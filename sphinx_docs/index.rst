@@ -7,6 +7,8 @@
    
    Home <md_index>
    Entrypoints (.exe) <entrypoints.md>
+   CLI <cli.md>
+   Python Package <package.md>
    Development <development.md>
    Notes <notes/notes.rst>
    Mods <mods/mods.rst>

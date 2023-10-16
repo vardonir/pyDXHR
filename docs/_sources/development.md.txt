@@ -5,8 +5,8 @@
 * Python 3.10
 * Numpy
 * fastcrc
-* [kaitaistruct](https://kaitai.io/) - The python-generated code is part of the repo, but the raw KSY files are also included.
-* scipy - mostly for handling rotations
+* [kaitaistruct](https://kaitai.io/) - The python-generated code is part of the repo, and the raw KSY files are also included.
+* scipy - for handling rotations
 * black and pylint
 
 For the exporters:
@@ -35,4 +35,4 @@ WiiU: Use [cDecrypt](https://github.com/VitaSmith/cdecrypt)
 
 Xbox 360: Follow the instructions for [extract-iso](https://github.com/XboxDev/extract-xiso). You can extract the two discs of the DC version separately.
 
-PS3: Convert your game to an ISO, transfer it to your PC, then open it using [RPCS3](https://rpcs3.net/). The bigfiles should be somewhere in /dev/hda. 
+PS3: Unpack the ISO like a ZIP file.

@@ -9,6 +9,13 @@ Cinematics are still in English, all TML audio will still be English (I'm not su
 
 I don't think porting the cinematics is worth it since it just adds 2.5GB of files for a few minutes of cutscenes.
 
-More technical notes to come when I feel like writing them.
+ps: afaik, the PC version was never released in Japan, hence the existence for this mod
 
-ps: afaik, the PC version was never released in Japan.
+Link to the mod: https://www.nexusmods.com/deusexhumanrevolution/mods/32
+
+Demo: https://youtu.be/rO370a0HYDk and https://youtu.be/-IJomMggVN4
+
+- TODO: 
+  - explain how this was actually made
+  - make a video compilation of the cinematics
+  - provide an option for the cinematics anyway

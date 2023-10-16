@@ -19,7 +19,6 @@
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
-    <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Unit DRM" href="units.html" />
@@ -49,6 +48,8 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../md_index.html">Home</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../entrypoints.html">Entrypoints (.exe)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../package.html">Python Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development.html">Development</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="notes.html">Notes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="av.html"> Audio/Video</a></li>
@@ -73,7 +74,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../mods/mods.html">Mods</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ramble.html">Rambling</a></li>
 </ul>
 
         </div>
@@ -144,11 +145,11 @@
 <p>The names come from the file lists found in the console version of the game.</p>
 <section id="renderterrain">
 <h3>RenderTerrain<a class="headerlink" href="#renderterrain" title="Permalink to this heading"></a></h3>
-<p>Typically found in stream objects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings.</p>
+<p>Typically found in stream objects and unit DRMs. These are typically large meshes, with more than 10 materials at a time. A good example - the entire helipad in the Sarif HQ is one big RenderTerrain, including the background buildings. A good chunk of Adam’s apartment is also a RT.</p>
 </section>
 <section id="rendermodel-and-rendermodelbuffer">
 <h3>RenderModel and RenderModelBuffer<a class="headerlink" href="#rendermodel-and-rendermodelbuffer" title="Permalink to this heading"></a></h3>
-<p>Usually found in IMFs and objects.</p>
+<p>Usually found in IMFs and objects - IMF DRMs contain a single RenderModel, while object DRMs can contain multiple RenderModels.</p>
 <p>For the PC version, the RenderModel section data is split between a header, which contains information about bones/joints and material IDs, and the mesh data itself (indices and vertices). On the console versions, the RenderModel section is only the header, and RenderModelBuffer contains the mesh data separately.</p>
 <p>Note: <code class="docutils literal notranslate"><span class="pre">RenderModel.ksy</span></code> assumes that it’s reading data starting from the <code class="docutils literal notranslate"><span class="pre">Mesh</span></code> data portion of the section.</p>
 </section>
@@ -165,8 +166,7 @@
 </section>
 <section id="material">
 <h2>Material<a class="headerlink" href="#material" title="Permalink to this heading"></a></h2>
-<p>TODO</p>
-<p>hoo boy</p>
+<p>No.</p>
 </section>
 </section>
 
@@ -178,7 +178,7 @@
   <hr/>
 
   <div role="contentinfo">
-<jinja2.runtime.BlockReference object at 0x000002B78833C3D0>
+<jinja2.runtime.BlockReference object at 0x0000019D7D22D750>
 Not affiliated with Embracer Group AB or Eidos Montréal.
 
   </div>
