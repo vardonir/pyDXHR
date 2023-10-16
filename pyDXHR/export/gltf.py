@@ -373,67 +373,85 @@ def merge_using_library(
         except FileNotFoundError:
             continue
 
-        if len(loaded_gltf.nodes) > 1:
-            breakpoint()
-            # print(path)
+        # if len(loaded_gltf.nodes) > 1:
+        #     breakpoint()
+        #     # print(path)
+        #     continue
+        # elif len(loaded_gltf.meshes) == 0:
+        #     continue
+        # else:
+        #     assert len(loaded_gltf.meshes) == 1
+
+        if len(loaded_gltf.meshes) == 0:
             continue
-        elif len(loaded_gltf.meshes) == 0:
-            continue
-        else:
-            assert len(loaded_gltf.meshes) == 1
 
-        # copy accessors and buffer views
-        acc_cursor = len(merged_gltf.accessors)
-        gltf_buffer_views = [bv for bv in loaded_gltf.bufferViews if bv.name != "empty"]
-        gltf_buffers = [b for b in loaded_gltf.buffers if b.extras.get("name") != "empty"]
-        for o_acc, o_bv in zip(loaded_gltf.accessors, gltf_buffer_views):
-            acc = copy(o_acc)
-            bv = copy(o_bv)
+        for m_idx, m in enumerate(loaded_gltf.meshes):
+            mesh = copy(m)
+            current_mesh_number = len(merged_gltf.meshes)
+            merged_gltf.meshes.append(mesh)
 
-            bv.buffer = len(merged_gltf.buffers)
-            bv.name = None
-            acc.name = None
-            acc.bufferView += acc_cursor
+            # get the acc/bv for this particular mesh
+            mesh_acc = [acc for acc in loaded_gltf.accessors if acc.extras.get("MESH_NAME") == mesh.name]
+            mesh_bv = [bv for bv in loaded_gltf.bufferViews if bv.extras.get("MESH_NAME") == mesh.name]
+            mesh_buffers = [b for b in loaded_gltf.buffers if b.extras.get("name") == mesh.name]
 
-            merged_gltf.accessors.append(acc)
-            merged_gltf.bufferViews.append(bv)
+            # copy accessors and buffer views
+            acc_cursor = len(merged_gltf.accessors)
 
-        # copy buffers
-        for b in gltf_buffers:
-            b.uri = "library/" + b.uri
-            merged_gltf.buffers.append(b)
+            # if m_idx == 0, then this does nothing, it's just zero
+            # but if m_idx > 0, then this subtracts the current value of the BV from the first mesh
+            # because the BV index of the first mesh needs to be "pushed back"
+            # uh... it works.
+            acc_start_for_mdx_1 = mesh_acc[0].bufferView
+            if m_idx > 0:
+                for acc in mesh_acc:
+                    acc.bufferView -= acc_start_for_mdx_1
 
-        current_mesh_number = len(merged_gltf.meshes)
-        mesh = copy(loaded_gltf.meshes[0])
-        merged_gltf.meshes.append(mesh)
+            for o_acc, o_bv in zip(mesh_acc, mesh_bv):
+                acc = copy(o_acc)
+                bv = copy(o_bv)
 
-        prim: gl.Primitive
-        for prim in mesh.primitives:
-            attribute_dict = json.loads(prim.attributes.to_json())
-            revised_attrs = {
-                attr: attr_idx + acc_cursor
-                for attr, attr_idx in attribute_dict.items()
-                if attr_idx is not None
-            }
+                bv.buffer = len(merged_gltf.buffers)
+                bv.name = None
+                acc.name = None
+                acc.bufferView += acc_cursor
 
-            prim.attributes = gl.Attributes(**revised_attrs)
-            prim.indices += acc_cursor
+                merged_gltf.accessors.append(acc)
+                merged_gltf.bufferViews.append(bv)
 
-            cdc_mat_id = "M_" + prim.extras["cdcMatID"].upper()
-            prim.material = [mat.name for mat in merged_gltf.materials].index(cdc_mat_id)
+            # copy buffers
+            for b in mesh_buffers:
+                b.uri = "library/" + b.uri
+                merged_gltf.buffers.append(b)
 
-        # take the nodes of the loaded gltf that have no children
-        gltf_nodes = [n for n in loaded_gltf.nodes if n.mesh is not None]
-        for trs in trs_list:
-            node = copy(loaded_gltf.nodes[0])
+            prim: gl.Primitive
+            for prim in mesh.primitives:
+                attribute_dict = json.loads(prim.attributes.to_json())
+                revised_attrs = {
+                    attr: attr_idx + acc_cursor - acc_start_for_mdx_1
+                    for attr, attr_idx in attribute_dict.items()
+                    if attr_idx is not None
+                }
 
-            node.matrix = trs
-            node.translation = None
-            node.rotation = None
-            node.scale = None
-            node.mesh = current_mesh_number
+                prim.attributes = gl.Attributes(**revised_attrs)
+                prim.indices += acc_cursor - acc_start_for_mdx_1
 
-            merged_gltf.nodes.append(node)
-            top_node.children.append(len(merged_gltf.nodes) - 1)
+                cdc_mat_id = "M_" + prim.extras["cdcMatID"].upper()
+                prim.material = [mat.name for mat in merged_gltf.materials].index(cdc_mat_id)
+
+            # take the nodes of the loaded gltf that have no children
+            gltf_nodes = [n for n in loaded_gltf.nodes if n.name == "SM_" + mesh.name]
+            assert len(gltf_nodes) == 1
+            for trs in trs_list:
+                node = copy(gltf_nodes[0])
+
+                node.matrix = trs
+                node.translation = None
+                node.rotation = None
+                node.scale = None
+                node.mesh = current_mesh_number
+
+                merged_gltf.nodes.append(node)
+                top_node.children.append(len(merged_gltf.nodes) - 1)
 
     merged_gltf.save(save_to)
