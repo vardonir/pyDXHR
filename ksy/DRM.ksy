@@ -139,6 +139,7 @@ enums:
   section_subtype:
     0: generic
     5: texture
+    11: unknown_11
     13: sound
     16: unknown_16
     18: unknown_18
@@ -150,6 +151,7 @@ enums:
     27: render_model_buffer
     28: unknown_28
     30: unknown_30
+    32: unknown_32
     34: unknown_34
     36: unknown_36
     40: smart_script

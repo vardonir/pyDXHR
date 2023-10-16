@@ -29,12 +29,13 @@ class BigfileHeader(KaitaiBigfileHeader):
             case 0x7FF00000:
                 return self.alignment
 
-            # ps3 (all versions) = 0x0000F07F
-            # xbox base = 0x00003062
-            # xbox demo = 0x00000065
-            # xbox dc = 0x0000D06A
+            # ps3 (all versions) + xbox cache = 0x0000F07F
+            # xbox base bigfile = 0x00003062
+            # xbox demo bigfile = 0x00000065
+            # xbox dc disc 1 bigfile = 0x0000D06A
+            # xbox dc disc 2 bigfile = 0x0000006B
             # wiiu = 0x0000401
-            case 0x0000F07F | 0x00003062 | 0x00000065 | 0x0000D06A | 0x0000401F:
+            case 0x0000F07F | 0x00003062 | 0x00000065 | 0x0000D06A | 0x0000401F | 0x0000006B:
                 return struct.unpack(">L", struct.pack("<L", self.alignment))[0]
 
             case _:

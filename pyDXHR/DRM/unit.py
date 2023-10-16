@@ -19,6 +19,7 @@ class UnitDRM(DRM):
 
     def __init__(self):
         super().__init__()
+        self.is_masterunit: bool = False
         self.linked_drm_list: List[str] = []
         self.streamgroup_map: Dict[Tuple[str, str], List[np.ndarray]] = {}
         self.cell_map: Dict[Tuple[str, int], List[np.ndarray]] = {}
@@ -146,6 +147,9 @@ class UnitDRM(DRM):
         `read_objects()` or `read_imfs()` anyway.
         """
         super().open()
+
+        if self.name.endswith("masterunit.drm"):
+            self.is_masterunit = True
 
         unit_ref = Reference.from_root(self)
 

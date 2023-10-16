@@ -31,24 +31,19 @@ parser.add_argument(
 
 parser.add_argument(
     "-u",
-    "--skip-unknown",
+    "--unknown",
     action="store_true",
-    help="Skip unknown files"
+    help="Get unknown files"
 )
 
 parser.add_argument(
     "-k",
-    "--skip-known",
+    "--known",
     action="store_true",
-    help="Skip known files"
+    help="Get known files"
 )
 
 args = parser.parse_args()
 
-if args.skip_unknown and args.skip_known:
-    # what are you doing lol
-    print("???")
-    sys.exit(1)
-else:
-    unpack_to_location(args.source, args.out, args.skip_unknown, args.skip_known)
-    sys.exit(0)
+unpack_to_location(args.source, args.out, args.unknown, args.known)
+sys.exit(0)

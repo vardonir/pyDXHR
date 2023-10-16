@@ -2,7 +2,7 @@
 
 The base game came in one CD. DC came as a 2-CD package.
 
-Allegedly, there's a Japanese version of the base game. For the 6 people in Japan who own an XBox 360, I guess.
+Allegedly, there's a Japanese version of the base game. 
 
 ## Beta?
 

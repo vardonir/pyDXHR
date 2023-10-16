@@ -4,22 +4,17 @@
 """
 
 import shutil
-import json
-from typing import List, Dict, Optional
-from copy import copy
+from tqdm import tqdm
 
 import kaitaistruct
-import numpy as np
-import pygltflib as gl
 from pathlib import Path
 
 from Bigfile import Bigfile
 from pyDXHR.DRM import DRM
-from pyDXHR.DRM.Section import RenderMesh, Material
+from pyDXHR.DRM.Section import Material
 from pyDXHR.DRM.unit import UnitDRM
 from pyDXHR.export import gltf
 import tempfile
-from scipy.spatial.transform import Rotation
 
 
 def from_drm(drm: UnitDRM,
@@ -29,16 +24,29 @@ def from_drm(drm: UnitDRM,
              z_up: bool = False,
              **kwargs
              ) -> None:
+    if drm.is_masterunit:
+        pbar = tqdm(drm.linked_drm_list)
+        for subunit in pbar:
+            subunit_drm = UnitDRM.from_bigfile(subunit, bigfile)
+            subunit_drm.open()
+            pbar.set_description(f"Exporting {subunit_drm.name}")
+
+            from_drm(subunit_drm, bigfile, save_to, scale, z_up, **kwargs)
+        return
+
     if len(Path(save_to).suffix) != 0:
         save_to = Path(save_to).parent
         save_to.mkdir(parents=True, exist_ok=True)
 
     library_path = Path(save_to) / "library"
+    library_path.mkdir(parents=True, exist_ok=True)
     temp_dir = Path(tempfile.gettempdir()) / "pyDXHR"
+    temp_dir.mkdir(parents=True, exist_ok=True)
 
-    if kwargs.get("generate_library", False):
-        library_path.mkdir(parents=True, exist_ok=True)
-        assert temp_dir.is_dir()
+    if library_path.is_dir():
+        library_items = set(i.stem for i in library_path.glob("*.gltf"))
+    else:
+        library_items = set()
 
     # stream data
     if kwargs.get("stream", True):
@@ -68,11 +76,14 @@ def from_drm(drm: UnitDRM,
                     drm_name=stream_drm.name.replace('.drm', ''),
                 )
 
-    # internal data
-    mat_list = Material.from_drm(drm)
-    for mat in mat_list:
-        mat.read()
+    # internal material data (for int_imf + cells)
+    mat_list = []
+    if kwargs.get("cell", True) or kwargs.get("int_imf", True):
+        mat_list = Material.from_drm(drm)
+        for mat in mat_list:
+            mat.read()
 
+    # internal data (cells)
     if kwargs.get("cell", True):
         cell_gltf_list = []
         if len(drm.cell_map):
@@ -90,61 +101,64 @@ def from_drm(drm: UnitDRM,
                 drm_name=f"{drm.name.replace('.drm', '')}_cell",
             )
 
+    # IMF data
     if kwargs.get("int_imf", True) or kwargs.get("ext_imf", True):
         if not len(drm.int_imf_map) or not len(drm.ext_imf_map):
             drm.read_imfs()
 
         if kwargs.get("int_imf", True):
-            int_imf_gltf_dict: Dict[int, gl.GLTF2] = {}
-            for sec_id, trs_list in drm.int_imf_map.items():
-                imf_gltf = gltf.to_temp(drm.get_section_from_id(sec_id))
-                int_imf_gltf_dict[sec_id] = imf_gltf
+            for sec_id, _ in drm.int_imf_map.items():
+                if Path(f"{sec_id:08X}.gltf").stem in library_items:
+                    continue
 
-            if kwargs.get("generate_library", False):
-                for sec_id, gltf_inst in int_imf_gltf_dict.items():
-                    for buff in gltf_inst.buffers:
+                imf_gltf = gltf.to_temp(drm.get_section_from_id(sec_id))
+                if imf_gltf:
+                    for buff in imf_gltf.buffers:
                         if buff.extras.get("name", "empty") != "empty":
                             buffer_file = temp_dir / buff.uri
                             shutil.copy(buffer_file, library_path)
 
-                    gltf_inst.save(library_path / f"{sec_id:08X}.gltf")
-            else:
-                gltf.merge_with_table(
-                    gltf_dict=int_imf_gltf_dict,
-                    loc_table=drm.int_imf_map,
-                    save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
-                    scale=scale,
-                    z_up=z_up,
-                    mat_list=mat_list,
-                    drm_name=f"{drm.name.replace('.drm', '')}_int_imf",
-                )
+                    imf_gltf.save(library_path / f"{sec_id:08X}.gltf")
+
+            gltf.merge_using_library(
+                library_path=library_path,
+                loc_table=drm.int_imf_map,
+                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
+                unit_name=drm.name.replace('.drm', '') + "_int_imf",
+                scale=scale,
+                z_up=z_up,
+            )
 
         if kwargs.get("ext_imf", True):
-            ext_imf_gltf_dict: Dict[str, gl.GLTF2] = {}
-            for imf_name, trs_list in drm.ext_imf_map.items():
-                data = bigfile.read(imf_name)
-                imf_drm = DRM.from_bytes(data)
+            for imf_name, _ in drm.ext_imf_map.items():
+                if Path(imf_name).stem in library_items:
+                    continue
+
+                imf_drm = DRM.from_bigfile(imf_name, bigfile)
                 imf_drm.open()
 
-                for sec in imf_drm.sections:
-                    imf_gltf = gltf.to_temp(sec)
-                    if imf_gltf is not None:
-                        imf_filename = Path(imf_name).stem
-                        ext_imf_gltf_dict[imf_filename] = imf_gltf
+                try:
+                    gltf.from_drm(imf_drm,
+                                  save_to=library_path / (Path(imf_name).stem + ".gltf"),
+                                  scale=0.002,
+                                  z_up=True,
+                                  skip_textures=True
+                                  )
+                except kaitaistruct.KaitaiStructError:
+                    continue
+                except:
+                    breakpoint()
 
-            if kwargs.get("generate_library", False):
-                for imf_filename, gltf_inst in ext_imf_gltf_dict.items():
-                    for buff in gltf_inst.buffers:
-                        if buff.extras.get("name", "empty") != "empty":
-                            buffer_file = temp_dir / buff.uri
-                            shutil.copy(buffer_file, library_path)
+            gltf.merge_using_library(
+                library_path=library_path,
+                loc_table=drm.ext_imf_map,
+                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_ext_imf.gltf"),
+                unit_name=drm.name.replace('.drm', '') + "_ext_imf",
+                scale=scale,
+                z_up=z_up,
+            )
 
-                    gltf_inst.save(library_path / f"{imf_filename}.gltf")
-            else:
-                breakpoint()
-
-            breakpoint()
-
+    # object data
     if kwargs.get("obj", True):
         if not len(drm.obj_map):
             drm.read_objects()
@@ -153,4 +167,30 @@ def from_drm(drm: UnitDRM,
         object_list = {int(line[0]): line[1] for line in object_list if len(line) == 2}
         parsed_object_map = {object_list[obj_id]: trs_list for obj_id, trs_list in drm.obj_map.items()}
 
-        breakpoint()
+        for obj_name, _ in parsed_object_map.items():
+            if obj_name in library_items:
+                continue
+
+            obj_drm = DRM.from_bigfile(obj_name + ".drm", bigfile)
+            obj_drm.open()
+
+            try:
+                gltf.from_drm(obj_drm,
+                              save_to=library_path / (obj_name + ".gltf"),
+                              scale=0.002,
+                              z_up=True,
+                              skip_textures=True
+                              )
+            except kaitaistruct.KaitaiStructError:
+                continue
+            except:
+                breakpoint()
+
+        gltf.merge_using_library(
+            library_path=library_path,
+            loc_table=parsed_object_map,
+            save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_obj.gltf"),
+            unit_name=drm.name.replace('.drm', '') + "_obj",
+            scale=scale,
+            z_up=z_up,
+        )

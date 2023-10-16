@@ -1,0 +1,4 @@
+kaitaistruct
+numpy
+pygltflib
+tqdm

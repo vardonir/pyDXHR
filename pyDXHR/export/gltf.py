@@ -49,26 +49,44 @@ def to_temp(sec: Section) -> Optional[gl.GLTF2]:
     return loaded_gltf
 
 
-def from_section(sec: Section, save_to: Path | str) -> None:
+def from_section(
+        sec: Section,
+        save_to: Path | str
+) -> None:
     """
     Convert a section to a single GLTF file
     """
-    rm = RenderMesh.from_section(sec)
-    name = sec.header.section_id
-    breakpoint()
+    try:
+        rm = RenderMesh.from_section(sec)
+    except kaitaistruct.KaitaiStructError:
+        return None
+
+    if rm is None:
+        return None
+
+    md = rm.parse_mesh_data()
+    md.name = f"{sec.header.section_id:08X}"
+
+    md.to_gltf(save_to)
 
 
 def from_drm(drm: DRM, save_to: Path | str,
              scale: float = 1.0,
-             z_up: bool = False) -> None:
+             z_up: bool = False,
+             skip_textures: bool = False
+             ) -> None:
     """
     Convert DRM to a single GLTF file. Not intended for unit DRMs.
     """
     rm_list = RenderMesh.from_drm(drm)
     mat_list = Material.from_drm(drm)
-    tex_list = RenderResource.from_drm(drm)
+
     texture_dest_dir = Path(save_to).parent / "textures"
-    texture_dest_dir.mkdir(parents=True, exist_ok=True)
+    if not skip_textures:
+        tex_list = RenderResource.from_drm(drm)
+        texture_dest_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        tex_list = []
 
     if drm.name:
         drm_name = Path(drm.name).stem
@@ -80,6 +98,7 @@ def from_drm(drm: DRM, save_to: Path | str,
         mat.read()
 
     # read texture data
+    # this for loop would not run if tex_list is empty anyway
     for tex in tex_list:
         image = tex.read()
         image.to_dds(save_to=texture_dest_dir)
@@ -108,9 +127,9 @@ def from_drm(drm: DRM, save_to: Path | str,
 
     if len(gltf_list) == 1:
         if temp_buffer_path.is_file():
-            shutil.copy(temp_buffer_path, Path(save_to).parent / (Path(save_to).stem + ".bin"))
+            shutil.copy(temp_buffer_path, Path(save_to).parent / Path(temp_buffer_path).name)
 
-            gltf_list[0].buffers[0].uri = Path(save_to).stem + ".bin"
+            # gltf_list[0].buffers[0].uri = Path(save_to).stem + ".bin"
             gltf_list[0].save(save_to)
 
     else:
@@ -302,20 +321,119 @@ def merge(
     merged_gltf.save(save_to)
 
 
-def merge_with_table(
-        gltf_dict: Dict[str | int, gl.GLTF2],
+def merge_using_library(
+        library_path: str | Path,
         loc_table: Dict[str | int, List[np.ndarray]],
         save_to: str | Path,
-        mat_list: Optional = None,
-        tex_list: Optional = None,
-        drm_name="DXHR DRM",
+        unit_name: str = "DXHR",
         scale=1.0,
         z_up=False,
 ):
-    assert len(gltf_dict) == len(loc_table)
+    merged_gltf = gl.GLTF2()
+    merged_gltf.asset = MeshData.generate_asset_metadata()
+    top_node = gl.Node(
+        name=unit_name,
+    )
+    top_node.scale = [scale, scale, scale]
+    if z_up:
+        top_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
 
-    for name, gltf in gltf_dict.items():
-        if name in loc_table:
-            pass
-            # loc_table[name] =
-    breakpoint()
+    merged_gltf.nodes.append(top_node)
+
+    merged_gltf.scenes.append(gl.Scene(name=unit_name, nodes=[0]))
+    merged_gltf.scene = 0
+
+    # copy the materials
+    for path in loc_table.keys():
+        if isinstance(path, int):
+            path = f"{path:08X}"
+
+        try:
+            loaded_gltf = gl.GLTF2().load(library_path / (Path(path).name.replace(".drm", "") + ".gltf"))
+        except FileNotFoundError:
+            continue
+
+        for mat in loaded_gltf.materials:
+            if mat not in merged_gltf.materials:
+                merged_gltf.materials.append(mat)
+
+    # remove duplicates
+    clean_loc_table = {k if isinstance(k, str) else f"{k:08X}": set() for k in loc_table.keys()}
+    for k, vl in loc_table.items():
+        if isinstance(k, int):
+            k = f"{k:08X}"
+
+        for v in vl:
+            tup = tuple(np.round(v, 2).T.flatten().tolist())
+            clean_loc_table[k].add(tup)
+
+    for path, trs_list in clean_loc_table.items():
+        try:
+            loaded_gltf = gl.GLTF2().load(library_path / (Path(path).name.replace(".drm", "") + ".gltf"))
+        except FileNotFoundError:
+            continue
+
+        if len(loaded_gltf.nodes) > 1:
+            breakpoint()
+            # print(path)
+            continue
+        elif len(loaded_gltf.meshes) == 0:
+            continue
+        else:
+            assert len(loaded_gltf.meshes) == 1
+
+        # copy accessors and buffer views
+        acc_cursor = len(merged_gltf.accessors)
+        gltf_buffer_views = [bv for bv in loaded_gltf.bufferViews if bv.name != "empty"]
+        gltf_buffers = [b for b in loaded_gltf.buffers if b.extras.get("name") != "empty"]
+        for o_acc, o_bv in zip(loaded_gltf.accessors, gltf_buffer_views):
+            acc = copy(o_acc)
+            bv = copy(o_bv)
+
+            bv.buffer = len(merged_gltf.buffers)
+            bv.name = None
+            acc.name = None
+            acc.bufferView += acc_cursor
+
+            merged_gltf.accessors.append(acc)
+            merged_gltf.bufferViews.append(bv)
+
+        # copy buffers
+        for b in gltf_buffers:
+            b.uri = "library/" + b.uri
+            merged_gltf.buffers.append(b)
+
+        current_mesh_number = len(merged_gltf.meshes)
+        mesh = copy(loaded_gltf.meshes[0])
+        merged_gltf.meshes.append(mesh)
+
+        prim: gl.Primitive
+        for prim in mesh.primitives:
+            attribute_dict = json.loads(prim.attributes.to_json())
+            revised_attrs = {
+                attr: attr_idx + acc_cursor
+                for attr, attr_idx in attribute_dict.items()
+                if attr_idx is not None
+            }
+
+            prim.attributes = gl.Attributes(**revised_attrs)
+            prim.indices += acc_cursor
+
+            cdc_mat_id = "M_" + prim.extras["cdcMatID"].upper()
+            prim.material = [mat.name for mat in merged_gltf.materials].index(cdc_mat_id)
+
+        # take the nodes of the loaded gltf that have no children
+        gltf_nodes = [n for n in loaded_gltf.nodes if n.mesh is not None]
+        for trs in trs_list:
+            node = copy(loaded_gltf.nodes[0])
+
+            node.matrix = trs
+            node.translation = None
+            node.rotation = None
+            node.scale = None
+            node.mesh = current_mesh_number
+
+            merged_gltf.nodes.append(node)
+            top_node.children.append(len(merged_gltf.nodes) - 1)
+
+    merged_gltf.save(save_to)
