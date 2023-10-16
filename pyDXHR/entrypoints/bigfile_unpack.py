@@ -21,27 +21,11 @@ parser.add_argument(
     type=str,
 )
 
-parser.add_argument(
-    "-o",
-    "--out",
-    help="output directory",
-    type=str,
-    default=None
-)
+parser.add_argument("-o", "--out", help="output directory", type=str, default=None)
 
-parser.add_argument(
-    "-u",
-    "--unknown",
-    action="store_true",
-    help="Get unknown files"
-)
+parser.add_argument("-u", "--unknown", action="store_true", help="Get unknown files")
 
-parser.add_argument(
-    "-k",
-    "--known",
-    action="store_true",
-    help="Get known files"
-)
+parser.add_argument("-k", "--known", action="store_true", help="Get known files")
 
 args = parser.parse_args()
 

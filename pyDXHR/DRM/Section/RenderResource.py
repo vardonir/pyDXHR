@@ -47,7 +47,9 @@ class Texture(RenderResource):
             height=parsed.height,
             tex_fmt_str=parsed.format.name,
             payload=parsed.payload,
-            name=self.resource_name if self.resource_name is not None else f"{self.section_id:08x}"
+            name=self.resource_name
+            if self.resource_name is not None
+            else f"{self.section_id:08x}"
             # len_mipmaps=parsed.len_mipmaps
         )
 
@@ -67,4 +69,8 @@ def from_section(section: Section) -> Optional[RenderResource]:
 
 
 def from_drm(drm: DRM) -> List[RenderResource]:
-    return [from_section(sec) for sec in drm.sections if sec.header.section_type == SectionType.render_resource]
+    return [
+        from_section(sec)
+        for sec in drm.sections
+        if sec.header.section_type == SectionType.render_resource
+    ]

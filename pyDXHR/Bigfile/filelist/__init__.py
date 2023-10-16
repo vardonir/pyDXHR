@@ -5,7 +5,7 @@ from typing import Dict
 
 
 def crc32bzip2(d: str) -> int:
-    """ Encodes a string using CRC32-BZIP2 """
+    """Encodes a string using CRC32-BZIP2"""
     from fastcrc.crc32 import bzip2
 
     if isinstance(d, str):

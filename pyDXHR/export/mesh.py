@@ -12,11 +12,13 @@ from pyDXHR import VertexAttribute
 from pyDXHR.DRM.Section import Material
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
 class MeshData:
-    """ Compiles the vertex data along with the material data to export to GLTF """
+    """Compiles the vertex data along with the material data to export to GLTF"""
+
     def set_material_data(self, materials: List[int]):
         self.materials = materials
 
@@ -29,13 +31,11 @@ class MeshData:
         return asset_data
 
     def _populate_constants(self):
-        """ Add the constants to the GLTF file - metadata and the empty texture"""
+        """Add the constants to the GLTF file - metadata and the empty texture"""
         import base64
 
         self.gltf_root.asset = self.generate_asset_metadata()
-        self.gltf_root.extras = {
-            "MeshDataName": self.name
-        }
+        self.gltf_root.extras = {"MeshDataName": self.name}
 
         empty_image = gl.Image(
             name="empty",
@@ -53,28 +53,29 @@ class MeshData:
         encoded = base64.b64encode(image)
 
         empty_image_buffer = gl.Buffer(
-            uri='data:application/octet-stream;base64,{}'.format(str(encoded).split("'")[1]),
+            uri="data:application/octet-stream;base64,{}".format(
+                str(encoded).split("'")[1]
+            ),
             byteLength=len(image),
-            extras={"name": "empty"}
+            extras={"name": "empty"},
         )
 
         empty_image_buffer_view = gl.BufferView(
-            name="empty",
-            buffer=1,
-            byteLength=empty_image_buffer.byteLength
+            name="empty", buffer=1, byteLength=empty_image_buffer.byteLength
         )
         index_empty_image_buffer_view = self._add_property(empty_image_buffer_view)
         empty_image.bufferView = index_empty_image_buffer_view
 
         self.gltf_root.buffers.append(empty_image_buffer)
 
-    def __init__(self,
-                 vertex_buffers,
-                 mesh_prim_indexed,
-                 material_list,
-                 name: Optional[str] = None,
-                 bbox_sphere_radius: int = -1
-                 ):
+    def __init__(
+        self,
+        vertex_buffers,
+        mesh_prim_indexed,
+        material_list,
+        name: Optional[str] = None,
+        bbox_sphere_radius: int = -1,
+    ):
         """
 
         :param vertex_buffers:
@@ -101,14 +102,10 @@ class MeshData:
 
         self.trs_matrix = None
         self.gltf_root = gl.GLTF2()
-        self._binary_blob = b''
-        
-        self._parent_node = gl.Node(
-            name=self.name
-        )
-        self._parent_node.extras = {
-            "bbox_sphere_radius": bbox_sphere_radius
-        }
+        self._binary_blob = b""
+
+        self._parent_node = gl.Node(name=self.name)
+        self._parent_node.extras = {"bbox_sphere_radius": bbox_sphere_radius}
         index_parent_node = self._add_property(self._parent_node)
 
         scene_node = gl.Scene()
@@ -119,16 +116,11 @@ class MeshData:
         self._gltf_mesh_prim_list = []
 
     def build_gltf(self):
-
         # add the materials
         material_index_dict = {}
         if self._skip_textures:
             for mat in self.material_list:
-                gltf_mat = gl.Material(
-                    name=f"M_{mat:08X}",
-                    extras={},
-                    alphaCutoff=None
-                )
+                gltf_mat = gl.Material(name=f"M_{mat:08X}", extras={}, alphaCutoff=None)
 
                 index_mat = self._add_property(gltf_mat)
                 material_index_dict[mat] = index_mat
@@ -163,10 +155,13 @@ class MeshData:
             for imp, (mat, arr) in enumerate(mesh_prim_list):
                 accessor_index = len(self.gltf_root.accessors)
 
-                idx_buffer_view, idx_accessor, idx_byte_data = self._add_index_data(array=arr,
-                                                                                    binary_blob=self._binary_blob,
-                                                                                    mesh_num=idx, sub_mesh_num=imp,
-                                                                                    name=self.name)
+                idx_buffer_view, idx_accessor, idx_byte_data = self._add_index_data(
+                    array=arr,
+                    binary_blob=self._binary_blob,
+                    mesh_num=idx,
+                    sub_mesh_num=imp,
+                    name=self.name,
+                )
 
                 self._binary_blob += idx_byte_data
                 idx_buffer_view_index = self._add_property(idx_buffer_view)
@@ -182,7 +177,7 @@ class MeshData:
                         "MESH_IDX": idx,
                         "PRIM_IDX": imp,
                         "cdcMatID": f"{mat:08X}",
-                    }
+                    },
                 )
 
                 self._gltf_mesh_prim_list.append(mesh_prim)
@@ -190,13 +185,11 @@ class MeshData:
         self._is_built = True
 
     def to_gltf(self, save_to: Optional[str | Path] = None):
-        """ As-is from the game GLTF """
+        """As-is from the game GLTF"""
         if not self._is_built:
             self.build_gltf()
 
-        mesh = gl.Mesh(
-            name=self.name
-        )
+        mesh = gl.Mesh(name=self.name)
         mesh_index = self._add_property(mesh)
         self._parent_node.mesh = mesh_index
 
@@ -204,12 +197,7 @@ class MeshData:
         return self._finalize(save_to=save_to)
 
     def _finalize(self, save_to: Optional[str | Path] = None):
-
-        buffer = gl.Buffer(
-            extras={
-                "name": self.name
-            }
-        )
+        buffer = gl.Buffer(extras={"name": self.name})
         buffer.byteLength = len(self._binary_blob)
         self.gltf_root.buffers.append(buffer)
 
@@ -259,11 +247,11 @@ class MeshData:
 
     @staticmethod
     def _add_index_data(
-            array: np.ndarray,
-            binary_blob: bytes,
-            mesh_num: int = -1,
-            sub_mesh_num: int = -1,
-            name: str = ""
+        array: np.ndarray,
+        binary_blob: bytes,
+        mesh_num: int = -1,
+        sub_mesh_num: int = -1,
+        name: str = "",
     ) -> Tuple[gl.BufferView, gl.Accessor, bytes]:
         current_byte_offset = len(binary_blob)
 
@@ -297,13 +285,14 @@ class MeshData:
 
         return view, accessor, byte_data
 
-    def _add_vertex_data(self,
-                         vtx_sem: VertexAttribute,
-                         vtx_array: np.ndarray,
-                         binary_blob: bytes,
-                         mesh_num: int = -1,
-                         name: str = ""
-                         ) -> Tuple[gl.BufferView, gl.Accessor, bytes]:
+    def _add_vertex_data(
+        self,
+        vtx_sem: VertexAttribute,
+        vtx_array: np.ndarray,
+        binary_blob: bytes,
+        mesh_num: int = -1,
+        name: str = "",
+    ) -> Tuple[gl.BufferView, gl.Accessor, bytes]:
         """
         Transforms a vertex semantic/vertex numpy array to a GLTF buffer view + Accessor + byte data
 
@@ -313,10 +302,16 @@ class MeshData:
         :param mesh_num:
         :return:
         """
-        if vtx_sem.value in {VertexAttribute.tangent.value, VertexAttribute.binormal.value}:
+        if vtx_sem.value in {
+            VertexAttribute.tangent.value,
+            VertexAttribute.binormal.value,
+        }:
             vtx_array = self._add_tangent_handedness(vtx_array)
 
-        elif vtx_sem.value in {VertexAttribute.color1.value, VertexAttribute.color2.value}:
+        elif vtx_sem.value in {
+            VertexAttribute.color1.value,
+            VertexAttribute.color2.value,
+        }:
             # I'm not sure if this is correct, but if it gets the GLTF validator to shut up...
             vtx_array = np.abs(vtx_array)
 
@@ -333,7 +328,7 @@ class MeshData:
                 "MESH_IDX": mesh_num,
                 "VTX_SEM": vtx_attr_as_gltf_attr(vtx_sem),
             },
-            name=f"Mesh_{mesh_num}_{vtx_sem.name}"
+            name=f"Mesh_{mesh_num}_{vtx_sem.name}",
         )
 
         accessor = gl.Accessor(
@@ -349,11 +344,20 @@ class MeshData:
             },
         )
 
-        if vtx_sem.value in {VertexAttribute.texcoord1.value, VertexAttribute.texcoord2.value}:
+        if vtx_sem.value in {
+            VertexAttribute.texcoord1.value,
+            VertexAttribute.texcoord2.value,
+        }:
             accessor.type = gl.VEC2
-        elif vtx_sem.value in {VertexAttribute.tangent.value, VertexAttribute.binormal.value}:
+        elif vtx_sem.value in {
+            VertexAttribute.tangent.value,
+            VertexAttribute.binormal.value,
+        }:
             accessor.type = gl.VEC4
-        elif vtx_sem.value in {VertexAttribute.normal.value, VertexAttribute.normal2.value}:
+        elif vtx_sem.value in {
+            VertexAttribute.normal.value,
+            VertexAttribute.normal2.value,
+        }:
             accessor.type = gl.VEC3
         elif vtx_sem.value is VertexAttribute.position.value:
             accessor.type = gl.VEC3
@@ -367,7 +371,7 @@ class MeshData:
     @staticmethod
     def _add_tangent_handedness(v: np.ndarray, reverse: bool = False) -> np.ndarray:
         handedness = 1 if not reverse else -1
-        return np.hstack([v, handedness*np.ones((1, v.shape[0])).T])
+        return np.hstack([v, handedness * np.ones((1, v.shape[0])).T])
 
     @staticmethod
     def _populate_mesh_attributes(attribute_index_dict: dict) -> gl.Attributes:
@@ -381,17 +385,13 @@ class MeshData:
             POSITION=attribute_index_dict[VertexAttribute.position.value],
             NORMAL=attribute_index_dict[VertexAttribute.normal.value],
             TANGENT=attribute_index_dict[VertexAttribute.tangent.value],
-
             TEXCOORD_0=attribute_index_dict[VertexAttribute.texcoord1.value],
             TEXCOORD_1=attribute_index_dict[VertexAttribute.texcoord2.value],
-
             COLOR_0=attribute_index_dict[VertexAttribute.color1.value],
             COLOR_1=attribute_index_dict[VertexAttribute.color2.value],
-
             # TODO: not implemented
             JOINTS_0=None,
             WEIGHTS_0=None,
-
             # included in file for archival purposes
             _BINORMAL=attribute_index_dict[VertexAttribute.binormal.value],
             _NORMAL2=attribute_index_dict[VertexAttribute.normal2.value],  # so confused
@@ -400,7 +400,7 @@ class MeshData:
 
 
 def generate_black_image():
-    """ Generates a black image """
+    """Generates a black image"""
     from PIL import Image
     import io
 
@@ -410,24 +410,32 @@ def generate_black_image():
     image = Image.fromarray(image)
 
     img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format='PNG')
+    image.save(img_byte_arr, format="PNG")
     return img_byte_arr.getvalue()
 
 
 def vtx_attr_as_gltf_attr(vtx_sem) -> str:
-    if vtx_sem.value in {VertexAttribute.position.value, VertexAttribute.normal.value, VertexAttribute.tangent.value}:
+    if vtx_sem.value in {
+        VertexAttribute.position.value,
+        VertexAttribute.normal.value,
+        VertexAttribute.tangent.value,
+    }:
         return vtx_sem.name.upper()
     elif vtx_sem.value in {VertexAttribute.texcoord1, VertexAttribute.texcoord2}:
-        return ("".join([i for i in vtx_sem.name][:-1])).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
+        return (
+            "".join([i for i in vtx_sem.name][:-1])
+        ).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
     elif vtx_sem.value in {VertexAttribute.color1, VertexAttribute.color2}:
-        return ("".join([i for i in vtx_sem.name][:-1])).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
+        return (
+            "".join([i for i in vtx_sem.name][:-1])
+        ).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
     else:
         # GLTF spec says that unused attributes should have a leading underscore
         return "_" + vtx_sem.name.upper()
 
 
 def apply_node_transformations(node: gl.Node, **kwargs):
-    """ Apply a transformation to a node and return the same node """
+    """Apply a transformation to a node and return the same node"""
     trs_mat = kwargs.get("trs_matrix")
     if trs_mat is not None:
         if isinstance(trs_mat, np.ndarray):
@@ -451,5 +459,7 @@ def apply_global_node_transform(node: gl.Node):
     return apply_node_transformations(
         node,
         scale=3 * [uniform_scale],
-        rotation=Rotation.from_euler('x', -90, degrees=True).as_quat().tolist() if use_z_up else None
+        rotation=Rotation.from_euler("x", -90, degrees=True).as_quat().tolist()
+        if use_z_up
+        else None,
     )

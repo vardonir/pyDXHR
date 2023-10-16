@@ -21,6 +21,7 @@ import pygltflib as gl
 from scipy.spatial.transform import Rotation
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -49,10 +50,7 @@ def to_temp(sec: Section) -> Optional[gl.GLTF2]:
     return loaded_gltf
 
 
-def from_section(
-        sec: Section,
-        save_to: Path | str
-) -> None:
+def from_section(sec: Section, save_to: Path | str) -> None:
     """
     Convert a section to a single GLTF file
     """
@@ -70,11 +68,13 @@ def from_section(
     md.to_gltf(save_to)
 
 
-def from_drm(drm: DRM, save_to: Path | str,
-             scale: float = 1.0,
-             z_up: bool = False,
-             skip_textures: bool = False
-             ) -> None:
+def from_drm(
+    drm: DRM,
+    save_to: Path | str,
+    scale: float = 1.0,
+    z_up: bool = False,
+    skip_textures: bool = False,
+) -> None:
     """
     Convert DRM to a single GLTF file. Not intended for unit DRMs.
     """
@@ -127,7 +127,9 @@ def from_drm(drm: DRM, save_to: Path | str,
 
     if len(gltf_list) == 1:
         if temp_buffer_path.is_file():
-            shutil.copy(temp_buffer_path, Path(save_to).parent / Path(temp_buffer_path).name)
+            shutil.copy(
+                temp_buffer_path, Path(save_to).parent / Path(temp_buffer_path).name
+            )
 
             # gltf_list[0].buffers[0].uri = Path(save_to).stem + ".bin"
             gltf_list[0].save(save_to)
@@ -140,7 +142,7 @@ def from_drm(drm: DRM, save_to: Path | str,
             tex_list=tex_list,
             drm_name=drm_name,
             scale=scale,
-            z_up=z_up
+            z_up=z_up,
         )
 
     # remove the temporary gltf
@@ -149,13 +151,13 @@ def from_drm(drm: DRM, save_to: Path | str,
 
 
 def merge(
-        gltf_list: List[gl.GLTF2],
-        save_to: str | Path,
-        mat_list: Optional = None,
-        tex_list: Optional = None,
-        drm_name="DXHR DRM",
-        scale=1.0,
-        z_up=False
+    gltf_list: List[gl.GLTF2],
+    save_to: str | Path,
+    mat_list: Optional = None,
+    tex_list: Optional = None,
+    drm_name="DXHR DRM",
+    scale=1.0,
+    z_up=False,
 ):
     # merge the gltf if there's more than one
     merged_gltf = gl.GLTF2()
@@ -165,7 +167,9 @@ def merge(
     )
     top_node.scale = [scale, scale, scale]
     if z_up:
-        top_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
+        top_node.rotation = (
+            Rotation.from_euler("x", -90, degrees=True).as_quat().tolist()
+        )
 
     merged_gltf.nodes.append(top_node)
 
@@ -173,11 +177,7 @@ def merge(
     merged_gltf.scene = 0
 
     # materials and images
-    compiled_materials = {
-        m.name: copy(m)
-        for f in gltf_list
-        for m in f.materials
-    }
+    compiled_materials = {m.name: copy(m) for f in gltf_list for m in f.materials}
 
     # the materials are just copied in bulk to the GLTF file
     merged_gltf.materials = list(compiled_materials.values())
@@ -192,11 +192,7 @@ def merge(
                 mat.extras |= mt.to_json()
             # mat.extras = list(set([f"{mt.texture_id:08X}" for mt in mat_data[mat.name]]))
 
-    compiled_images = {
-        i.name: copy(i)
-        for f in gltf_list
-        for i in f.images
-    }
+    compiled_images = {i.name: copy(i) for f in gltf_list for i in f.images}
 
     # the URI attached to the image needs to be updated before it gets attached
     for im in compiled_images.values():
@@ -206,11 +202,7 @@ def merge(
 
     # then the textures need to be copied
     if len([t for f in gltf_list for t in f.textures]) != 0:
-        compiled_textures = {
-            t.name: copy(t)
-            for f in gltf_list
-            for t in f.textures
-        }
+        compiled_textures = {t.name: copy(t) for f in gltf_list for t in f.textures}
 
         merged_gltf.textures = list(compiled_textures.values())
         tex_id_list = list(compiled_textures.keys())
@@ -226,9 +218,14 @@ def merge(
     for f in gltf_list:
         current_node_index: int = len(merged_gltf.nodes)
 
-        empty_image_buffer_view_list = [(idx, bv) for idx, bv in enumerate(f.bufferViews) if bv.name == "empty"]
+        empty_image_buffer_view_list = [
+            (idx, bv) for idx, bv in enumerate(f.bufferViews) if bv.name == "empty"
+        ]
         if len(empty_image_buffer_view_list) == 1:
-            empty_image_bv_index, empty_image_buffer_view = empty_image_buffer_view_list[0]
+            (
+                empty_image_bv_index,
+                empty_image_buffer_view,
+            ) = empty_image_buffer_view_list[0]
             f.bufferViews.pop(empty_image_bv_index)
         else:
             continue
@@ -301,7 +298,9 @@ def merge(
 
     if empty_image_buffer_view is not None and empty_image_buffer is not None:
         empty_tex = [t for t in merged_gltf.textures if t.name == "empty"][0]
-        empty_img_idx, empty_img = [(idx, i) for idx, i in enumerate(merged_gltf.images) if i.name == "empty"][0]
+        empty_img_idx, empty_img = [
+            (idx, i) for idx, i in enumerate(merged_gltf.images) if i.name == "empty"
+        ][0]
 
         empty_image_buffer_view.buffer = len(merged_gltf.buffers)
         empty_img.bufferView = len(merged_gltf.bufferViews)
@@ -322,12 +321,12 @@ def merge(
 
 
 def merge_using_library(
-        library_path: str | Path,
-        loc_table: Dict[str | int, List[np.ndarray]],
-        save_to: str | Path,
-        unit_name: str = "DXHR",
-        scale=1.0,
-        z_up=False,
+    library_path: str | Path,
+    loc_table: Dict[str | int, List[np.ndarray]],
+    save_to: str | Path,
+    unit_name: str = "DXHR",
+    scale=1.0,
+    z_up=False,
 ):
     merged_gltf = gl.GLTF2()
     merged_gltf.asset = MeshData.generate_asset_metadata()
@@ -336,7 +335,9 @@ def merge_using_library(
     )
     top_node.scale = [scale, scale, scale]
     if z_up:
-        top_node.rotation = Rotation.from_euler('x', -90, degrees=True).as_quat().tolist()
+        top_node.rotation = (
+            Rotation.from_euler("x", -90, degrees=True).as_quat().tolist()
+        )
 
     merged_gltf.nodes.append(top_node)
 
@@ -349,7 +350,9 @@ def merge_using_library(
             path = f"{path:08X}"
 
         try:
-            loaded_gltf = gl.GLTF2().load(library_path / (Path(path).name.replace(".drm", "") + ".gltf"))
+            loaded_gltf = gl.GLTF2().load(
+                library_path / (Path(path).name.replace(".drm", "") + ".gltf")
+            )
         except FileNotFoundError:
             continue
 
@@ -358,7 +361,9 @@ def merge_using_library(
                 merged_gltf.materials.append(mat)
 
     # remove duplicates
-    clean_loc_table = {k if isinstance(k, str) else f"{k:08X}": set() for k in loc_table.keys()}
+    clean_loc_table = {
+        k if isinstance(k, str) else f"{k:08X}": set() for k in loc_table.keys()
+    }
     for k, vl in loc_table.items():
         if isinstance(k, int):
             k = f"{k:08X}"
@@ -369,7 +374,9 @@ def merge_using_library(
 
     for path, trs_list in clean_loc_table.items():
         try:
-            loaded_gltf = gl.GLTF2().load(library_path / (Path(path).name.replace(".drm", "") + ".gltf"))
+            loaded_gltf = gl.GLTF2().load(
+                library_path / (Path(path).name.replace(".drm", "") + ".gltf")
+            )
         except FileNotFoundError:
             continue
 
@@ -391,9 +398,19 @@ def merge_using_library(
             merged_gltf.meshes.append(mesh)
 
             # get the acc/bv for this particular mesh
-            mesh_acc = [acc for acc in loaded_gltf.accessors if acc.extras.get("MESH_NAME") == mesh.name]
-            mesh_bv = [bv for bv in loaded_gltf.bufferViews if bv.extras.get("MESH_NAME") == mesh.name]
-            mesh_buffers = [b for b in loaded_gltf.buffers if b.extras.get("name") == mesh.name]
+            mesh_acc = [
+                acc
+                for acc in loaded_gltf.accessors
+                if acc.extras.get("MESH_NAME") == mesh.name
+            ]
+            mesh_bv = [
+                bv
+                for bv in loaded_gltf.bufferViews
+                if bv.extras.get("MESH_NAME") == mesh.name
+            ]
+            mesh_buffers = [
+                b for b in loaded_gltf.buffers if b.extras.get("name") == mesh.name
+            ]
 
             # copy accessors and buffer views
             acc_cursor = len(merged_gltf.accessors)
@@ -437,7 +454,9 @@ def merge_using_library(
                 prim.indices += acc_cursor - acc_start_for_mdx_1
 
                 cdc_mat_id = "M_" + prim.extras["cdcMatID"].upper()
-                prim.material = [mat.name for mat in merged_gltf.materials].index(cdc_mat_id)
+                prim.material = [mat.name for mat in merged_gltf.materials].index(
+                    cdc_mat_id
+                )
 
             # take the nodes of the loaded gltf that have no children
             gltf_nodes = [n for n in loaded_gltf.nodes if n.name == "SM_" + mesh.name]

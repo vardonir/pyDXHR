@@ -28,7 +28,9 @@ class Locals:
         return len(self.strings)
 
     @classmethod
-    def from_bigfile(cls, bf: Bigfile, locale: int = 0xFFFFFD61, encoding: Optional[str] = "utf-8"):
+    def from_bigfile(
+        cls, bf: Bigfile, locale: int = 0xFFFFFD61, encoding: Optional[str] = "utf-8"
+    ):
         """
         The default locale here is the English version from the PC Director's Cut
         """
@@ -83,12 +85,15 @@ class Locals:
     def modify_text(self, original_text: str, replacement_text: str):
         str_index = self.find_string_index(original_text)
         if len(str_index) > 1:
-            raise Warning("More than one instance of the string found, this function will replace all instances!")
+            raise Warning(
+                "More than one instance of the string found, this function will replace all instances!"
+            )
         for index in str_index:
             self.modify_index(index, replacement_text)
 
     def modify_index(self, index: int, replacement_text: str | bytes):
         import struct
+
         head_blob = self._unk0 + struct.pack("<H", len(self)) + self._unk6
         # final_blob = head_blob + self._rebuild_tables(index, replacement_text)
         self.byte_data = head_blob + self._rebuild_tables(index, replacement_text)
@@ -98,6 +103,7 @@ class Locals:
         assert len(self) == len(test.str_list)
 
         from pyDXHR.Bigfile.filelist import crc32bzip2
+
         archive_entry = BigfileEntry()
         archive_entry.name_hash = crc32bzip2(r"pc-w\local\locals.bin")
         archive_entry.byte_data = self.byte_data

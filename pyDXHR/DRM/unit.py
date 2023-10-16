@@ -11,6 +11,7 @@ from pyDXHR.DRM.resolver import Reference
 from pyDXHR import SectionType
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -50,14 +51,18 @@ class UnitDRM(DRM):
         else:
             pbar = range(self._obj_count)
         for i in pbar:
-            index,  = struct.unpack_from(f"{endian}H", self._obj_ref.section.data,
-                                         0x30 + self._obj_ref.offset + i * 0x70)
+            (index,) = struct.unpack_from(
+                f"{endian}H",
+                self._obj_ref.section.data,
+                0x30 + self._obj_ref.offset + i * 0x70,
+            )
 
-            trs_compact = np.frombuffer(self._obj_ref.section.data,
-                                        dtype=np.dtype(np.float32).newbyteorder(endian),
-                                        count=12,
-                                        offset=self._obj_ref.offset + i * 0x70
-                                        )
+            trs_compact = np.frombuffer(
+                self._obj_ref.section.data,
+                dtype=np.dtype(np.float32).newbyteorder(endian),
+                count=12,
+                offset=self._obj_ref.offset + i * 0x70,
+            )
             rot = trs_compact[0:3]
             pos = trs_compact[4:7]
             scl = trs_compact[8:11]
@@ -100,11 +105,12 @@ class UnitDRM(DRM):
             pbar = range(self._imf_count)
         for i in pbar:
             # trs_mat = self._imf_ref.access("16f", i * 0x90)
-            trs_mat_np = np.frombuffer(self._imf_ref.section.data,
-                                       dtype=np.dtype(np.float32).newbyteorder(endian),
-                                       count=16,
-                                       offset=self._imf_ref.offset + i * 0x90
-                                       )
+            trs_mat_np = np.frombuffer(
+                self._imf_ref.section.data,
+                dtype=np.dtype(np.float32).newbyteorder(endian),
+                count=16,
+                offset=self._imf_ref.offset + i * 0x90,
+            )
 
             # trs_mat = np.asarray(trs_mat).reshape((4, 4)).T
             trs_mat = np.asarray(trs_mat_np).reshape((4, 4)).T
@@ -118,7 +124,7 @@ class UnitDRM(DRM):
                 dtp_imf_ref = Reference.from_section_type(
                     drm_or_section_list=self.sections,
                     section_type=SectionType.dtpdata,
-                    section_id=dtpid
+                    section_id=dtpid,
                 )
                 rm_imf_ref = dtp_imf_ref.deref(0x4)
                 rm_sec = rm_imf_ref.section
@@ -161,7 +167,9 @@ class UnitDRM(DRM):
         ref_linked = ref_sub0.deref(0x4)
         if ref_linked:
             len_linked = ref_sub0.access("H", 0x2)
-            self.linked_drm_list = [ref_linked.access_string(0x100 * i, "utf-8") for i in range(len_linked)]
+            self.linked_drm_list = [
+                ref_linked.access_string(0x100 * i, "utf-8") for i in range(len_linked)
+            ]
 
         ref_collision = ref_sub0.deref(0x18)
         if ref_collision:
@@ -230,13 +238,13 @@ class UnitDRM(DRM):
                             streamgroup_path = streamgroup_path.access_string()
                             key = (streamgroup_name.lower(), streamgroup_path.lower())
 
-                        # try:
-                        #     streamgroup_name = streamgroup_name.access_string()
-                        #     streamgroup_path = streamgroup_path.access_string()
-                        #     key = (streamgroup_name.lower(), streamgroup_path.lower())
-                        # except AttributeError:
-                        #     continue
-                        # else:
+                            # try:
+                            #     streamgroup_name = streamgroup_name.access_string()
+                            #     streamgroup_path = streamgroup_path.access_string()
+                            #     key = (streamgroup_name.lower(), streamgroup_path.lower())
+                            # except AttributeError:
+                            #     continue
+                            # else:
                             if key not in self.streamgroup_map:
                                 self.streamgroup_map[key] = []
 
@@ -268,7 +276,10 @@ class UnitDRM(DRM):
                             if cell_sub4_0:
                                 ref_list_cell.append((cell_sub4_0, cell_name))
                                 self.cell_section_data |= {
-                                    (cell_name, cell.section.header.section_id): cell_sub4_0.section
+                                    (
+                                        cell_name,
+                                        cell.section.header.section_id,
+                                    ): cell_sub4_0.section
                                 }
 
                             ref_list_occlusion.append(cell_sub20)
@@ -278,7 +289,9 @@ class UnitDRM(DRM):
                             cell_name: str
 
                             self.cell_map = {
-                                (cell_name, cell.section.header.section_id): [self._identity_trs]
+                                (cell_name, cell.section.header.section_id): [
+                                    self._identity_trs
+                                ]
                                 for cell, cell_name in ref_list_cell
                             }
 

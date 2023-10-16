@@ -9,6 +9,7 @@ Status: Needs testing
 
 def create_gltf(drm_byte_data, dest_path=None, scale=1.0, z_up=False):
     from pyDXHR.DRM import DRM
+
     # from pyDXHR.DRM.Section import RenderMesh, Material, RenderResource
     from pyDXHR.export import gltf
 
@@ -39,7 +40,9 @@ if __name__ == "__main__":
 
     parser.add_argument("-s", "--scale", help="scale factor", type=float, default=1.0)
 
-    parser.add_argument("-z", "--z-up", action="store_true", help="Use z-axis as up", default=False)
+    parser.add_argument(
+        "-z", "--z-up", action="store_true", help="Use z-axis as up", default=False
+    )
 
     args = parser.parse_args()
 
@@ -50,11 +53,6 @@ if __name__ == "__main__":
 
     with open(args.source, "rb") as f:
         data = f.read()
-        create_gltf(
-            data,
-            dest_path=dest,
-            scale=args.scale,
-            z_up=args.z_up
-        )
+        create_gltf(data, dest_path=dest, scale=args.scale, z_up=args.z_up)
 
     sys.exit(0)

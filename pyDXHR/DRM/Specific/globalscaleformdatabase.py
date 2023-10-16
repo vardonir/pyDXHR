@@ -38,20 +38,23 @@ class GlobalScaleformDatabase:
         root_ref = Reference.from_root(self.drm)
 
         ref_sub0 = root_ref.deref(0)
-        cfx_count = ref_sub0.deref(0xbc).access(f"L")
-        dtp_id_start = ref_sub0.deref(0xac).access(f"L")
+        cfx_count = ref_sub0.deref(0xBC).access(f"L")
+        dtp_id_start = ref_sub0.deref(0xAC).access(f"L")
 
         cfx_refs = [
             Reference.from_section_type(
                 drm_or_section_list=self.drm,
                 section_type=SectionType.dtpdata,
-                section_id=4 + dtp_id_start + i)
-            for i in range(1, cfx_count-1)
+                section_id=4 + dtp_id_start + i,
+            )
+            for i in range(1, cfx_count - 1)
         ]
 
         for cfx in cfx_refs:
             if cfx:
-                cfx_length, = struct.unpack(f"{self.drm.endian}L", cfx.section.data[0:4])
+                (cfx_length,) = struct.unpack(
+                    f"{self.drm.endian}L", cfx.section.data[0:4]
+                )
                 byte_data = cfx.section.data[4:]
                 sec_id = cfx.section.header.section_id
 

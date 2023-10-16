@@ -14,6 +14,7 @@ from pyDXHR.DRM.Section import SectionHeader
 
 def _byte_swap(data):
     import numpy as np
+
     a = np.frombuffer(data, dtype=np.uint32)
     aa = a.byteswap()
     bb = aa.tobytes()
@@ -21,7 +22,7 @@ def _byte_swap(data):
 
 
 class Resolver(ABC):
-    """ Abstract class for resolvers """
+    """Abstract class for resolvers"""
 
     def __init__(self):
         self.pointer_offset: int | None = None
@@ -33,30 +34,30 @@ class Resolver(ABC):
 
     @abstractmethod
     def deserialize(self, data, endian: str = "<"):
-        """ Deserialize the resolver data """
+        """Deserialize the resolver data"""
         raise NotImplementedError
 
 
 class LocalDataResolver(Resolver):
-    """ Resolvers for data in the same section """
+    """Resolvers for data in the same section"""
 
     def deserialize(self, data, endian: str = "<"):
         if endian == ">":
-            data, = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
+            (data,) = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
 
-        self.pointer_offset = ((data & 0x00000000FFFFFFFF) >> 0)
-        self.data_offset = ((data & 0xFFFFFFFF00000000) >> 32)
+        self.pointer_offset = (data & 0x00000000FFFFFFFF) >> 0
+        self.data_offset = (data & 0xFFFFFFFF00000000) >> 32
 
     def __repr__(self):
-        return f'LDR | ptr {self.pointer_offset:08X} | data {self.data_offset:08X}'
+        return f"LDR | ptr {self.pointer_offset:08X} | data {self.data_offset:08X}"
 
 
 class RemoteDataResolver(Resolver):
-    """ Resolvers for data in the same DRM """
+    """Resolvers for data in the same DRM"""
 
     def deserialize(self, data, endian: str = "<"):
         if endian == ">":
-            data, = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
+            (data,) = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
 
         self.section_index = (data & 0x0000000000003FFF) >> 00
         self.pointer_offset = (data & 0x0000003FFFFFC000) >> 12
@@ -67,26 +68,31 @@ class RemoteDataResolver(Resolver):
 
 
 class UnknownResolver(Resolver):
-    def deserialize(self,
-                    data,
-                    section_headers: Optional = None,
-                    section_data: bytes = b"",
-                    endian: str = "<"):
+    def deserialize(
+        self,
+        data,
+        section_headers: Optional = None,
+        section_data: bytes = b"",
+        endian: str = "<",
+    ):
         if endian == ">":
-            data, = struct.unpack_from(">L", _byte_swap(data.to_bytes(4, "little")))
+            (data,) = struct.unpack_from(">L", _byte_swap(data.to_bytes(4, "little")))
 
         self.pointer_offset = ((data & 0x01FFFFFF) >> 0) * 4
         self.section_type = SectionType(((data & 0xFE000000) >> 25))
 
         if section_headers and section_data:
-            ext_id, = struct.unpack_from(f"{endian}L", section_data, self.pointer_offset)
-            self.section_index = self._find_section_index(section_headers, self.section_type, ext_id)
+            (ext_id,) = struct.unpack_from(
+                f"{endian}L", section_data, self.pointer_offset
+            )
+            self.section_index = self._find_section_index(
+                section_headers, self.section_type, ext_id
+            )
 
-    def _find_section_index(self,
-                            section_headers,
-                            section_type: SectionType,
-                            section_id: int):
-        """ 
+    def _find_section_index(
+        self, section_headers, section_type: SectionType, section_id: int
+    ):
+        """
         I think this was adapted from https://github.com/rrika/dxhr/blob/main/tools/drm.py#L430,
         but I'm not entirely sure anymore...
         """
@@ -105,19 +111,22 @@ class UnknownResolver(Resolver):
 
 
 class UnknownResolver2(UnknownResolver):
-    """ Overloading the UR for the repr """
+    """Overloading the UR for the repr"""
+
     def __repr__(self):
         return f"U2R | ptr {self.pointer_offset:08X} SecId {self.section_id:08X} | {SectionType(self.section_type)}"
 
 
 class UnknownResolver4(UnknownResolver):
-    """ Overloading the UR for the repr """
+    """Overloading the UR for the repr"""
+
     def __repr__(self):
         return f"U4R | ptr {self.pointer_offset:08X} | {SectionType(self.section_type)}"
 
 
 class MissingResolver(Resolver):
-    """ I think this is the resolver for "help, your data is in another DRM"? """
+    """I think this is the resolver for "help, your data is in another DRM"?"""
+
     def __repr__(self):
         return f"MissingResolver | ptr {self.pointer_offset:08X} SecId {self.section_id:08X}"
 
@@ -126,10 +135,10 @@ class MissingResolver(Resolver):
 
 
 def read_resolver_list(
-        resolver_data: bytes,
-        header_list: List[SectionHeader],
-        section_data: bytes,
-        endian: str = "<"
+    resolver_data: bytes,
+    header_list: List[SectionHeader],
+    section_data: bytes,
+    endian: str = "<",
 ) -> List[Resolver]:
     """
     Read the resolver list from the section data.
@@ -146,18 +155,25 @@ def read_resolver_list(
     """
     import os
     from dotenv import load_dotenv
+
     load_dotenv()
     sort = os.getenv("sort_resolvers", None)
 
     resolvers = []
 
     if len(resolver_data):
-        local_resolver_count, remote_resolver_count, \
-            u2_resolver_count, u3_resolver_count, u4_resolver_count = \
-            struct.unpack_from(f"{endian}5L", resolver_data)
+        (
+            local_resolver_count,
+            remote_resolver_count,
+            u2_resolver_count,
+            u3_resolver_count,
+            u4_resolver_count,
+        ) = struct.unpack_from(f"{endian}5L", resolver_data)
 
-        offset = 4*5
-        local_resolver_data = struct.unpack_from(f"{endian}{local_resolver_count}Q", resolver_data, offset=offset)
+        offset = 4 * 5
+        local_resolver_data = struct.unpack_from(
+            f"{endian}{local_resolver_count}Q", resolver_data, offset=offset
+        )
         l_res_list = []
         for lr in local_resolver_data:
             l_res = LocalDataResolver()
@@ -173,7 +189,9 @@ def read_resolver_list(
         resolvers.extend(l_res_list)
 
         offset += local_resolver_count * 8
-        remote_resolver_data = struct.unpack_from(f"{endian}{remote_resolver_count}Q", resolver_data, offset=offset)
+        remote_resolver_data = struct.unpack_from(
+            f"{endian}{remote_resolver_count}Q", resolver_data, offset=offset
+        )
         r_res_list = []
         for rr in remote_resolver_data:
             r_res = RemoteDataResolver()
@@ -187,11 +205,18 @@ def read_resolver_list(
         resolvers.extend(r_res_list)
 
         offset += remote_resolver_count * 8
-        u2_resolver_data = struct.unpack_from(f"{endian}{u2_resolver_count}L", resolver_data, offset=offset)
+        u2_resolver_data = struct.unpack_from(
+            f"{endian}{u2_resolver_count}L", resolver_data, offset=offset
+        )
         u2res_list = []
         for u2r in u2_resolver_data:
             u2_res = UnknownResolver2()
-            u2_res.deserialize(data=u2r, section_headers=header_list, section_data=section_data, endian=endian)
+            u2_res.deserialize(
+                data=u2r,
+                section_headers=header_list,
+                section_data=section_data,
+                endian=endian,
+            )
             u2res_list.append(u2_res)
         if sort and sort == "ptr":
             sorted(u2res_list, key=lambda x: x.pointer_offset)
@@ -200,11 +225,18 @@ def read_resolver_list(
         offset += u2_resolver_count * 4
         assert u3_resolver_count == 0
 
-        u4_resolver_data = struct.unpack_from(f"{endian}{u4_resolver_count}L", resolver_data, offset=offset)
+        u4_resolver_data = struct.unpack_from(
+            f"{endian}{u4_resolver_count}L", resolver_data, offset=offset
+        )
         u4res_list = []
         for u4r in u4_resolver_data:
             u4_res = UnknownResolver4()
-            u4_res.deserialize(data=u4r, section_headers=header_list, section_data=section_data, endian=endian)
+            u4_res.deserialize(
+                data=u4r,
+                section_headers=header_list,
+                section_data=section_data,
+                endian=endian,
+            )
             u4res_list.append(u4_res)
         if sort and sort == "ptr":
             sorted(u4res_list, key=lambda x: x.pointer_offset)
@@ -220,6 +252,7 @@ class ReferenceSectionNotFound(Exception):
 class Reference:
     def __init__(self):
         from pyDXHR.DRM.Section import Section
+
         self.section_list = []
         self.section: Optional[Section] = None
         self.offset = 0
@@ -243,6 +276,7 @@ class Reference:
     @classmethod
     def from_section(cls, drm_or_section_list, section, offset: int = 0):
         from pyDXHR.DRM import DRM
+
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -254,8 +288,11 @@ class Reference:
         return obj
 
     @classmethod
-    def from_section_index(cls, drm_or_section_list, section_index: int, offset: int = 0):
+    def from_section_index(
+        cls, drm_or_section_list, section_index: int, offset: int = 0
+    ):
         from pyDXHR.DRM import DRM
+
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -272,8 +309,15 @@ class Reference:
         return obj
 
     @classmethod
-    def from_section_type(cls, drm_or_section_list, section_id: int, section_type: SectionType, offset: int = 0):
+    def from_section_type(
+        cls,
+        drm_or_section_list,
+        section_id: int,
+        section_type: SectionType,
+        offset: int = 0,
+    ):
         from pyDXHR.DRM import DRM
+
         obj = cls()
         if isinstance(drm_or_section_list, DRM):
             obj.section_list = drm_or_section_list.sections
@@ -281,7 +325,10 @@ class Reference:
             obj.section_list = drm_or_section_list
 
         for section in obj.section_list:
-            if section.header.section_type == section_type and section.header.section_id == section_id:
+            if (
+                section.header.section_type == section_type
+                and section.header.section_id == section_id
+            ):
                 obj.section = section
                 break
 
@@ -290,12 +337,16 @@ class Reference:
         return obj
 
     def add(self, offset: int = 0):
-        """ Add to the current offset """
-        return Reference.from_section(self.section_list, self.section, self.offset + offset)
+        """Add to the current offset"""
+        return Reference.from_section(
+            self.section_list, self.section, self.offset + offset
+        )
 
     def access(self, unpack_format: str, offset=0):
-        """ Access numerical data from the section data at the current offset """
-        out = struct.unpack_from(f"{self.endian}{unpack_format}", self.section.data, self.offset + offset)
+        """Access numerical data from the section data at the current offset"""
+        out = struct.unpack_from(
+            f"{self.endian}{unpack_format}", self.section.data, self.offset + offset
+        )
         # struct unpack returns a tuple even if there's only one output so...
         if len(out) == 1:
             return out[0]
@@ -339,7 +390,9 @@ class Reference:
         """
         offset += self.offset
         try:
-            resolver, = [res for res in self.section.resolvers if offset == res.pointer_offset]
+            (resolver,) = [
+                res for res in self.section.resolvers if offset == res.pointer_offset
+            ]
         except ValueError:
             return None
         else:
@@ -347,21 +400,29 @@ class Reference:
             if type(resolver).__qualname__ == LocalDataResolver.__qualname__:
                 reference_offset = resolver.data_offset
                 local_section_index = self.section_list.index(self.section)
-                obj = Reference.from_section_index(self.section_list, local_section_index, reference_offset)
+                obj = Reference.from_section_index(
+                    self.section_list, local_section_index, reference_offset
+                )
                 return obj
             elif type(resolver).__qualname__ == RemoteDataResolver.__qualname__:
                 reference_offset = resolver.data_offset
                 remote_section_index = resolver.section_index
-                obj = Reference.from_section_index(self.section_list, remote_section_index, reference_offset)
+                obj = Reference.from_section_index(
+                    self.section_list, remote_section_index, reference_offset
+                )
                 return obj
             elif type(resolver).__qualname__ == UnknownResolver2.__qualname__:
                 try:
-                    return Reference.from_section_index(self.section_list, resolver.section_index)
+                    return Reference.from_section_index(
+                        self.section_list, resolver.section_index
+                    )
                 except Exception as e:
                     breakpoint()
             elif type(resolver).__qualname__ == UnknownResolver4.__qualname__:
                 try:
-                    return Reference.from_section_index(self.section_list, resolver.section_index)
+                    return Reference.from_section_index(
+                        self.section_list, resolver.section_index
+                    )
                 except Exception as e:
                     breakpoint()
             else:

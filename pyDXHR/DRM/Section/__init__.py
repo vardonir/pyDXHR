@@ -41,10 +41,16 @@ class SectionHeader:
         self.unknown_06: int = -1
 
     def write(self):
-        return struct.pack(f"{self.endian}{self._header_format}",
-                           self.len_data, self.section_type.value,
-                           self.unknown_05, self.unknown_06,
-                           self.flags, self.section_id, self.specialization)
+        return struct.pack(
+            f"{self.endian}{self._header_format}",
+            self.len_data,
+            self.section_type.value,
+            self.unknown_05,
+            self.unknown_06,
+            self.flags,
+            self.section_id,
+            self.specialization,
+        )
 
     @classmethod
     def from_kaitai_struct(cls, kaitai: DxhrDrm.Drm.SectionHeader, endian: str = "<"):
@@ -66,27 +72,23 @@ class SectionHeader:
         return f"SectionHeader: {self.section_type.name} ({self.section_id:08X})"
 
     def __eq__(self, other):
-        return (self.section_id == other.section_id) and (self.section_type == other.section_type)
+        return (self.section_id == other.section_id) and (
+            self.section_type == other.section_type
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
 
 class Section:
-    __slots__ = (
-        "header",
-        "resolvers",
-        "data",
-        "reloc_data",
-        "ofs_start"
-    )
+    __slots__ = ("header", "resolvers", "data", "reloc_data", "ofs_start")
 
     def __init__(self):
         self.header: Optional[SectionHeader] = None
         self.resolvers: List = []
-        self.data: bytes = b''
+        self.data: bytes = b""
         self.ofs_start: int = -1
-        self.reloc_data: bytes = b''
+        self.reloc_data: bytes = b""
 
         # self.PayloadOffset: int = -1
 

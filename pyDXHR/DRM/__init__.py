@@ -18,30 +18,34 @@ drm_unpack_from_bytes = unpack_from_byte_data
 
 
 class InvalidDRMError(Exception):
-    """ Raised when the input DRM is invalid """
+    """Raised when the input DRM is invalid"""
+
     pass
 
 
 class NotCompressedDRMError(Exception):
-    """ Raised when the input DRM is not compressed """
+    """Raised when the input DRM is not compressed"""
+
     pass
 
 
 class InvalidDRMVersionException(Exception):
-    """ Raised when the input DRM invalid """
+    """Raised when the input DRM invalid"""
+
     pass
 
 
 class KaitaiDRM(DxhrDrm):
-    """ Converts the Kaitai generated DRM class into a more usable format """
+    """Converts the Kaitai generated DRM class into a more usable format"""
+
     @property
     def is_le(self):
-        """ Returns whether the DRM is little endian """
+        """Returns whether the DRM is little endian"""
         return self.version < 65535
 
     @property
     def drm_dependencies(self):
-        """ Returns a list of DRM dependencies, split based on nulls """
+        """Returns a list of DRM dependencies, split based on nulls"""
         drm_deps = self.drm_data.drm_dependencies.strip("\x00").split("\x00")
         if len(drm_deps) == 1 and drm_deps[0] == "":
             return []
@@ -49,7 +53,7 @@ class KaitaiDRM(DxhrDrm):
 
     @property
     def obj_dependencies(self):
-        """ Returns a list of object dependencies, split based on nulls """
+        """Returns a list of object dependencies, split based on nulls"""
         obj_deps = self.drm_data.obj_dependencies.strip("\x00").split("\x00")
         if len(obj_deps) == 1 and obj_deps[0] == "":
             return []
@@ -57,22 +61,22 @@ class KaitaiDRM(DxhrDrm):
 
     @property
     def root_section_index(self):
-        """ Returns the index of the root section """
+        """Returns the index of the root section"""
         return self.drm_data.root_section
 
     @property
     def sections(self):
-        """ Returns a list of sections along with the section headers """
+        """Returns a list of sections along with the section headers"""
         return zip(self.drm_data.section_headers, self.drm_data.sections)
 
     @property
     def flags(self):
-        """ Returns the DRM flag(s?). Not sure what this is used for, but might be useful """
+        """Returns the DRM flag(s?). Not sure what this is used for, but might be useful"""
         return self.drm_data.flags
 
 
 class DRM:
-    """ cdcEngine DRM file """
+    """cdcEngine DRM file"""
 
     def __init__(self) -> None:
         self.name: Optional[str | int] = None
@@ -93,11 +97,10 @@ class DRM:
                 return sec
 
     @classmethod
-    def from_bigfile(cls,
-                     drm_name_or_hash: str | int,
-                     bigfile: Bigfile,
-                     locale: int = 0xFFFFFFFF):
-        """ Create DRM object from a Bigfile and a filename/hash """
+    def from_bigfile(
+        cls, drm_name_or_hash: str | int, bigfile: Bigfile, locale: int = 0xFFFFFFFF
+    ):
+        """Create DRM object from a Bigfile and a filename/hash"""
         try:
             data = bigfile.read(drm_name_or_hash, locale=locale)
         except KeyError:
@@ -162,8 +165,10 @@ class DRM:
         self.root_section_index = kt_drm.root_section_index
         self.flags = kt_drm.flags
 
-        header_list: List[SectionHeader] = [SectionHeader.from_kaitai_struct(head, self.endian)
-                                            for head, _ in kt_drm.sections]
+        header_list: List[SectionHeader] = [
+            SectionHeader.from_kaitai_struct(head, self.endian)
+            for head, _ in kt_drm.sections
+        ]
 
         for header, (_, sec) in zip(header_list, kt_drm.sections):
             assert not len(sec.align.strip(b"\x00"))
@@ -227,7 +232,7 @@ def decompress(data: bytes):
         packed_size = i[1]
         compression_type = i[0] & 0xFF
 
-        block_data = data[cursor: cursor + packed_size]
+        block_data = data[cursor : cursor + packed_size]
         cursor += packed_size.item()
 
         if compression_type == 1:

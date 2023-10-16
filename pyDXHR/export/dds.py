@@ -7,6 +7,7 @@ class TextureFormat(Enum):
     """
     This is intended to "translate" the textureformats specified in the generated KSY enums
     """
+
     A8R8G8B8 = "a8r8g8b8"
     DXT1 = "dxt1"
     DXT3 = "dxt3"
@@ -14,13 +15,7 @@ class TextureFormat(Enum):
 
 
 class Image:
-    def __init__(self,
-                 height,
-                 width,
-                 tex_fmt_str,
-                 payload=b"",
-                 len_mipmaps=0,
-                 name=""):
+    def __init__(self, height, width, tex_fmt_str, payload=b"", len_mipmaps=0, name=""):
         self.Name = name
         self.Height = height
         self.Width = width
@@ -96,7 +91,7 @@ class Image:
 
         out = flags_texture
         if self.LenMipMaps > 0:
-            out |= (flags_complex | flags_mipmap)
+            out |= flags_complex | flags_mipmap
         return out
 
     def _dwCaps2(self):
@@ -123,7 +118,7 @@ class Image:
     def build_dds_blob(self):
         import struct
 
-        dds_magic = b'\x44\x44\x53\x20'
+        dds_magic = b"\x44\x44\x53\x20"
         len_dds_header = 124
 
         self._dds_blob += dds_magic
@@ -131,7 +126,7 @@ class Image:
         # TODO: FIX ME
         # region DDS header
         self._dds_blob += struct.pack(
-            '<7I44x',
+            "<7I44x",
             int(len_dds_header),
             self._flags(),
             self.Height,
@@ -142,20 +137,20 @@ class Image:
         )
 
         self._dds_blob += struct.pack(
-            '<8I',
+            "<8I",
             32,
             self._pixel_format(),
             self._fourcc(),
             self._pixel_size(),
-            *self._pixel_bitmasks()
-            )
+            *self._pixel_bitmasks(),
+        )
 
         self._dds_blob += struct.pack(
-            '<4I4x',
+            "<4I4x",
             self._dwCaps1(),  # dwCaps1
             0,  # dwCaps2 - no cubemaps in DXHR
             0,  # dwCaps3 = 0
-            0  # dwCaps4 = 0
+            0,  # dwCaps4 = 0
         )
         # endregion
 
@@ -164,7 +159,7 @@ class Image:
         self._dds_blob += self.Payload
 
     def to_dds(self, save_to: Optional[str | Path] = None) -> Optional[bytes]:
-        """ Return the DDS blob as bytes or save to path """
+        """Return the DDS blob as bytes or save to path"""
         if len(self._dds_blob) == 0:
             self.build_dds_blob()
 

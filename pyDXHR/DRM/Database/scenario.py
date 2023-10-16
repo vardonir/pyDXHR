@@ -25,9 +25,10 @@ class ScenarioDatabase:
 
         self.scene_names = {}
         for ref in scene_references:
-
             script_id, count_a, _, count_b = ref.access("4L")
-            script_ref = Reference.from_section_type(self.drm, section_type=SectionType.script, section_id=script_id)
+            script_ref = Reference.from_section_type(
+                self.drm, section_type=SectionType.script, section_id=script_id
+            )
 
             if ref.deref(0x14):
                 scene_name = ref.deref(0x14).access_string().lower()
@@ -44,13 +45,10 @@ class ScenarioDatabase:
             #         continue
             #
             #     drm = DRM.from_bigfile(scn_dat, self.bigfile)
-                # scn_root_ref = Reference.from_drm_root(scn)
-                #
-                # ref20 = scn.lookup_reference(SectionType.Script, script_ref.deref(0x14).deref(0x20).access("L"))
-                # ref48 = scn.lookup_reference(SectionType.Script, script_ref.deref(0x14).deref(0x48).access("L"))
+            # scn_root_ref = Reference.from_drm_root(scn)
+            #
+            # ref20 = scn.lookup_reference(SectionType.Script, script_ref.deref(0x14).deref(0x20).access("L"))
+            # ref48 = scn.lookup_reference(SectionType.Script, script_ref.deref(0x14).deref(0x48).access("L"))
             # breakpoint()
 
-
-
         # breakpoint()
-

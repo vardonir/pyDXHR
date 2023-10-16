@@ -7,6 +7,7 @@ class BigfileEntry:
     """
     Single bigfile entry
     """
+
     __slots__ = (
         "name_hash",
         "filename",

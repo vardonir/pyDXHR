@@ -84,7 +84,9 @@ def unpack(path_to_000, unpacked_destination):
                         case 0x80:
                             mtl_entry["normal"].add(f"{mat_tex.texture_id:08X}")
 
-                mtl_data[f"M_{mtl.section_id:08X}"] = {k: list(v) for k, v in mtl_entry.items() if k != "alpha"}
+                mtl_data[f"M_{mtl.section_id:08X}"] = {
+                    k: list(v) for k, v in mtl_entry.items() if k != "alpha"
+                }
                 mtl_data[f"M_{mtl.section_id:08X}"] |= {"alpha": alpha}
 
     with open(Path(unpacked_destination) / "materials.json", "w") as f:
@@ -100,8 +102,10 @@ def unpack(path_to_000, unpacked_destination):
         for tex in tqdm(textures_dir.rglob("*.png")):
             if tex.is_file():
                 tex_id = int(tex.stem, 16)
-                name = (Path(texture_dict[tex_id].replace("|", "_")).parts[-1] + ".png")
-                path = named_textures_dir / "/".join(Path(texture_dict[tex_id].replace("|", "_")).parts[:-1])
+                name = Path(texture_dict[tex_id].replace("|", "_")).parts[-1] + ".png"
+                path = named_textures_dir / "/".join(
+                    Path(texture_dict[tex_id].replace("|", "_")).parts[:-1]
+                )
                 path.mkdir(parents=True, exist_ok=True)
                 try:
                     tex.rename(path / name)
@@ -144,7 +148,7 @@ def unpack(path_to_000, unpacked_destination):
 if __name__ == "__main__":
     unpack(
         path_to_000=r"F:\Projects\pyDXHR\bigfiles\DXHRPS3\CACHE.000",
-        unpacked_destination=r"C:\Users\vardo\Documents\pyDXHR\playground\mat_tex_unpack\base_ps3"
+        unpacked_destination=r"C:\Users\vardo\Documents\pyDXHR\playground\mat_tex_unpack\base_ps3",
     )
 
     # import argparse

@@ -20,7 +20,8 @@ from pyDXHR.generated.render_model_buffer import RenderModelBuffer
 
 
 class FileTypes(Enum):
-    """ Files extracted from Bigfiles, identified using the first four bytes of the file. """
+    """Files extracted from Bigfiles, identified using the first four bytes of the file."""
+
     CDRM = b"CDRM"
     MUL = 0x0000AC44
     MUS = b"Mus!"

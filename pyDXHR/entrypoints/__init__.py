@@ -3,7 +3,6 @@ import sys
 
 
 def bigfile():
-
     parser = argparse.ArgumentParser(
         prog="pyDXHR Bigfile utilities",
     )

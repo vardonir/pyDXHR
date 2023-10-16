@@ -20,15 +20,17 @@ write_new_bigfile = write_from_entries
 
 
 class BigfileError(Exception):
-    """ raised for generic bigfile-related errors """
+    """raised for generic bigfile-related errors"""
+
     pass
 
 
 class Bigfile:
-    """ DXHR bigfile """
+    """DXHR bigfile"""
 
     class Version(Enum):
-        """ game version """
+        """game version"""
+
         # these do not match the platform keys in the file,
         # since the options are either -jap for the
         # japanese version and -w for the rest.
@@ -39,7 +41,8 @@ class Bigfile:
         BETA = "beta"
 
     class Platform(Enum):
-        """ game platform """
+        """game platform"""
+
         # these match the platform keys in the file
         PC = "pc"
         XBOX360 = "xenon"
@@ -138,7 +141,9 @@ class Bigfile:
 
         self._is_opened = True
 
-    def get_entry_from_filename(self, filename: str, locale: int = 0xFFFFFFFF) -> BigfileEntry:
+    def get_entry_from_filename(
+        self, filename: str, locale: int = 0xFFFFFFFF
+    ) -> BigfileEntry:
         if not self._is_opened:
             self.open()
 
@@ -232,6 +237,7 @@ class Bigfile:
         cls, version: Optional[Version] = None, platform: Optional[Platform] = None
     ):
         from dotenv import load_dotenv
+
         load_dotenv()
         obj = cls()
 

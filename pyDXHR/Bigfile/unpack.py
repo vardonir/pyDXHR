@@ -16,7 +16,7 @@ def unpack_to_location(
     skip_unknown: bool = False,
     skip_known: bool = False,
 ):
-    """ Unpacks a bigfile to a location """
+    """Unpacks a bigfile to a location"""
     if unpacked_destination is None:
         if Path(path_for_000_file).is_file():
             unpacked_destination = (
@@ -40,7 +40,7 @@ def unpack_to_location(
 
 
 def unpack_000_file(file, skip_unknown, skip_known, dest, name):
-    """ Unpacks a single .000 file """
+    """Unpacks a single .000 file"""
     bf = Bigfile.from_path(file)
     bf.open()
 

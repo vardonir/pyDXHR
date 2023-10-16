@@ -22,9 +22,7 @@ if __name__ == "__main__":
         out = Path(sys.argv[1]).parent
 
     drm_unpack_from_bytes(
-        drm_byte_data=data,
-        drm_name=Path(sys.argv[1]).stem,
-        unpack_destination=out
+        drm_byte_data=data, drm_name=Path(sys.argv[1]).stem, unpack_destination=out
     )
 
     sys.exit(0)

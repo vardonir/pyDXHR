@@ -1,10 +1,11 @@
 def write_from_entries(entries, source_bigfile):
     from pyDXHR.Bigfile import Bigfile
     import struct
+
     out_data = b""
     out_data += struct.pack(f"{source_bigfile.endian}L", source_bigfile.alignment)
     if isinstance(source_bigfile.platform, Bigfile.Platform):
-        platform_as_bytes = bytes(source_bigfile.key, 'ascii')
+        platform_as_bytes = bytes(source_bigfile.key, "ascii")
     else:
         raise Exception
 
@@ -17,11 +18,15 @@ def write_from_entries(entries, source_bigfile):
     est_header_size += ((0x800 - est_header_size) % 0x800) % 0x800
 
     # the entries need to be sorted by size and hash
-    replacement_entries = sorted(sorted(entries, key=lambda x: x.uncompressed_size), key=lambda y: y.name_hash)
+    replacement_entries = sorted(
+        sorted(entries, key=lambda x: x.uncompressed_size), key=lambda y: y.name_hash
+    )
 
-    archive_data = _repack_archive_entries(header_size=est_header_size,
-                                           data_alignment=source_bigfile.alignment,
-                                           entries=replacement_entries)
+    archive_data = _repack_archive_entries(
+        header_size=est_header_size,
+        data_alignment=source_bigfile.alignment,
+        entries=replacement_entries,
+    )
 
     # pack in the name hashes
     for entry in replacement_entries:
@@ -54,7 +59,7 @@ def write_from_entries(entries, source_bigfile):
 
 
 def _repack_archive_entries(header_size, data_alignment, entries):
-    out_data_list = [b'']
+    out_data_list = [b""]
 
     max_blocks_per_file = data_alignment // 2048
 
@@ -78,7 +83,9 @@ def _repack_archive_entries(header_size, data_alignment, entries):
             pos = 0
             global_pos += max_blocks_per_file
 
-            len_diff = ((0x800 - len(out_data_list[current_bigfile_index])) % 0x800) % 0x800
+            len_diff = (
+                (0x800 - len(out_data_list[current_bigfile_index])) % 0x800
+            ) % 0x800
             out_data_list[current_bigfile_index] += b"\x00" * len_diff
 
             out_data_list.append(b"")

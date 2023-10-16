@@ -17,13 +17,14 @@ from pyDXHR.export import gltf
 import tempfile
 
 
-def from_drm(drm: UnitDRM,
-             bigfile: Bigfile,
-             save_to: Path | str,
-             scale: float = 1.0,
-             z_up: bool = False,
-             **kwargs
-             ) -> None:
+def from_drm(
+    drm: UnitDRM,
+    bigfile: Bigfile,
+    save_to: Path | str,
+    scale: float = 1.0,
+    z_up: bool = False,
+    **kwargs,
+) -> None:
     if drm.is_masterunit:
         pbar = tqdm(drm.linked_drm_list)
         for subunit in pbar:
@@ -53,8 +54,13 @@ def from_drm(drm: UnitDRM,
         stream_gltf_list = []
         stream_mat_list = []
         if len(drm.streamgroup_map):
-            for (streamgroup_path, streamgroup_name), trs in drm.streamgroup_map.items():
-                stream_drm = DRM.from_bigfile(rf"streamgroups\{streamgroup_name}.drm", bigfile)
+            for (
+                streamgroup_path,
+                streamgroup_name,
+            ), trs in drm.streamgroup_map.items():
+                stream_drm = DRM.from_bigfile(
+                    rf"streamgroups\{streamgroup_name}.drm", bigfile
+                )
                 stream_drm.open()
 
                 mat_list = Material.from_drm(stream_drm)
@@ -69,11 +75,11 @@ def from_drm(drm: UnitDRM,
 
                 gltf.merge(
                     gltf_list=stream_gltf_list,
-                    save_to=Path(save_to) / (streamgroup_name + '.gltf'),
+                    save_to=Path(save_to) / (streamgroup_name + ".gltf"),
                     scale=scale,
                     z_up=z_up,
                     mat_list=stream_mat_list,
-                    drm_name=stream_drm.name.replace('.drm', ''),
+                    drm_name=stream_drm.name.replace(".drm", ""),
                 )
 
     # internal material data (for int_imf + cells)
@@ -87,14 +93,13 @@ def from_drm(drm: UnitDRM,
     if kwargs.get("cell", True):
         cell_gltf_list = []
         if len(drm.cell_map):
-
             for (cell_name, cell_sec_id), sec in drm.cell_section_data.items():
                 cell_gltf = gltf.to_temp(sec)
                 cell_gltf_list.append(cell_gltf)
 
             gltf.merge(
                 gltf_list=cell_gltf_list,
-                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_cells.gltf"),
+                save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"),
                 scale=scale,
                 z_up=z_up,
                 mat_list=mat_list,
@@ -123,8 +128,9 @@ def from_drm(drm: UnitDRM,
             gltf.merge_using_library(
                 library_path=library_path,
                 loc_table=drm.int_imf_map,
-                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_int_imf.gltf"),
-                unit_name=drm.name.replace('.drm', '') + "_int_imf",
+                save_to=Path(save_to)
+                / (drm.name.replace(".drm", "") + "_int_imf.gltf"),
+                unit_name=drm.name.replace(".drm", "") + "_int_imf",
                 scale=scale,
                 z_up=z_up,
             )
@@ -138,12 +144,13 @@ def from_drm(drm: UnitDRM,
                 imf_drm.open()
 
                 try:
-                    gltf.from_drm(imf_drm,
-                                  save_to=library_path / (Path(imf_name).stem + ".gltf"),
-                                  scale=0.002,
-                                  z_up=True,
-                                  skip_textures=True
-                                  )
+                    gltf.from_drm(
+                        imf_drm,
+                        save_to=library_path / (Path(imf_name).stem + ".gltf"),
+                        scale=0.002,
+                        z_up=True,
+                        skip_textures=True,
+                    )
                 except kaitaistruct.KaitaiStructError:
                     continue
                 except:
@@ -152,8 +159,9 @@ def from_drm(drm: UnitDRM,
             gltf.merge_using_library(
                 library_path=library_path,
                 loc_table=drm.ext_imf_map,
-                save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_ext_imf.gltf"),
-                unit_name=drm.name.replace('.drm', '') + "_ext_imf",
+                save_to=Path(save_to)
+                / (drm.name.replace(".drm", "") + "_ext_imf.gltf"),
+                unit_name=drm.name.replace(".drm", "") + "_ext_imf",
                 scale=scale,
                 z_up=z_up,
             )
@@ -163,9 +171,14 @@ def from_drm(drm: UnitDRM,
         if not len(drm.obj_map):
             drm.read_objects()
 
-        object_list = [line.split(",") for line in bigfile.read("objectlist.txt").decode("utf-8").split("\r\n")]
+        object_list = [
+            line.split(",")
+            for line in bigfile.read("objectlist.txt").decode("utf-8").split("\r\n")
+        ]
         object_list = {int(line[0]): line[1] for line in object_list if len(line) == 2}
-        parsed_object_map = {object_list[obj_id]: trs_list for obj_id, trs_list in drm.obj_map.items()}
+        parsed_object_map = {
+            object_list[obj_id]: trs_list for obj_id, trs_list in drm.obj_map.items()
+        }
 
         for obj_name, _ in parsed_object_map.items():
             if obj_name in library_items:
@@ -175,12 +188,13 @@ def from_drm(drm: UnitDRM,
             obj_drm.open()
 
             try:
-                gltf.from_drm(obj_drm,
-                              save_to=library_path / (obj_name + ".gltf"),
-                              scale=0.002,
-                              z_up=True,
-                              skip_textures=True
-                              )
+                gltf.from_drm(
+                    obj_drm,
+                    save_to=library_path / (obj_name + ".gltf"),
+                    scale=0.002,
+                    z_up=True,
+                    skip_textures=True,
+                )
             except kaitaistruct.KaitaiStructError:
                 continue
             except:
@@ -189,8 +203,8 @@ def from_drm(drm: UnitDRM,
         gltf.merge_using_library(
             library_path=library_path,
             loc_table=parsed_object_map,
-            save_to=Path(save_to) / (drm.name.replace('.drm', '') + "_obj.gltf"),
-            unit_name=drm.name.replace('.drm', '') + "_obj",
+            save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_obj.gltf"),
+            unit_name=drm.name.replace(".drm", "") + "_obj",
             scale=scale,
             z_up=z_up,
         )

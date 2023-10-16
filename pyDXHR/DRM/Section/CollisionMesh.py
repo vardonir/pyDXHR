@@ -30,25 +30,27 @@ class CollisionMesh:
 
         vertexdata = vtx_ref.section.data
         indices = idx_ref.section.data
-        indices += b"\0" * ((-len(indices)) % 12)  # pad with zeros so that it's divisible by 12
+        indices += b"\0" * (
+            (-len(indices)) % 12
+        )  # pad with zeros so that it's divisible by 12
 
-        vertices = np.frombuffer(vertexdata,
-                                 dtype=np.dtype(np.float32).newbyteorder(self.endian)).reshape((-1, 3))  # noqa
+        vertices = np.frombuffer(
+            vertexdata, dtype=np.dtype(np.float32).newbyteorder(self.endian)
+        ).reshape(
+            (-1, 3)
+        )  # noqa
 
-        ic = np.frombuffer(indices,
-                           dtype=np.dtype(np.uint16).newbyteorder(self.endian)).reshape((-1, 6))  # noqa
+        ic = np.frombuffer(
+            indices, dtype=np.dtype(np.uint16).newbyteorder(self.endian)
+        ).reshape(
+            (-1, 6)
+        )  # noqa
         indices = ic[:, 0:3].astype(np.uint32)
 
         return MeshData(
-            vertex_buffers={
-                0: {
-                    VertexAttribute.position: vertices
-                }
-            },
-            mesh_prim_indexed={
-                0: [(0, indices)]
-            },
-            material_list=[0]
+            vertex_buffers={0: {VertexAttribute.position: vertices}},
+            mesh_prim_indexed={0: [(0, indices)]},
+            material_list=[0],
         )
 
 

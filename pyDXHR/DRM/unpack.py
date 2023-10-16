@@ -1,6 +1,4 @@
-def unpack_from_byte_data(drm_byte_data,
-                          drm_name,
-                          unpack_destination):
+def unpack_from_byte_data(drm_byte_data, drm_name, unpack_destination):
     from pyDXHR.DRM import DRM
     from pyDXHR import SectionType
 
@@ -27,19 +25,22 @@ def unpack_from_byte_data(drm_byte_data,
                 ext = "shdr"
 
         if sec.header.section_type == SectionType.render_resource:
-            ext = 'pcd'
+            ext = "pcd"
 
-        write(name=drm.name,
-              sec_id=sec.header.section_id,
-              sec_type=sec.header.section_type.name,
-              sec_subtype=sec.header.section_subtype.name,
-              extension=ext,
-              data=sec.data,
-              dest_path=unpack_destination)
+        write(
+            name=drm.name,
+            sec_id=sec.header.section_id,
+            sec_type=sec.header.section_type.name,
+            sec_subtype=sec.header.section_subtype.name,
+            extension=ext,
+            data=sec.data,
+            dest_path=unpack_destination,
+        )
 
 
 def write(name, sec_id, sec_type, sec_subtype, extension, data, dest_path):
     from pathlib import Path
+
     if isinstance(name, str):
         out_path = Path(dest_path) / name / sec_type / sec_subtype
     elif isinstance(name, int):
