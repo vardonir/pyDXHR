@@ -141,7 +141,7 @@ enums:
     5: texture
     11: unknown_11
     13: sound
-    16: unknown_16
+    16: unknown_16  # fsfx
     18: unknown_18
     20: unknown_20
     21: unknown_21
@@ -152,7 +152,7 @@ enums:
     28: unknown_28
     30: unknown_30
     32: unknown_32
-    34: unknown_34
+    34: unknown_34  # fxfxa
     36: unknown_36
     40: smart_script
     41: scaleform

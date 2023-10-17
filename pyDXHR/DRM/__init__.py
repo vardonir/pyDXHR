@@ -216,8 +216,6 @@ class DRM:
 
             sec.header.file_name = dtp_list.get(sec.header.section_id, None)
 
-        breakpoint()
-
 
 def decompress(data: bytes):
     """
