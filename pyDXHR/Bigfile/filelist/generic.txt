@@ -1,3 +1,11 @@
+gym_det01_sq06_megandeath.drm
+zoo_worldfx.drm
+zoo_hub.drm
+zoo_gameplay.drm
+zoo_scenario.drm
+zoo_scenario_beta.drm
+zoo_scenario_gamma.drm
+zoo_feature_3d.drm
 textures.ids
 animlist.ids
 boneid.ids

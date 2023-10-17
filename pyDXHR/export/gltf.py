@@ -344,6 +344,9 @@ def merge_using_library(
     merged_gltf.scenes.append(gl.Scene(name=unit_name, nodes=[0]))
     merged_gltf.scene = 0
 
+    empty_buffer = None
+    empty_bv = None
+
     # copy the materials
     for path in loc_table.keys():
         if isinstance(path, int):
@@ -356,6 +359,9 @@ def merge_using_library(
         except FileNotFoundError:
             continue
 
+        if empty_buffer is None and empty_bv is None and len(loaded_gltf.buffers):
+            empty_buffer = [b for b in loaded_gltf.buffers if b.extras.get("name") == "empty"][0]
+            empty_bv = [bv for bv in loaded_gltf.bufferViews if bv.name == "empty"][0]
         for mat in loaded_gltf.materials:
             if mat not in merged_gltf.materials:
                 merged_gltf.materials.append(mat)
@@ -472,5 +478,59 @@ def merge_using_library(
 
                 merged_gltf.nodes.append(node)
                 top_node.children.append(len(merged_gltf.nodes) - 1)
+
+    # add empty texture for the materials
+    if empty_buffer is not None and empty_bv is not None:
+        empty_bv.buffer = len(merged_gltf.buffers)
+        merged_gltf.buffers.append(empty_buffer)
+
+        empty_tex = gl.Texture(name="empty")
+        empty_tex.source = 0
+        merged_gltf.textures.append(empty_tex)
+
+        empty_image = gl.Image(name="empty")
+        empty_image.bufferView = len(merged_gltf.bufferViews)
+        empty_image.mimeType = "image/png"
+        merged_gltf.images.append(empty_image)
+
+        merged_gltf.bufferViews.append(empty_bv)
+
+        for mat in merged_gltf.materials:
+            mat.pbrMetallicRoughness = gl.PbrMetallicRoughness(
+                baseColorTexture=gl.TextureInfo(index=0)
+            )
+
+    merged_gltf.save(save_to)
+
+
+def merge_all(
+        save_to: str | Path,
+        gltf_files: List[str | Path],
+        drm_name="DXHR DRM",
+        scale=1.0,
+        z_up=False,
+):
+    merged_gltf = gl.GLTF2()
+    merged_gltf.asset = MeshData.generate_asset_metadata()
+    top_node = gl.Node(
+        name=drm_name,
+    )
+    top_node.scale = [scale, scale, scale]
+    if z_up:
+        top_node.rotation = (
+            Rotation.from_euler("x", -90, degrees=True).as_quat().tolist()
+        )
+
+    merged_gltf.nodes.append(top_node)
+
+    merged_gltf.scenes.append(gl.Scene(name=drm_name, nodes=[0]))
+    merged_gltf.scene = 0
+
+    for file in gltf_files:
+        loaded_gltf = gl.GLTF2().load(file)
+
+
+    breakpoint()
+
 
     merged_gltf.save(save_to)

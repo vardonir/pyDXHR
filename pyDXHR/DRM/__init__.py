@@ -188,6 +188,23 @@ class DRM:
 
             self.sections.append(section)
 
+    def parse_filenames(self, bigfile: Bigfile):
+        """Parse filenames based on the ids files. Only works with certain versions of the game"""
+        try:
+            dtp_list = bigfile.read_data_by_name("dtpdata.ids")
+            texture_list = bigfile.read_data_by_name("textures.ids")
+        except Exception:
+            raise FileNotFoundError
+
+        dtp_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in dtp_list.decode("latin1").split("\n")[1:-1]}
+        texture_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in texture_list.decode("latin1").split("\n")[1:-1]}
+
+        for sec in self.sections:
+            if sec.header.section_type != SectionType.render_resource:
+                sec.header.file_name = dtp_list.get(sec.header.section_id, None)
+            else:
+                sec.header.file_name = texture_list.get(sec.header.section_id, None)
+
 
 def decompress(data: bytes):
     """

@@ -99,7 +99,10 @@ class Section:
         return not self.__eq__(other)
 
     def __repr__(self):
-        return f"{self.header.section_type.name} {self.header.section_subtype.name} ({self.header.section_id})"
+        if self.header.file_name is not None:
+            return self.header.file_name
+        else:
+            return f"{self.header.section_type.name} {self.header.section_subtype.name} ({self.header.section_id})"
 
     @classmethod
     def from_kaitai_struct(cls, kaitai: DxhrDrm.Drm.Section):

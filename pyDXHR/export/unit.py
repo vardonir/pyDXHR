@@ -50,6 +50,7 @@ def from_drm(
         library_items = set()
 
     # stream data
+    stream_file_list = []
     if kwargs.get("stream", True):
         stream_gltf_list = []
         stream_mat_list = []
@@ -73,14 +74,16 @@ def from_drm(
                     if stream_gltf is not None:
                         stream_gltf_list.append(stream_gltf)
 
+                stream_save_to = Path(save_to) / (streamgroup_name + ".gltf")
                 gltf.merge(
                     gltf_list=stream_gltf_list,
-                    save_to=Path(save_to) / (streamgroup_name + ".gltf"),
+                    save_to=stream_save_to,
                     scale=scale,
                     z_up=z_up,
                     mat_list=stream_mat_list,
                     drm_name=stream_drm.name.replace(".drm", ""),
                 )
+                stream_file_list.append(stream_save_to)
 
     # internal material data (for int_imf + cells)
     mat_list = []
@@ -208,3 +211,17 @@ def from_drm(
             scale=scale,
             z_up=z_up,
         )
+
+    # gltf.merge_all(
+    #     save_to=Path(save_to) / (drm.name.replace(".drm", "") + ".gltf"),
+    #     drm_name=drm.name.replace(".drm", ""),
+    #     scale=scale,
+    #     z_up=z_up,
+    #     gltf_files=[
+    #         Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"),
+    #         Path(save_to) / (drm.name.replace(".drm", "") + "_int_imf.gltf"),
+    #         Path(save_to) / (drm.name.replace(".drm", "") + "_ext_imf.gltf"),
+    #         Path(save_to) / (drm.name.replace(".drm", "") + "_obj.gltf"),
+    #         *stream_file_list,
+    #     ],
+    # )
