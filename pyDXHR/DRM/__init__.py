@@ -193,17 +193,30 @@ class DRM:
         try:
             dtp_list = bigfile.read_data_by_name("dtpdata.ids")
             texture_list = bigfile.read_data_by_name("textures.ids")
+            waves_list = bigfile.read_data_by_name("waves.ids")
+            object_list = bigfile.read_data_by_name("objectlist.ids")
         except Exception:
             raise FileNotFoundError
 
-        dtp_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in dtp_list.decode("latin1").split("\n")[1:-1]}
-        texture_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in texture_list.decode("latin1").split("\n")[1:-1]}
+        dtp_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in dtp_list.decode("latin1").split("\n")[1:-1]}  # noqa
+        texture_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in texture_list.decode("latin1").split("\n")[1:-1]}  # noqa
+        waves_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in waves_list.decode("latin1").split("\n")[1:-1]}  # noqa
+        object_list = {int(i.split(",")[0]): i.split(",")[1].strip() for i in object_list.decode("latin1").split("\n")[1:-1]}  # noqa
 
         for sec in self.sections:
-            if sec.header.section_type != SectionType.render_resource:
-                sec.header.file_name = dtp_list.get(sec.header.section_id, None)
-            else:
+            if sec.header.section_type == SectionType.render_resource:
                 sec.header.file_name = texture_list.get(sec.header.section_id, None)
+                continue
+            elif sec.header.section_type == SectionType.fmod:
+                sec.header.file_name = waves_list.get(sec.header.section_id, None)
+                continue
+            elif sec.header.section_type == SectionType.object:
+                sec.header.file_name = object_list.get(sec.header.section_id, None)
+                continue
+
+            sec.header.file_name = dtp_list.get(sec.header.section_id, None)
+
+        breakpoint()
 
 
 def decompress(data: bytes):
