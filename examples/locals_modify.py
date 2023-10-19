@@ -10,9 +10,11 @@ locals_instance.open()
 intro_text = r"Welcome to Deus Ex: Human Revolution - Director's Cut. For information and updates, visit www.DeusEx.com or connect to the Internet."  # noqa
 replacement_text = "hello world! -Vardonir"
 
-locals_instance.modify_text(original_text=intro_text, replacement_text=replacement_text)
+locals_instance.modify_text(original=intro_text, replacement=replacement_text)
 replacement_entry = locals_instance.write()
 
-new_bf = write_new_bigfile([replacement_entry], source_bigfile=bf)
+out_000 = write_new_bigfile([replacement_entry], source_bigfile=bf)
 
-breakpoint()
+mods_folder = r"F:\Games\Deus Ex HRDC\mods"
+with open(mods_folder + r"/hello_world.000", "wb") as ff:
+    ff.write(out_000[0])

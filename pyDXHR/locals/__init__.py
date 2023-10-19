@@ -12,6 +12,32 @@ from pyDXHR.Bigfile import Bigfile, BigfileEntry
 from pyDXHR.generated.locals import Locals as KaitaiLocals
 
 
+class LocalsItem:
+    def __init__(self):
+        self.byte_string: bytes = b""
+        self.original_length = 0
+        self.string: Optional[str] = None
+        self.offset: int = 0
+        self.is_modified: bool = False
+        self.encoding: Optional[str] = None
+
+    @classmethod
+    def from_kaitai_str(cls, kt_string_object, encoding: Optional[str] = "utf-8"):
+        obj = cls()
+
+        obj.byte_string = kt_string_object.body
+        obj.original_length = len(kt_string_object.body)
+        if encoding:
+            obj.encoding = encoding
+            obj.string = kt_string_object.body.decode(encoding)
+
+        obj.offset = kt_string_object.offset
+        return obj
+
+    def __repr__(self):
+        return f"<LocalsItem: {self.offset} | {self.string}>"
+
+
 class Locals:
     def __init__(self):
         self._is_open = False
@@ -21,11 +47,11 @@ class Locals:
         self.byte_data: bytes = b""
         self.encoding: Optional[str] = None
         self.locale: int = 0xFFFFFD61
-        self.strings = []
-        self._offsets = []
+
+        self.items: List[LocalsItem] = []
 
     def __len__(self):
-        return len(self.strings)
+        return len(self.items)
 
     @classmethod
     def from_bigfile(
@@ -57,17 +83,36 @@ class Locals:
         self._unk0 = kt_locals.unk0
         self._unk6 = kt_locals.unk6
 
-        for item in kt_locals.str_list:
-            if self.encoding is None:
-                self.strings.append(item.body)
-            else:
-                self.strings.append(item.body.decode(self.encoding))
-            self._offsets.append(item.offset)
+        self.items = [LocalsItem.from_kaitai_str(item, self.encoding) for item in kt_locals.str_list]
 
+    @property
     def offset_dict(self):
-        return {o: s for s, o in zip(self.strings, self._offsets)}
+        if self.encoding:
+            return {item.offset: item.string for item in self.items}
+        else:
+            return {item.offset: item.byte_string for item in self.items}
 
-    def find_string_index(self, string: str | bytes) -> List[int]:
+    def modify_text(self, original: str | bytes, replacement: str | bytes):
+        str_index = self._find_string_at_index(original)
+        if len(str_index) > 1:
+            raise Warning(
+                "More than one instance of the string found, this function will replace all instances!"
+            )
+        for index in str_index:
+            self.modify_at_index(index, replacement)
+
+    def modify_at_index(self, index: int, replacement: str | bytes):
+        self.items[index].is_modified = True
+
+        if self.encoding:
+            self.items[index].string = replacement
+        else:
+            self.items[index].byte_string = replacement
+
+    def _find_offset_at_index(self, index: int) -> int:
+        return self.items[index].offset
+
+    def _find_string_at_index(self, string: str | bytes) -> List[int]:
         """
         Find the index/indices of a string in the locals.bin file
 
@@ -77,30 +122,56 @@ class Locals:
         shows up in the game 13 times (in the PC Director's Cut version).
         """
 
-        return [idx for idx, s in enumerate(self.strings) if s == string]
+        if self.encoding:
+            return [idx for idx, s in enumerate(self.items) if s.string == string]
+        else:
+            return [idx for idx, s in enumerate(self.items) if s.byte_string == string]
 
-    def find_offset_index(self, offset: int) -> int:
-        return self._offsets.index(offset)
-
-    def modify_text(self, original_text: str, replacement_text: str):
-        str_index = self.find_string_index(original_text)
-        if len(str_index) > 1:
-            raise Warning(
-                "More than one instance of the string found, this function will replace all instances!"
-            )
-        for index in str_index:
-            self.modify_index(index, replacement_text)
-
-    def modify_index(self, index: int, replacement_text: str | bytes):
+    def _rebuild_tables(self):
+        """
+        Rebuild the offset table and the text body
+        Note: this works even for modifying more than one text item in the table
+        """
         import struct
 
+        # build header
         head_blob = self._unk0 + struct.pack("<H", len(self)) + self._unk6
-        # final_blob = head_blob + self._rebuild_tables(index, replacement_text)
-        self.byte_data = head_blob + self._rebuild_tables(index, replacement_text)
+
+        # calculate where the starting offset of the text blob should be - this is the
+        # length of the offset table + length of the header
+        text_blob_start = len(self) * 4 + len(head_blob)
+
+        # build text body
+        text_blob = b""
+        offset_cursor = text_blob_start
+        for i in self.items:
+            if len(i.string) == 0:
+                text_blob += b""
+                continue
+
+            if self.encoding:
+                data = i.string.encode(self.encoding) + b"\x00"
+            else:
+                data = i.byte_string + b"\x00"
+
+            i.offset = offset_cursor
+            offset_cursor += len(data)
+            text_blob += data
+
+        # build offset table
+        offset_blob = b""
+        for i in self.items:
+            offset_blob += struct.pack("<L", i.offset)
+
+        return head_blob + offset_blob + text_blob
 
     def write(self) -> BigfileEntry:
-        test = KaitaiLocals.from_bytes(self.byte_data)
+        blob = self._rebuild_tables()
+        test = KaitaiLocals.from_bytes(blob)
         assert len(self) == len(test.str_list)
+
+        # make sure the tests pass before writing
+        self.byte_data = blob
 
         from pyDXHR.Bigfile.filelist import crc32bzip2
 
@@ -113,42 +184,11 @@ class Locals:
         archive_entry.uncompressed_size = len(self.byte_data)
         return archive_entry
 
-    def _rebuild_tables(self, index: int, replacement_text: str | bytes):
-        import struct
+    def __getitem__(self, index):
+        if self.encoding:
+            return self.items[index]
+        else:
+            return self.items[index]
 
-        original_text = self[index]
-
-        if isinstance(replacement_text, str):
-            replacement_text = replacement_text.encode(self.encoding)
-
-        len_difference = len(replacement_text) - len(original_text)
-
-        # rebuild the offset table
-        offsets_blob = b""
-        for i, offset in enumerate(self._offsets):
-            if offset == 0:
-                offsets_blob += struct.pack("<L", 0)
-            elif i > index:
-                offsets_blob += struct.pack("<L", offset + len_difference)
-            else:
-                offsets_blob += struct.pack("<L", offset)
-
-        # rebuild the string table
-        strings_blob = b""
-        string: str
-        for i, string in enumerate(self.strings):
-            if i == 0:
-                continue
-            if len(string) == 0:
-                strings_blob += b""
-                continue
-
-            if i == index:
-                strings_blob += replacement_text + b"\x00"
-            else:
-                strings_blob += string.encode(self.encoding) + b"\x00"
-
-        return offsets_blob + strings_blob
-
-    def __getitem__(self, item):
-        return self.strings[item]
+    def append(self, text: str):
+        raise NotImplementedError

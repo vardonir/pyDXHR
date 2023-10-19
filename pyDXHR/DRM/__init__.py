@@ -96,6 +96,9 @@ class DRM:
             if sec.header.section_id == section_id:
                 return sec
 
+    def __getitem__(self, item):
+        return self.sections[item]
+
     @classmethod
     def from_bigfile(
         cls, drm_name_or_hash: str | int, bigfile: Bigfile, locale: int = 0xFFFFFFFF

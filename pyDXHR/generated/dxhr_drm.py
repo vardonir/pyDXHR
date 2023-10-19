@@ -37,7 +37,8 @@ class DxhrDrm(KaitaiStruct):
         texture = 5
         unknown_11 = 11
         sound = 13
-        unknown_16 = 16
+        fsfx = 16
+        lights = 17
         unknown_18 = 18
         unknown_20 = 20
         unknown_21 = 21
@@ -48,7 +49,7 @@ class DxhrDrm(KaitaiStruct):
         unknown_28 = 28
         unknown_30 = 30
         unknown_32 = 32
-        unknown_34 = 34
+        fxfxa = 34
         unknown_36 = 36
         smart_script = 40
         scaleform = 41

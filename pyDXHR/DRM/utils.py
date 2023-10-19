@@ -5,6 +5,10 @@ from pyDXHR import SectionType
 
 
 def get_text_references(drm) -> List[Reference]:
+    """
+    Used by the databases
+    TODO: explain me
+    """
     root_ref = Reference.from_root(drm)
     header = np.frombuffer(
         root_ref.section.data, dtype=np.dtype(np.uint32).newbyteorder(root_ref.endian)
