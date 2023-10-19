@@ -186,9 +186,9 @@ class Locals:
 
     def __getitem__(self, index):
         if self.encoding:
-            return self.items[index]
+            return self.items[index].string
         else:
-            return self.items[index]
+            return self.items[index].byte_string
 
     def append(self, text: str):
         raise NotImplementedError

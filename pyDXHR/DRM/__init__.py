@@ -8,7 +8,7 @@ from pyDXHR.DRM.unpack import unpack_from_byte_data
 from pyDXHR.DRM.Section import *
 from pyDXHR.Bigfile import Bigfile
 from pyDXHR.generated.dxhr_drm import DxhrDrm
-from pyDXHR.DRM.Database import email, ireader, scenario
+from pyDXHR.DRM.Database import emails, ireader, scenario
 
 drm_magic = 0x4344524D
 # iReaderDatabase = ireader.IReaderDatabase

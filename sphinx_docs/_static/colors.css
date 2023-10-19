@@ -62,3 +62,8 @@ background-color: var(--themebgcolor);
     background-color: var(--themecolor3);    
     border-style: none solid none none;
 }
+
+table {
+    background-color: rgb(227, 227, 227);
+    color: black;    
+}

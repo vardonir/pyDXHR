@@ -16,3 +16,4 @@ Several notes on the files used by the game. Might be useful. Might be confusing
     Section data<sections.md>
     Units<units.md>
     The XBox version<xbox.md>
+    Databases<databases/databases.rst>
