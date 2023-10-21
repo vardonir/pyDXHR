@@ -8,10 +8,11 @@ bf = Bigfile.from_env(version=Bigfile.Version.DIRECTORS_CUT, platform=Bigfile.Pl
 bf.open()
 
 # drm = DRM.from_bigfile(0xAB0AD4A3, bf)
-drm = DRM.from_bigfile("shaderlibs\chr_cloth_f5d3d712114d34da_dx9.drm", bf)
+drm = DRM.from_bigfile("email_database.drm", bf)
 drm.open()
 
 out = r"C:\Users\vardo\Documents\pyDXHR\playground"
+convert_textures = True
 
 
 def write(name, sec_id, sec_type, sec_subtype, extension, data):

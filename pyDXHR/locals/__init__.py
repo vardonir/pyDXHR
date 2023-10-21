@@ -77,6 +77,9 @@ class Locals:
         return obj
 
     def open(self):
+        if self._is_open:
+            return
+
         self._is_open = True
 
         kt_locals = KaitaiLocals.from_bytes(self.byte_data)

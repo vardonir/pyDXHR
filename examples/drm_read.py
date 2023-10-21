@@ -4,7 +4,10 @@ from pyDXHR.DRM import DRM
 bf = Bigfile.from_env()
 bf.open()
 
-drm = DRM.from_bigfile(0xAB0AD4A3, bf)
+# drm_name = 0xAB0AD4A3
+drm_name = r"streamgroups\det_adam_apt_c_all.drm"
+
+drm = DRM.from_bigfile(drm_name, bf)
 drm.open()
 
 print("DRM dependencies: ")
@@ -23,3 +26,5 @@ for sec in drm.sections:
           sec.header.section_type.name,
           sec.header.section_subtype.name,
           sec.header.len_data)
+
+breakpoint()

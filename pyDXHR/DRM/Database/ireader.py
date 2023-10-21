@@ -78,6 +78,13 @@ class IReaderDatabase:
         self._drm = None
         self.data: Dict[int, IReaderContents] = {}
 
+    def set_locals_bin(self, locals_bin: Locals):
+        if self._is_open:
+            raise RuntimeError("Cannot set locals.bin after opening the database")
+
+        self._locals_bin = locals_bin
+        self._locals_bin.open()
+
     @classmethod
     def from_bigfile(cls, bf, locale: Optional[int] = 0xFFFFFD61):
         """ Open the ireader database from a bigfile """
