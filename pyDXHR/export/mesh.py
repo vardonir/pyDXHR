@@ -9,7 +9,6 @@ import numpy as np
 import pygltflib as gl
 
 from pyDXHR import VertexAttribute
-from pyDXHR.DRM.Section import Material
 import os
 from dotenv import load_dotenv
 
@@ -19,8 +18,11 @@ load_dotenv()
 class MeshData:
     """Compiles the vertex data along with the material data to export to GLTF"""
 
-    def set_material_data(self, materials: List[int]):
+    def set_material_data(self, materials: Optional[List]):
         self.materials = materials
+
+    def set_texture_data(self, textures: Optional[List]):
+        self.textures = textures
 
     @staticmethod
     def generate_asset_metadata():
@@ -90,7 +92,7 @@ class MeshData:
                this was originally used in the lumen-optimized implementation
         """
 
-        self._skip_textures = bool(os.getenv("skip_textures", True))
+        self._skip_textures = os.getenv("skip_textures", "True") == "True"
         self._is_built = False
 
         self.bbox_sphere_radius = bbox_sphere_radius
@@ -98,7 +100,8 @@ class MeshData:
         self.mesh_prim_indexed = mesh_prim_indexed
         self.material_list = material_list
         self.name: str = name
-        self.materials: Optional[List[int]] = None
+        self.materials: Optional[List] = None
+        self.textures: Optional[List] = None
 
         self.trs_matrix = None
         self.gltf_root = gl.GLTF2()
@@ -118,14 +121,25 @@ class MeshData:
     def build_gltf(self):
         # add the materials
         material_index_dict = {}
-        if self._skip_textures:
-            for mat in self.material_list:
-                gltf_mat = gl.Material(name=f"M_{mat:08X}", extras={}, alphaCutoff=None)
+        for mat in self.material_list:
+            gltf_mat = gl.Material(name=f"M_{mat:08X}", extras={}, alphaCutoff=None)
 
-                index_mat = self._add_property(gltf_mat)
-                material_index_dict[mat] = index_mat
-        else:
-            raise NotImplementedError
+            index_mat = self._add_property(gltf_mat)
+            material_index_dict[mat] = index_mat
+        if not self._skip_textures:
+            if self.materials is None:
+                raise ValueError("No materials were provided")
+            if self.textures is None:
+                raise ValueError("No textures were provided")
+
+            # add the filenames of the materials
+            if self.materials[0].file_name is not None:
+                for cdc_mat_id, gltf_mat_id in material_index_dict.items():
+                    self.gltf_root.materials[gltf_mat_id].extras |= {
+                        "file_name": Path([m.file_name for m in self.materials if m.section_id == cdc_mat_id][0]).stem
+                    }
+
+            # raise NotImplementedError
 
         # add vertex/index data
 
@@ -381,10 +395,13 @@ class MeshData:
         :param attribute_index_dict:
         :return:
         """
+
+        limit_attributes = os.getenv("limit_attributes", "True") == "True"
+
         return gl.Attributes(
             POSITION=attribute_index_dict[VertexAttribute.position.value],
-            NORMAL=attribute_index_dict[VertexAttribute.normal.value],
-            TANGENT=attribute_index_dict[VertexAttribute.tangent.value],
+            NORMAL=None if limit_attributes else attribute_index_dict[VertexAttribute.normal.value],
+            TANGENT=None if limit_attributes else attribute_index_dict[VertexAttribute.tangent.value],
             TEXCOORD_0=attribute_index_dict[VertexAttribute.texcoord1.value],
             TEXCOORD_1=attribute_index_dict[VertexAttribute.texcoord2.value],
             COLOR_0=attribute_index_dict[VertexAttribute.color1.value],

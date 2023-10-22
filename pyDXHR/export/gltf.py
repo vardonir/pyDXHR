@@ -4,7 +4,6 @@ Convert section or DRM to GLTF files
 
 import tempfile
 import shutil
-import os
 from copy import copy
 import json
 from tempfile import gettempdir
@@ -47,6 +46,10 @@ def to_temp(sec: Section) -> Optional[gl.GLTF2]:
 
     loaded_gltf = gl.GLTF2().load(temp_dest_path)
     loaded_gltf.nodes[0].name = f"SM_{rm.section_id:08X}"
+
+    if len(loaded_gltf.accessors) == 0:
+        return None
+
     return loaded_gltf
 
 
@@ -112,7 +115,10 @@ def from_drm(
             continue
 
         md = rm.parse_mesh_data()
+        # md.name = Path(rm.file_name).stem if rm.file_name is not None else f"{rm.section_id:08X}"
         md.name = f"{rm.section_id:08X}"
+        md.set_material_data(mat_list)
+        md.set_texture_data(tex_list)
 
         # save it to a temporary directory so that the buffer file will be created
         (Path(gettempdir()) / "pyDXHR").mkdir(parents=True, exist_ok=True)
@@ -125,32 +131,18 @@ def from_drm(
         loaded_gltf.nodes[0].name = f"SM_{rm.section_id:08X}"
         gltf_list.append(loaded_gltf)
 
-    if len(gltf_list) == 1:
-        if temp_buffer_path.is_file():
-            shutil.copy(
-                temp_buffer_path, Path(save_to).parent / Path(temp_buffer_path).name
-            )
-
-            # gltf_list[0].buffers[0].uri = Path(save_to).stem + ".bin"
-            gltf_list[0].save(save_to)
-
-    else:
-        merge(
-            gltf_list=gltf_list,
-            save_to=save_to,
-            mat_list=mat_list,
-            tex_list=tex_list,
-            drm_name=drm_name,
-            scale=scale,
-            z_up=z_up,
-        )
-
-    # remove the temporary gltf
-    # if temp_dest_path is not None:
-    #     os.remove(temp_dest_path)
+    merge_gltf(
+        gltf_list=gltf_list,
+        save_to=save_to,
+        mat_list=mat_list,
+        tex_list=tex_list,
+        drm_name=drm_name,
+        scale=scale,
+        z_up=z_up
+    )
 
 
-def merge(
+def merge_gltf(
     gltf_list: List[gl.GLTF2],
     save_to: str | Path,
     mat_list: Optional = None,
@@ -188,8 +180,9 @@ def merge(
     for mat in merged_gltf.materials:
         if mat.name in mat_data:
             mat.extras = {}
-            for mt in mat_data[mat.name]:
-                mat.extras |= mt.to_json()
+            for md in mat_data[mat.name]:
+                mat.extras |= md.to_json()
+                # mat.extras["file_name"] = fn
             # mat.extras = list(set([f"{mt.texture_id:08X}" for mt in mat_data[mat.name]]))
 
     compiled_images = {i.name: copy(i) for f in gltf_list for i in f.images}

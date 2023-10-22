@@ -2,3 +2,4 @@ kaitaistruct
 numpy
 pygltflib
 tqdm
+dotenv

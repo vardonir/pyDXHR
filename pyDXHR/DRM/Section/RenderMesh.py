@@ -9,6 +9,8 @@ from pyDXHR.DRM import DRM, Section
 from pyDXHR.generated.render_model_buffer import (
     RenderModelBuffer as KaitaiRenderModelBuffer,
 )
+
+from pyDXHR.export.mesh import MeshData
 from pyDXHR.generated.render_terrain import RenderTerrain as KaitaiRenderTerrain
 from pyDXHR import VertexAttribute
 
@@ -21,13 +23,14 @@ class RenderMesh(ABC):
         self.endian: str = "<"
         self.materials = []
         self.section_id: int = 0
+        self.file_name: Optional[str] = None
 
     def read(self):
         """Read the mesh data"""
         return self.parse_mesh_data()
 
     @abstractmethod
-    def parse_mesh_data(self):
+    def parse_mesh_data(self) -> MeshData:
         """Abstract method. Parse mesh data."""
         raise NotImplementedError
 
@@ -49,6 +52,7 @@ class RenderModel(RenderMesh):
     def __init__(self, section: Section):
         super().__init__()
         self.section = section
+        self.file_name = self.section.header.file_name
         self.section_id = section.header.section_id
         section_data = self.section.data
 
@@ -59,7 +63,9 @@ class RenderModel(RenderMesh):
         elif buffer_mark_be != -1:
             buffer_mark = buffer_mark_be
         else:
-            raise ValueError("Mesh data not found")
+            buffer_mark = -1
+            self.rmb = None
+            # raise ValueError("Mesh data not found")
 
         if buffer_mark != -1:
             self.rmb: Optional[RenderModelBuffer] = RenderModelBuffer.from_bytes(
@@ -69,6 +75,8 @@ class RenderModel(RenderMesh):
             self.rmb.byte_data = section_data[buffer_mark:]
             self.rmb.endian = section.header.endian
             self.rmb.section_id = section.header.section_id
+        else:
+            self.materials = _get_materials(section, 0x8)
 
         self.rm_data = section_data[:buffer_mark]
         # TODO: I believe there's some information here about bones, but I'm not interested in that right now.
@@ -87,6 +95,12 @@ class RenderModel(RenderMesh):
         """
         raise NotImplementedError
 
+    def __repr__(self):
+        if self.file_name:
+            return f"<{self.__class__.__name__} {self.file_name}>"
+        else:
+            return f"<{self.__class__.__name__} {self.section_id:08X}>"
+
 
 class RenderTerrain(KaitaiRenderTerrain, RenderMesh):
     """
@@ -94,7 +108,7 @@ class RenderTerrain(KaitaiRenderTerrain, RenderMesh):
     10 materials. For example, the helipad + ground + background in the Sarif Industries HQ is one big RT.
     """
 
-    def parse_mesh_data(self):
+    def parse_mesh_data(self) -> MeshData:
         """
         Read the RT data using the kaitai parser
         """
@@ -191,7 +205,7 @@ class RenderModelBuffer(KaitaiRenderModelBuffer, RenderMesh):
     merged with the RenderModel section in the PC version. This is the data that starts from the "Mesh" header.
     """
 
-    def parse_mesh_data(self):
+    def parse_mesh_data(self) -> MeshData:
         """
         Read the RMB data using the kaitai parser
         """
@@ -277,10 +291,15 @@ def from_section(sec: Section) -> Optional[RenderMesh]:
         rm = RenderModel.from_section(sec)
         rm.byte_data = sec.data
         rm.endian = sec.header.endian
+        rm.file_name = sec.header.file_name
         if rm.rmb is not None:
             return rm.rmb
+        else:
+            return None
     elif sec.header.section_subtype == SectionSubtype.render_model_buffer:
         rmb = RenderModelBuffer.from_bytes(sec.data)
+
+        rmb.file_name = sec.header.file_name
         rmb.section_id = sec.header.section_id
         rmb.byte_data = sec.data
         rmb.endian = sec.header.endian
@@ -294,6 +313,7 @@ def from_section(sec: Section) -> Optional[RenderMesh]:
         mesh_data = sec.data[start_offset:]
 
         rt = RenderTerrain.from_bytes(mesh_data)
+        rt.file_name = sec.header.file_name
         rt.section_id = sec.header.section_id
         rt.endian = sec.header.endian
         rt.byte_data = mesh_data
@@ -303,17 +323,46 @@ def from_section(sec: Section) -> Optional[RenderMesh]:
         return None
 
 
+def from_section_pair(rm_sec: Section, rm_buffer_sec: Section) -> Optional[RenderMesh]:
+    rm = RenderModel.from_section(rm_sec)
+    rmb = from_section(rm_buffer_sec)
+    rmb.materials = rm.materials
+    rmb.file_name = rm_sec.header.file_name
+
+    return rmb
+
+
 def from_drm(drm: DRM) -> List[RenderMesh]:
     """
     Convert a DRM to a list of RenderMesh instances
     """
-    from pyDXHR import SectionType
+    from pyDXHR import SectionType, SectionSubtype
 
-    return [
-        from_section(sec)
-        for sec in drm.sections
-        if sec.header.section_type == SectionType.render_mesh
-    ]
+    if drm.endian == ">":
+        rm_list = []
+        for i in range(0, len(drm.sections) - 1):
+            curr_sec = drm.sections[i]
+            next_sec = drm.sections[i + 1]
+
+            if curr_sec.header.section_type == SectionType.render_mesh and next_sec.header.section_type == SectionType.render_mesh:
+                if curr_sec.header.section_subtype == SectionSubtype.render_model and next_sec.header.section_subtype == SectionSubtype.render_model_buffer:
+                    sec_pair = from_section_pair(curr_sec, next_sec)
+                    if sec_pair:
+                        rm_list.append(sec_pair)
+                        continue
+
+            if curr_sec.header.section_type == SectionType.render_mesh and curr_sec.header.section_subtype == SectionSubtype.render_terrain:
+                rm_list.append(from_section(curr_sec))
+                continue
+
+        return rm_list
+
+    else:
+        return [
+            from_section(sec)
+            for sec in drm.sections
+            if sec.header.section_type == SectionType.render_mesh
+        ]
 
 
 def _get_materials(sec: Section, offset: int = 0) -> List[int]:

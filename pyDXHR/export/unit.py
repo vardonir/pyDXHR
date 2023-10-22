@@ -74,16 +74,10 @@ def from_drm(
                     if stream_gltf is not None:
                         stream_gltf_list.append(stream_gltf)
 
-                stream_save_to = Path(save_to) / (streamgroup_name + ".gltf")
-                gltf.merge(
-                    gltf_list=stream_gltf_list,
-                    save_to=stream_save_to,
-                    scale=scale,
-                    z_up=z_up,
-                    mat_list=stream_mat_list,
-                    drm_name=stream_drm.name.replace(".drm", ""),
-                )
-                stream_file_list.append(stream_save_to)
+            stream_save_to = Path(save_to) / (drm.name.replace(".drm", "") + "_streams.gltf")
+            gltf.merge_gltf(gltf_list=stream_gltf_list, save_to=stream_save_to, mat_list=stream_mat_list,
+                            drm_name=drm.name.replace(".drm", ""), scale=scale, z_up=z_up)
+            stream_file_list.append(stream_save_to)
 
     # internal material data (for int_imf + cells)
     mat_list = []
@@ -92,7 +86,7 @@ def from_drm(
         for mat in mat_list:
             mat.read()
 
-    # internal data (cells)
+    # internal data (cells/internal stream data)
     if kwargs.get("cell", True):
         cell_gltf_list = []
         if len(drm.cell_map):
@@ -100,14 +94,9 @@ def from_drm(
                 cell_gltf = gltf.to_temp(sec)
                 cell_gltf_list.append(cell_gltf)
 
-            gltf.merge(
-                gltf_list=cell_gltf_list,
-                save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"),
-                scale=scale,
-                z_up=z_up,
-                mat_list=mat_list,
-                drm_name=f"{drm.name.replace('.drm', '')}_cell",
-            )
+            gltf.merge_gltf(gltf_list=cell_gltf_list,
+                            save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"), mat_list=mat_list,
+                            drm_name=f"{drm.name.replace('.drm', '')}_cell", scale=scale, z_up=z_up)
 
     # IMF data
     if kwargs.get("int_imf", True) or kwargs.get("ext_imf", True):
@@ -156,7 +145,7 @@ def from_drm(
                     )
                 except kaitaistruct.KaitaiStructError:
                     continue
-                except:
+                except Exception as e:
                     breakpoint()
 
             gltf.merge_using_library(

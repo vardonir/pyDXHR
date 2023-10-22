@@ -8,12 +8,17 @@ bf.open()
 imf = "imf\imf_props\imf_vehicule\chopper_int\chopper_int.drm"  # noqa
 obj = "television_extralarge.drm"
 
-drm = DRM.from_bigfile(obj, bf)
+drm = DRM.from_bigfile(imf, bf)
 drm.open()
 
+try:
+    drm.parse_filenames(bf)
+except FileNotFoundError:
+    pass
+
 gltf.from_drm(drm,
-              save_to=rf"C:\Users\vardo\Documents\pyDXHR\playground\test.gltf",
+              save_to=rf"C:\Users\vardo\Documents\pyDXHR\playground\ps3\test.gltf",
               scale=0.002, z_up=True
               )
 
-breakpoint()
+# breakpoint()

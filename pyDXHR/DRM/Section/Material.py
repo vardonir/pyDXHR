@@ -65,6 +65,7 @@ class Material:
         self.reference: Optional[Reference] = None
         self.material_tex_list: List[MaterialTex] = []
         self.name: Optional[str] = None
+        self.file_name: Optional[str] = None
         self.section_id: Optional[int] = None
 
     def read(self):
@@ -72,6 +73,12 @@ class Material:
 
     def parse_material_data(self):
         raise NotImplementedError
+
+    def __repr__(self):
+        if self.file_name:
+            return f"<{self.__class__.__name__} {self.file_name}>"
+        else:
+            return f"<{self.__class__.__name__} {self.section_id:08X}>"
 
 
 class Unknown18(Material):
@@ -190,13 +197,16 @@ def from_drm(drm: DRM) -> List[Material]:
             if sec.header.section_subtype == SectionSubtype.unknown_18:
                 # only the PC version uses the specializations for materials
                 if (
-                    (os.getenv("platform", "pc") == "pc")
+                    drm.endian == "<"
+                    and (os.getenv("platform", "pc") == "pc")
                     and (os.getenv("read_materials", "dx11") == "dx11")
                     and (sec.header.specialization >> 30 != 1)
                 ):
                     continue
 
                 ref = Reference.from_section(drm.sections, sec)
-                materials.append(Unknown18.from_reference(ref))
+                mat = Unknown18.from_reference(ref)
+                mat.file_name = sec.header.file_name
+                materials.append(mat)
 
     return materials
