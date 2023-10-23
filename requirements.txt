@@ -3,3 +3,4 @@ numpy
 pygltflib
 tqdm
 dotenv
+wannacri
