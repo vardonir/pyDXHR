@@ -11,7 +11,7 @@ from pathlib import Path
 
 from Bigfile import Bigfile
 from pyDXHR.DRM import DRM
-from pyDXHR.DRM.Section import Material
+from pyDXHR.DRM.Section import Material, RenderResource
 from pyDXHR.DRM.unit import UnitDRM
 from pyDXHR.export import gltf
 import tempfile
@@ -53,6 +53,7 @@ def from_drm(
     stream_file_list = []
     if kwargs.get("stream", True):
         stream_gltf_list = []
+        stream_tex_list = []
         stream_mat_list = []
         if len(drm.streamgroup_map):
             for (
@@ -63,11 +64,20 @@ def from_drm(
                     rf"streamgroups\{streamgroup_name}.drm", bigfile
                 )
                 stream_drm.open()
+                try:
+                    stream_drm.parse_filenames(bigfile)
+                except FileNotFoundError:
+                    pass
 
                 mat_list = Material.from_drm(stream_drm)
                 for mat in mat_list:
                     mat.read()
                 stream_mat_list.extend(mat_list)
+
+                tex_list = RenderResource.from_drm(stream_drm)
+                for tex in tex_list:
+                    tex.read()
+                stream_tex_list.extend(tex_list)
 
                 for sec in stream_drm.sections:
                     stream_gltf = gltf.to_temp(sec)
@@ -75,16 +85,28 @@ def from_drm(
                         stream_gltf_list.append(stream_gltf)
 
             stream_save_to = Path(save_to) / (drm.name.replace(".drm", "") + "_streams.gltf")
-            gltf.merge_gltf(gltf_list=stream_gltf_list, save_to=stream_save_to, mat_list=stream_mat_list,
-                            drm_name=drm.name.replace(".drm", ""), scale=scale, z_up=z_up)
+            gltf.merge_gltf(
+                gltf_list=stream_gltf_list,
+                save_to=stream_save_to,
+                mat_list=stream_mat_list,
+                tex_list=stream_tex_list,
+                drm_name=drm.name.replace(".drm", ""),
+                scale=scale,
+                z_up=z_up
+            )
             stream_file_list.append(stream_save_to)
 
-    # internal material data (for int_imf + cells)
+    # internal material + texture data (for int_imf + cells)
     mat_list = []
+    tex_list = []
     if kwargs.get("cell", True) or kwargs.get("int_imf", True):
         mat_list = Material.from_drm(drm)
         for mat in mat_list:
             mat.read()
+
+        tex_list = RenderResource.from_drm(drm)
+        for tex in tex_list:
+            tex.read()
 
     # internal data (cells/internal stream data)
     if kwargs.get("cell", True):
@@ -95,8 +117,13 @@ def from_drm(
                 cell_gltf_list.append(cell_gltf)
 
             gltf.merge_gltf(gltf_list=cell_gltf_list,
-                            save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"), mat_list=mat_list,
-                            drm_name=f"{drm.name.replace('.drm', '')}_cell", scale=scale, z_up=z_up)
+                            save_to=Path(save_to) / (drm.name.replace(".drm", "") + "_cells.gltf"),
+                            mat_list=mat_list,
+                            tex_list=tex_list,
+                            drm_name=f"{drm.name.replace('.drm', '')}_cell",
+                            scale=scale,
+                            z_up=z_up
+                            )
 
     # IMF data
     if kwargs.get("int_imf", True) or kwargs.get("ext_imf", True):
@@ -110,10 +137,15 @@ def from_drm(
 
                 imf_gltf = gltf.to_temp(drm.get_section_from_id(sec_id))
                 if imf_gltf:
+
+                    # fix the buffers
                     for buff in imf_gltf.buffers:
                         if buff.extras.get("name", "empty") != "empty":
                             buffer_file = temp_dir / buff.uri
                             shutil.copy(buffer_file, library_path)
+
+                    # fix images and textures, if available
+                    # breakpoint()
 
                     imf_gltf.save(library_path / f"{sec_id:08X}.gltf")
 
@@ -141,7 +173,7 @@ def from_drm(
                         save_to=library_path / (Path(imf_name).stem + ".gltf"),
                         scale=0.002,
                         z_up=True,
-                        skip_textures=True,
+                        skip_textures=True
                     )
                 except kaitaistruct.KaitaiStructError:
                     continue
@@ -185,7 +217,7 @@ def from_drm(
                     save_to=library_path / (obj_name + ".gltf"),
                     scale=0.002,
                     z_up=True,
-                    skip_textures=True,
+                    skip_textures=True
                 )
             except kaitaistruct.KaitaiStructError:
                 continue

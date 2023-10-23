@@ -252,7 +252,7 @@ class UnitDRM(DRM):
 
                 if sub50_18:
                     # sub50_18_4 = sub50_18.deref(4)  # ???
-                    len_cells = sub50_0.access("L")
+                    len_cells = sub50_0.access(f"L")
 
                     # sub50_18.deref(0x20).get_string()  # a bunch of strings ???
 

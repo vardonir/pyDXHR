@@ -102,6 +102,7 @@ class MeshData:
         self.name: str = name
         self.materials: Optional[List] = None
         self.textures: Optional[List] = None
+        self._has_named_textures: bool = False
 
         self.trs_matrix = None
         self.gltf_root = gl.GLTF2()
@@ -126,20 +127,6 @@ class MeshData:
 
             index_mat = self._add_property(gltf_mat)
             material_index_dict[mat] = index_mat
-        if not self._skip_textures:
-            if self.materials is None:
-                raise ValueError("No materials were provided")
-            if self.textures is None:
-                raise ValueError("No textures were provided")
-
-            # add the filenames of the materials
-            if self.materials[0].file_name is not None:
-                for cdc_mat_id, gltf_mat_id in material_index_dict.items():
-                    self.gltf_root.materials[gltf_mat_id].extras |= {
-                        "file_name": Path([m.file_name for m in self.materials if m.section_id == cdc_mat_id][0]).stem
-                    }
-
-            # raise NotImplementedError
 
         # add vertex/index data
 
@@ -209,6 +196,27 @@ class MeshData:
 
         mesh.primitives = self._gltf_mesh_prim_list
         return self._finalize(save_to=save_to)
+
+    def _attach_textures(self, save_to: Path | str):
+        if not self._skip_textures:
+            if self.materials is None:
+                raise ValueError("No materials were provided")
+            if self.textures is None:
+                raise ValueError("No textures were provided")
+
+            textures_dir = Path(save_to).parent / "textures"
+            textures_dir.mkdir(parents=True, exist_ok=True)
+
+            for tex in self.textures:
+                im = tex.read()
+                if os.getenv("texture_format") == "tga":
+                    im.to_tga(save_to=textures_dir)
+                elif os.getenv("texture_format") == "png":
+                    im.to_png(save_to=textures_dir)
+                else:
+                    im.to_dds(save_to=textures_dir)
+
+            breakpoint()
 
     def _finalize(self, save_to: Optional[str | Path] = None):
         buffer = gl.Buffer(extras={"name": self.name})

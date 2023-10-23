@@ -128,7 +128,7 @@ class RenderTerrain(KaitaiRenderTerrain, RenderMesh):
         # offset vb
         vb_data = self.byte_data[header.offset_vb :]
         for vb, (off_vtx_buffer, unk1, len_vtx_buffer, i_fmt) in enumerate(
-            [struct.unpack_from("<4L", vb_data, 0x10 * i) for i in range(header.len_vb)]
+            [struct.unpack_from(f"{self.endian}4L", vb_data, 0x10 * i) for i in range(header.len_vb)]
         ):
             vtx_buffer_info = vtx_info[i_fmt]
             vtx_sem_dict = {}

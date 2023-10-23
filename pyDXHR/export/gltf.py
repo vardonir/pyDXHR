@@ -1,7 +1,7 @@
 """
 Convert section or DRM to GLTF files
 """
-
+import os
 import tempfile
 import shutil
 from copy import copy
@@ -103,8 +103,13 @@ def from_drm(
     # read texture data
     # this for loop would not run if tex_list is empty anyway
     for tex in tex_list:
-        image = tex.read()
-        image.to_dds(save_to=texture_dest_dir)
+        im = tex.read()
+        if os.getenv("texture_format") == "tga":
+            im.to_tga(save_to=texture_dest_dir)
+        elif os.getenv("texture_format") == "png":
+            im.to_png(save_to=texture_dest_dir)
+        else:
+            im.to_dds(save_to=texture_dest_dir)
 
     # generate MeshData
     gltf_list = []
@@ -187,6 +192,24 @@ def merge_gltf(
 
     compiled_images = {i.name: copy(i) for f in gltf_list for i in f.images}
 
+    # if the textures have filenames, it makes sense to attach the images to the GLTF
+    # otherwise, they are kept in the textures folder
+    has_named_textures = False
+    if tex_list is not None and len(tex_list):
+        if tex_list[0].file_name is not None:
+            has_named_textures = True
+            textures_dir = Path(save_to).parent / "textures"
+            textures_dir.mkdir(parents=True, exist_ok=True)
+
+            for tex in tex_list:
+                im = tex.read()
+                if os.getenv("texture_format") == "tga":
+                    im.to_tga(save_to=textures_dir)
+                elif os.getenv("texture_format") == "png":
+                    im.to_png(save_to=textures_dir)
+                else:
+                    im.to_dds(save_to=textures_dir)
+
     # the URI attached to the image needs to be updated before it gets attached
     for im in compiled_images.values():
         merged_gltf.images.append(im)
@@ -203,6 +226,56 @@ def merge_gltf(
 
         for tex_name, gltf_tex in compiled_textures.items():
             gltf_tex.source = im_id_list.index(tex_name)
+
+    if has_named_textures:
+        # add the texlist as images/textures
+        image_index_dict = {}
+        for tex in tex_list:
+            gl_im = gl.Image(
+                uri="textures/" + tex.resource_name + "." + os.getenv("texture_format", "dds"),
+                name=tex.resource_name,
+                extras={
+                    "cdcTextureId": f"{tex.section_id:08X}",
+                }
+            )
+            image_index_dict[f"{tex.section_id:08X}"] = len(merged_gltf.images)
+
+            gl_tex = gl.Texture(
+                name=tex.resource_name,
+                source=len(merged_gltf.images),
+                extras={
+                    "cdcTextureId": f"{tex.section_id:08X}",
+                }
+            )
+
+            merged_gltf.images.append(gl_im)
+            merged_gltf.textures.append(gl_tex)
+
+        for idx, mat in enumerate(merged_gltf.materials):
+            mat_name = [Path(m.file_name).stem for m in mat_list if int(mat.name.split("_")[1], 16) == m.section_id][0]
+            mat.name = mat_name
+            for tex_id, mat_data in mat.extras.items():
+                tex_name_matches = [Path(t.file_name).stem for t in tex_list if int(tex_id, 16) == t.section_id]
+                if len(tex_name_matches):
+                    tex_name = tex_name_matches[0]
+                else:
+                    continue
+
+                if "normal" in tex_name or tex_name.endswith("_n"):
+                    norm = gl.NormalMaterialTexture(
+                        index=image_index_dict[tex_id],
+                    )
+
+                    mat.normalTexture = norm
+
+                if "flat" in tex_name or "diffuse" in tex_name or tex_name.endswith("_d"):
+                    pbr = gl.PbrMetallicRoughness(
+                        baseColorTexture=gl.TextureInfo(
+                           index=image_index_dict[tex_id],
+                        )
+                    )
+
+                    mat.pbrMetallicRoughness = pbr
 
     empty_image_buffer = None
     empty_image_buffer_view = None

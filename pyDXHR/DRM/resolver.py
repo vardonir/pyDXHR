@@ -56,8 +56,8 @@ class RemoteDataResolver(Resolver):
     """Resolvers for data in the same DRM"""
 
     def deserialize(self, data, endian: str = "<"):
-        if endian == ">":
-            (data,) = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
+        # if endian == ">":
+        #     (data,) = struct.unpack_from(">Q", _byte_swap(data.to_bytes(8, "little")))
 
         self.section_index = (data & 0x0000000000003FFF) >> 00
         self.pointer_offset = (data & 0x0000003FFFFFC000) >> 12
@@ -75,8 +75,8 @@ class UnknownResolver(Resolver):
         section_data: bytes = b"",
         endian: str = "<",
     ):
-        if endian == ">":
-            (data,) = struct.unpack_from(">L", _byte_swap(data.to_bytes(4, "little")))
+        # if endian == ">":
+        #     (data,) = struct.unpack_from(">L", _byte_swap(data.to_bytes(4, "little")))
 
         self.pointer_offset = ((data & 0x01FFFFFF) >> 0) * 4
         self.section_type = SectionType(((data & 0xFE000000) >> 25))
