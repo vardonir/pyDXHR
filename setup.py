@@ -11,6 +11,9 @@ setup(
         "console_scripts": [
             "bigfile = pyDXHR.entrypoints:bigfile",
             "drm = pyDXHR.entrypoints:drm",
+            "unit = pyDXHR.entrypoints:unit",
+            "gltf = pyDXHR.entrypoints:gltf",
+            "usm = pyDXHR.entrypoints:usm",
         ]
     }
 )

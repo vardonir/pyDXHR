@@ -13,6 +13,6 @@ drm.open()
 coll_mesh = CollisionMesh.from_drm(drm)
 for c in coll_mesh:
     md = c.read()
-    md.to_gltf(r"C:\Users\vardo\Documents\pyDXHR\playground\collmesh\det_sarifhq_rail_tutorial.gltf")
+    md.to_gltf(fr"C:\Users\vardo\Documents\pyDXHR\playground\collmesh\{unit_drm}_coll.gltf")
 
 breakpoint()
