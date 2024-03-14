@@ -71,7 +71,10 @@ class MultiplexStream(KaitaiStruct):
                 self.data = self._io.read_bytes(self.segment_header.len_segment)
 
             if self.segment_header.type == MultiplexStream.SegmentType.audio:
-                self.blocks = MultiplexStream.Block(self._io, self, self._root)
+                self.blocks = []
+                for i in range(self._root.header.len_channel):
+                    self.blocks.append(MultiplexStream.Block(self._io, self, self._root))
+
 
             self.padding = self._io.read_bytes(((16 - (self._io.pos() % 16)) % 16))
 

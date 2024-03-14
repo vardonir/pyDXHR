@@ -147,8 +147,8 @@ def unpack(path_to_000, unpacked_destination):
 
 if __name__ == "__main__":
     unpack(
-        path_to_000=r"F:\Projects\pyDXHR\bigfiles\DXHRPS3\CACHE.000",
-        unpacked_destination=r"C:\Users\vardo\Documents\pyDXHR\playground\mat_tex_unpack\base_ps3",
+        path_to_000=r"C:\Users\vardo\Documents\pyDXHR\bigfiles\DXHR\BIGFILE.000",
+        unpacked_destination=r"C:\Users\vardo\Documents\pyDXHR\playground\mat_tex_unpack",
     )
 
     # import argparse

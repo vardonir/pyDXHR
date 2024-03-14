@@ -5,7 +5,7 @@ bf = Bigfile.from_env()
 bf.open()
 
 # drm_name = 0xAB0AD4A3
-drm_name = r"streamgroups\det_adam_apt_c_all.drm"
+drm_name = r"computer_hacking_a.drm"
 
 drm = DRM.from_bigfile(drm_name, bf)
 drm.open()

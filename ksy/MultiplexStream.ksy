@@ -67,9 +67,10 @@ types:
       - id: blocks
         type: block
         if: segment_header.type == segment_type::audio
+        repeat: expr
+        repeat-expr: _root.header.len_channel
       - id: padding
         size: (16 - (_io.pos % 16)) % 16
-
 
   segment_header:
     seq:

@@ -1,3 +1,81 @@
+from pathlib import Path
+from kaitaistruct import KaitaiStructError
+from pyDXHR.generated.multiplex_stream import MultiplexStream
+from pyDXHR.Bigfile import Bigfile
+from typing import Optional
+
+
+class InvalidMULError(Exception):
+    pass
+
+
+class KaitaiMultiplexStream(MultiplexStream):
+    pass
+
+
+class MUL:
+    def __init__(self) -> None:
+        self.name: Optional[str | int] = None
+        self.data: bytes = b""
+
+        self._kt_mul: Optional[KaitaiMultiplexStream] = None
+
+    def to_fsb(self, path: Optional[str | Path] = None):
+        fsb_bytes = b""
+
+        for segment in self._kt_mul.segments:
+            if segment.segment_header.type == MultiplexStream.SegmentType.audio:
+                fsb_bytes += segment.blocks[0].data
+
+        if path is not None:
+            with open(path, "wb") as f:
+                f.write(fsb_bytes)
+
+    def open(self):
+        try:
+            self._kt_mul = KaitaiMultiplexStream.from_bytes(self.data)
+        except KaitaiStructError:
+            raise Exception("Failed to parse MUL file")
+
+        # if self._kt_mul.header.sample_rate not in (5512, 11025, 22050, 44100, 48000):
+        #     raise InvalidMULError("Invalid sample rate")
+
+    @classmethod
+    def from_bytes(
+            cls,
+            data: bytes,
+            name: str | int = None):
+
+        obj = cls()
+        obj.name = name
+        obj.data = data
+        return obj
+
+    @classmethod
+    def from_bigfile(
+            cls,
+            drm_name_or_hash: str | int,
+            bigfile: Bigfile,
+            locale: int = 0xF
+    ):
+        try:
+            data = bigfile.read(drm_name_or_hash, locale=locale)
+        except KeyError:
+            data = bigfile.read(drm_name_or_hash + ".mul", locale=locale)
+
+        obj = cls.from_bytes(data)
+        if isinstance(drm_name_or_hash, int):
+            obj.name = f"{drm_name_or_hash:08X}"
+        else:
+            obj.name = drm_name_or_hash
+        return obj
+
+    @classmethod
+    def from_file(cls, file_path: str | Path):
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return cls.from_bytes(data, file_path)
+
 # import struct
 # from typing import List
 # from enum import IntEnum
