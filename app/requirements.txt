@@ -6,5 +6,5 @@ kaitaistruct
 numpy
 pygltflib
 tqdm
-dotenv
+python-dotenv
 wannacri
