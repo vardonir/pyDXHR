@@ -157,6 +157,7 @@ class Image:
         assert len(self._dds_blob) == len_dds_header + 4
 
         self._dds_blob += self.Payload
+        return self._dds_blob
 
     def to_dds(self, save_to: Optional[str | Path] = None) -> Optional[bytes]:
         """Return the DDS blob as bytes or save to path"""

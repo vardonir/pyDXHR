@@ -154,7 +154,7 @@ class UnitDRM(DRM):
         """
         super().open()
 
-        if self.name.endswith("masterunit.drm"):
+        if self.name is not None and self.name.endswith("masterunit.drm"):
             self.is_masterunit = True
 
         unit_ref = Reference.from_root(self)

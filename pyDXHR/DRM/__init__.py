@@ -91,6 +91,15 @@ class DRM:
 
         self._is_open: bool = False
 
+    def section_summary(self):
+        summary = {}
+        for sec in self.sections:
+            if sec.header.section_type.name not in summary:
+                summary[sec.header.section_type.name] = 1
+            else:
+                summary[sec.header.section_type.name] += 1
+        return summary
+
     def get_section_from_id(self, section_id: int):
         for sec in self.sections:
             if sec.header.section_id == section_id:
