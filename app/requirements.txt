@@ -8,3 +8,4 @@ pygltflib
 tqdm
 python-dotenv
 wannacri
+scipy
