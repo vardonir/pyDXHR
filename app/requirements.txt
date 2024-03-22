@@ -1,2 +1,3 @@
 stqdm
 streamlit
+pyDXHR
