@@ -2,3 +2,9 @@ stqdm
 streamlit
 pyDXHR
 kaitaistruct
+kaitaistruct
+numpy
+pygltflib
+tqdm
+dotenv
+wannacri
