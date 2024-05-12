@@ -454,6 +454,10 @@ def vtx_attr_as_gltf_attr(vtx_sem) -> str:
         return (
             "".join([i for i in vtx_sem.name][:-1])
         ).upper() + f"_{int([i for i in vtx_sem.name][-1]) - 1}"
+    elif vtx_sem.value == VertexAttribute.skin_indices:
+        return "JOINTS_0"
+    elif vtx_sem.value == VertexAttribute.skin_weights:
+        return "WEIGHTS_0"
     else:
         # GLTF spec says that unused attributes should have a leading underscore
         return "_" + vtx_sem.name.upper()

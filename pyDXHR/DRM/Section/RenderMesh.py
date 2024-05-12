@@ -23,6 +23,7 @@ class RenderMesh(ABC):
         self.endian: str = "<"
         self.materials = []
         self.section_id: int = 0
+        self.bones = None
         self.file_name: Optional[str] = None
 
     def read(self):
@@ -75,8 +76,10 @@ class RenderModel(RenderMesh):
             self.rmb.byte_data = section_data[buffer_mark:]
             self.rmb.endian = section.header.endian
             self.rmb.section_id = section.header.section_id
+            # self.rmb.bones = _get_bones(section, 0xC)
         else:
             self.materials = _get_materials(section, 0x8)
+            # self.bones = _get_bones(section, 0xC)
 
         self.rm_data = section_data[:buffer_mark]
         # TODO: I believe there's some information here about bones, but I'm not interested in that right now.
@@ -107,6 +110,9 @@ class RenderTerrain(KaitaiRenderTerrain, RenderMesh):
     RenderTerrain section - found in both PC and consoles, these are typically large meshes that contain more than
     10 materials. For example, the helipad + ground + background in the Sarif Industries HQ is one big RT.
     """
+
+    def add_bones(self, drm: DRM):
+        raise NotImplementedError
 
     def parse_mesh_data(self) -> MeshData:
         """
@@ -365,6 +371,23 @@ def from_drm(drm: DRM) -> List[RenderMesh]:
         ]
 
 
+def _get_bones(sec: Section, offset: int = 0):
+    # TODO
+    import struct
+
+    for res in sec.resolvers:
+        if res.pointer_offset == offset:
+            bone_offset = res.data_offset
+
+            if bone_offset:
+                endian = sec.header.endian
+                (count,) = struct.unpack_from(f"{endian}L", sec.data, bone_offset)
+
+            breakpoint()
+    breakpoint()
+    return
+
+
 def _get_materials(sec: Section, offset: int = 0) -> List[int]:
     """
     Get the material IDs from the section's resolvers.
@@ -430,6 +453,12 @@ def _read_vertex_buffer(
     :return: ndarray of vertices, with the correct shape
     """
     import struct
+
+    if semantic_type == 0x06:
+        breakpoint()
+
+    if semantic_type == 0x07:
+        breakpoint()
 
     match semantic_type:
         case 0x02:

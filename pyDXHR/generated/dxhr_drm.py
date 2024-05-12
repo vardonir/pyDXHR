@@ -40,6 +40,7 @@ class DxhrDrm(KaitaiStruct):
         fsfx = 16
         lights = 17
         unknown_18 = 18
+        unknown_19 = 19
         unknown_20 = 20
         unknown_21 = 21
         render_terrain = 24

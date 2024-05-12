@@ -144,6 +144,7 @@ enums:
     16: fsfx
     17: lights
     18: unknown_18
+    19: unknown_19
     20: unknown_20
     21: unknown_21
     24: render_terrain
